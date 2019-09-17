@@ -5,17 +5,14 @@
   <title>Beego</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     
-    
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
     {{template "bootstrap.html" .}}    
     <link href="../static/css/login.css" rel="stylesheet">
 </head>
 
 
 <body>
-  <div class="modal-dialog">
+  <div class=" modal-dialog-centered">
 		<div class="loginmodal-container">
 			<h1>Login to Your Account</h1><br>
       <div id="result">{{.error}}</div>

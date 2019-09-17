@@ -4,7 +4,6 @@
 <head>
   <title>Beego</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    {{template "Style.html" .}}
     {{template "bootstrap.html" .}}
 </head>
 

@@ -91,14 +91,10 @@ function OutputKanban(Column,element){
     var NameKanban = document.createElement('div');
     
     className = "KanbanName";
-    innerHTML = "№" + element.IdBitrix24 + " -  <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
+    innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
     if (element.ActiveBlokers.description != "") {
-
-        9
-  //<span class="sr-only">unread messages</span>
-
-
-        innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
+        //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
+        innerHTML += `<span class="badge badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
         className += " blocked";
     }
     NameKanban.innerHTML = innerHTML
@@ -139,7 +135,7 @@ function OutputKanban(Column,element){
                 const startDate = (new Date(element.Start)).toLocaleDateString();
                 let endDate 
                 if (element.End =="0001-01-01T00:00:00Z"){
-                    Stringdate = "по настоящее";
+                    Stringdate = " настоящее время";
                 }else{
                     Stringdate = (new Date(element.End)).toLocaleDateString();
                 }
@@ -153,7 +149,7 @@ function OutputKanban(Column,element){
                 const startDate = (new Date(element.Startdate)).toLocaleDateString();
                 let endDate 
                 if (element.Enddate =="0001-01-01T00:00:00Z"){
-                    Stringdate = "по настоящее";
+                    Stringdate = " настоящее время";
                 }else{
                     Stringdate = (new Date(element.Enddate)).toLocaleDateString();
                 }

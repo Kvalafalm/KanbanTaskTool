@@ -4,10 +4,6 @@
 <head>
   <title>Beego</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <script>
-    window.ServerAPIIP = {{.ServerAPIIP}};
-  </script>
-  {{template "Style.html" .}}
   {{template "bootstrap.html" .}}
 </head>
 
@@ -164,7 +160,7 @@
 
       </div>
     </div>
-  {{template "footer.html" .}}
+  
   
 </body>
 </html>
