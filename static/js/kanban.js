@@ -1,6 +1,7 @@
 var Columns = [];
 var Kanbans;
 
+let Modal = 
 
 window.onload = function() {
     //viewCollumn();
@@ -17,7 +18,7 @@ window.onload = function() {
         
         document.getElementById('preloaderbg').style.display = 'none';
     });
-
+    
 }
 
 function FillInKanbanDesk() {
@@ -94,7 +95,7 @@ function OutputKanban(Column,element){
     innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
     if (element.ActiveBlokers.description != "") {
         //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
-        innerHTML += `<span class="badge badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
+        innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
         className += " blocked";
     }
     NameKanban.innerHTML = innerHTML
@@ -130,6 +131,7 @@ function OutputKanban(Column,element){
            
             $(".TitleBitrix24").append("<h3>№" + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
+            let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
             Kanbans.StagesHistory.forEach(function(element) {
 
                 const startDate = (new Date(element.Start)).toLocaleDateString();
@@ -140,7 +142,7 @@ function OutputKanban(Column,element){
                     Stringdate = (new Date(element.End)).toLocaleDateString();
                 }
 
-                const StringSS = '<span> На этапе '+element.Idstage +' c ' + startDate + ' по ' + Stringdate + ' ('+ calculationGapDatesString(element.Start,element.End) + ')</span>'
+                const StringSS = '<span id="'+element.Id+'" class="onhover"> На этапе '+element.Idstage +' c ' + startDate + ' по ' + Stringdate + ' ('+ calculationGapDatesString(element.Start,element.End) + ')'+ DefaultButton + '</span>' 
                 $(".StageMore").append(StringSS);
             });
             Kanbans.Blokers.forEach(function(element) {
@@ -154,17 +156,18 @@ function OutputKanban(Column,element){
                     Stringdate = (new Date(element.Enddate)).toLocaleDateString();
                 }
                 let decision = '';
-
+                
                 if (element.Finished) {
-                    decision = element.Diside
+                    decision = element.Diside;
                 }else{
                     //decision= `<button type="button" class="btn btn-outline-danger" onclick="Alert("Тест")">Danger</button>`
-                    decision= `<button type="button" class="close" onclick="alert('qwe')" id="`+element.Id+`"></button>`;
+                    
+                    //decision= ` <button type="button" class="close" aria-label="Close" id="`+element.Id+`" data-toggle="modal" data-target="#exampleModal" "><span aria-hidden="true">&times;</span></button>`;
                 }
                
-                const StringSS = '<span> <b>'+element.Description +'</b> c ' + startDate + ' по ' 
+                const StringSS = '<span id="'+element.Id +'" class="onhover"> <b>'+ element.Description +'</b> c ' + startDate + ' по ' 
                 + Stringdate + ' ('+ calculationGapDatesString(element.Startdate,element.Enddate) + '). '
-                + decision + '</span>'
+                + decision + DefaultButton + '</span>'
 
                 $(".BlokersMore").append(StringSS);
             });
@@ -187,7 +190,6 @@ function OutputKanban(Column,element){
 *
 */ 
 function drag(eventKanban) {
-
     eventKanban.dataTransfer.setData("text", eventKanban.target.id);
 }
 
@@ -296,4 +298,54 @@ function calculationGapDatesString(StartDateIn, EndDateIn) {
         Result = Math.floor(times) + " м.";
     }
     return Result;
+}
+
+function StartModalWindow(th){
+    //if
+    $("#exampleModalLabel").empty();
+    $(".modal-body").empty();
+    let form;
+    if (th.parentElement.className!="onhover"){
+    form = `
+        <input type="hidden"  id="Id" value="" aria-hidden="true">
+        <input type="hidden" id="type" value="bloker" aria-hidden="true">`
+
+    form += AddInputRow("Причина","BlokerReason","text","","укажите причину");
+    form += AddInputRow("Решение","BlokerDecision","text","","");
+    form += AddInputRow("Время начала","BlokerStart","text",Date(),"");
+    form += AddInputRow("Время окончания","BlokerEnd","text","","");
+    }else{
+        $.ajax({
+            type: "GET",
+            url: "/KanbanToolAPI/bloker/"+th.parentElement.id,
+            crossDomain : true,
+            async:false,
+            data: ""
+    
+       }).done(function (element) {
+            form = `
+            <input type="hidden"  id="Id" value="`+element.Id+`" aria-hidden="true">
+            <input type="hidden" id="type" value="bloker" aria-hidden="true">`
+        form += AddInputRow("Причина","BlokerReason","text",element.Description,);
+        form += AddInputRow("Решение","BlokerDecision","text",element.Diside,"");
+        form += AddInputRow("Время начала","BlokerStart","text",element.Startdate,"");
+        form += AddInputRow("Время окончания","BlokerEnd","text",element.Enddate,"");
+        });
+
+
+    }
+    $(".modal-body").append(form)
+    $("#exampleModalLabel").append("Блокер");
+}
+function AddInputRow(Title,Id,type,value,placeholder){
+    let row;
+    row = `
+    <div class="form-group">
+        <label >`+ Title + `</label>
+        <input type="`+ type + `" class="form-control" value="`+value + `" id="`+ Id+ `" placeholder="`+ placeholder+ `">
+    </div>`;
+    return row;
+}
+function SaveModalWindow(th){
+
 }

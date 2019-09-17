@@ -190,10 +190,7 @@ body {
     border-left: 1px solid black;
 }
 
-.close:after{
-    display: inline-block;
-    content: "\00d7"; /* This will render the 'X' */
-  }
+
 
 #preloader {
   top: -15vw;
@@ -243,3 +240,14 @@ body {
     transform: rotate(15deg);
 }
 
+.onhover {
+  cursor: pointer;
+}
+
+.onhover button {
+  display: none;
+}
+
+.onhover:hover button {
+  display: inline-block;
+}

@@ -30,6 +30,15 @@ func GetActiveBlokersFromDB(idtask int) (ActiveBloker Bloker, err error) {
 	return ActiveBloker, err
 }
 
+func GetBlokerFromDBbyId(id int) (bloker Bloker, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	_, err = database.QueryTable("bloker").Filter("id", id).All(&bloker)
+
+	return bloker, err
+}
+
 func GetAllBlokersFromDB(idtask int) (ActiveBloker []Bloker, err error) {
 	database := orm.NewOrm()
 	database.Using("default")

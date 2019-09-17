@@ -140,7 +140,9 @@
           <h3>История этапов</h3> 
           <div class="StageMore">
           </div>
-          <h3>Блокировки</h3>
+          <h3>  Блокировки
+              <button type="button" class="btn btn-second btn-xs" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button> 
+          </h3>
           <div class="BlokersMore">
           </div>
         </div>
@@ -160,7 +162,34 @@
 
       </div>
     </div>
-  
-  
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Как получилось снять блокировку</h5>
+          </div>
+
+            <div class="modal-body">
+            
+
+
+
+              
+            
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" >Закрыть</button>
+              <button type="button" class="btn btn-primary" onclick="SaveModalWindow(this)" data-dismiss="modal" >Сохранить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- EndModalDialog -->
+
+
 </body>
 </html>

@@ -50,6 +50,12 @@ func (this *KanbanToolAPI) Get() {
 		this.Data["json"] = &taks
 		this.ServeJSON()
 
+	case "bloker":
+		idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+		bloker, _ := serv.GetBloker(idInt)
+		this.Data["json"] = &bloker
+		this.ServeJSON()
+
 	default:
 		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \" }"
 		this.ServeJSON()

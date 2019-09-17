@@ -289,3 +289,13 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 	}
 
 }
+
+func (Cb *KanbanService) GetBloker(id int) (bloker model.Bloker, err error) {
+
+	bloker, err = model.GetBlokerFromDBbyId(id)
+	if err != nil {
+		return bloker, err
+	}
+
+	return bloker, nil
+}
