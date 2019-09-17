@@ -1,0 +1,198 @@
+
+body {
+    background-image: url("../img/background.jpg") ;
+    -moz-background-size: 100%; /* Firefox 3.6+ */
+    -webkit-background-size: 100%; /* Safari 3.1+ и Chrome 4.0+ */
+    -o-background-size: 100%; /* Opera 9.6+ */
+    background-size: cover; /* Современные браузеры */
+}
+
+.KanbanDesk {
+
+    display:grid;
+}
+.Parametrs{
+    display:inline-block;
+}
+.KanbanColumn{
+
+    border-radius: 10px;
+    margin: 2px;
+    padding: 2px;
+    background-color: rgba(197, 197, 182, 0.43);
+}
+
+.KanbanColumnContent{
+    overflow: auto;
+    max-height: 80vh;
+}
+
+.NameColumn{
+    margin: 2px;
+    padding: 5px;
+    text-align: left;
+    font-family: "New Century Schoolbook", Georgia, Serif;
+    font-weight: bold
+
+}
+.Benchmarks {
+    
+    padding-left: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px dashed gray;
+    text-align: center;
+
+}
+.Benchmark{
+    display: flex;    
+    height: 40px;
+    vertical-align: middle;
+}
+.BenchmarksName{
+    padding-left: 3px;
+    padding-right: 3px;
+    font-family: "New Century Schoolbook", Georgia, Serif;
+    font-weight: bold
+}
+.BenchmarksValue{
+    padding-left: 3px;
+    padding-right: 3px;
+    color: #ffffff;
+    clear: right;
+    font-family: "New Century Schoolbook", Georgia, Serif;
+    font-size: x-large;
+}
+.Kanban{
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    border-left: 3px solid #bc0005;
+    padding: 5px;
+    margin: 5px;
+    height:auto;
+    min-height: 50px;
+    
+    min-width: 100px;
+
+}
+.KanbanDescription{
+    padding: 1px;
+    border-left: 20px yellow;
+    margin: 1px;
+}
+
+.KanbanName{
+    -webkit-user-select: text;
+    text-align: center;
+    font-style: inherit;
+    padding: 1px;
+    margin: 1px;
+
+}
+
+.VIPClient{
+
+    background-color: rgb(204, 204, 202);
+
+}
+.StandartClient{
+
+}
+.Warning{
+    font-size: medium;
+}
+.nameClient{
+    font-size:small;
+}
+#KanbanMore{
+    padding: 10px;
+    margin: 10px;
+    background-color: #F5F5F5;
+    display: none; 
+    z-index: 1000;
+    position: fixed;
+    overflow: auto;
+    top: 20%;
+    height:100%;
+    width:100%;
+}
+.KanbanMoreComents{
+    margin-right: 15;
+    padding: 15;
+    word-break: break-all;
+}
+::-webkit-scrollbar {
+    width: 3px;
+    background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb {
+    width: 3px;
+    background-image: -webkit-linear-gradient(#000000, #000000);
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border: 0px solid black;
+    background-color: #F5F5F5;
+}
+
+#preloader {
+  top: -15vw;
+  left: -20vw;
+  position: relative;
+  width: 800px;
+  height: 600px;
+  background: url('../img/pr.gif');
+
+}
+.centerbg2 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+#preloaderbg {
+  display: none;
+  width:100%;
+  height:100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 1000;
+  opacity: 0.4;
+  background:  #ffffff;
+}
+
+/* Dashboards*/ 
+
+.topLoader {
+    width: 256px;
+    height: 256px;
+    margin-bottom: 32px;
+    margin: 0 auto;
+  }
+
+.DashBoard {
+    background-color: lightgray;
+    width: 300px;
+    height: 300px;
+    display: inline-block;
+    border-radius: 25px;
+    margin: 5 auto;
+    border: 3px solid rgb(0, 0, 0);
+    vertical-align: middle;
+}
+
+.DashBoardName {
+  text-align:center;
+  color: hsl(0, 0%, 0%);
+  font-family: "New Century Schoolbook", Georgia, Serif;
+  font-size: x-large;    
+  margin: 0 auto;
+}
+
+.DashBoardSpan{
+    font-size: x-large;
+    display: block;
+    font-weight: bold;
+    text-align: center;
+}
