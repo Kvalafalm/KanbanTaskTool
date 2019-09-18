@@ -190,7 +190,9 @@ body {
     border-left: 1px solid black;
 }
 
-
+#FantomKanban{
+    opacity: 0.5;
+}
 
 #preloader {
   top: -15vw;
@@ -231,14 +233,7 @@ body {
 
  
   }
-.DragStart {
-    border: 1px solid red;
-    -webkit-transform: rotate(15deg);
-    -moz-transform: rotate(15deg);
-    -o-transform: rotate(15deg);
-    -ms-transform: rotate(15deg);
-    transform: rotate(15deg);
-}
+
 
 .onhover {
   cursor: pointer;

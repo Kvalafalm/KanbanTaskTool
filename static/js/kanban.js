@@ -1,7 +1,7 @@
 var Columns = [];
 var Kanbans;
 
-let Modal = 
+let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 
 window.onload = function() {
     //viewCollumn();
@@ -71,13 +71,9 @@ function OutputColumn(KanbanDiv,element){
     var NameColumn = document.createElement('div');
     NameColumn.className = "NameColumn";
     NameColumn.innerHTML = element.Name;
-    //var Benchmarks = document.createElement("div");
-    //Benchmarks.className = "Benchmarks";
-    // Benchmarks.innerHTML = '<div class=\"BenchmarksName\">Кол-во:</div> <div class=\"BenchmarksValue\"> 0</div> <div class=\"BenchmarksName\">Сумма:</div> <div class=\"BenchmarksValue\"> 0 т.р.</div>';
     var KanbanColumnContent = document.createElement('div');
     KanbanColumnContent.className = "KanbanColumnContent";
     KanbanColumn.append(NameColumn);
-    //KanbanColumn.append(Benchmarks);
     KanbanColumn.append(KanbanColumnContent);
     KanbanDiv.append(KanbanColumn);
 
@@ -196,12 +192,9 @@ function drag(eventKanban) {
 function setFunctionDADOnCollumn()
 {
 
-    $(".KanbanColumn").on("dragover",function(e){
-        e.preventDefault();
-      });
       $(".Kanban").on("dragstart",function(e){
         e.originalEvent.dataTransfer.setData("Text",e.target.id);
-        this.classList.add('.DragStart');
+        FantomKanbanHeight = $(e.target).closest(".Kanban").height();
         
       });
 
@@ -209,27 +202,78 @@ function setFunctionDADOnCollumn()
         e.preventDefault();
         let data=e.originalEvent.dataTransfer.getData("Text");
         let from = $("#"+data).closest(".KanbanColumn");
-        updateKanban(data,e.currentTarget.id);
-        $(e.currentTarget).find(".KanbanColumnContent").append(document.getElementById(data))
+
+        if (from[0].id != e.currentTarget.id) {
+            updateKanban(data,e.currentTarget.id);
+            from.find(".count").text("( "+ from.find(".KanbanColumnContent")[0].childElementCount + "/0)");
+        }
+        if (CurrentKanbanDrop != ""){
+            $(CurrentKanbanDrop).after($(document.getElementById(data)))
+        }else{
+            $(e.currentTarget).find(".KanbanColumnContent").append(document.getElementById(data))
+        }
         $(e.currentTarget).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
-        from.find(".count").text("( "+ from.find(".KanbanColumnContent")[0].childElementCount + "/0)");
         this.classList.remove('over'); 
       });
-
-      $(".KanbanColumn").on("dragenter",function(e){
-       this.classList.add('over');
+      
+      $(".KanbanColumn").on("dragenter",function dragenterKanban(e){
+        if(e.currentTarget != CurrentStageDrop){
+            $(CurrentStageDrop).removeClass('over');
+            CurrentStageDrop = e.currentTarget
+            $("#FantomKanban").remove();
+            $(CurrentStageDrop).addClass('over');
+            $(CurrentStageDrop).append(FantomCard(FantomKanbanHeight));
+            CurrentKanbanDrop="";
+        }
      });
+
+     $(".Kanban").on("dragenter",function dragenterKanban(e){
+         
+         if(e.currentTarget.closest(".Kanban") != CurrentKanbanDrop){
+            $(CurrentStageDrop).removeClass('over');
+            CurrentKanbanDrop = e.currentTarget.closest(".Kanban")
+            $("#FantomKanban").remove();
+            $(CurrentStageDrop).addClass('over');
+            $(CurrentKanbanDrop).after(FantomCard(FantomKanbanHeight));
+            
+        }
+
+         if ($(e.currentTarget).hasClass("Kanban") && e.currentTarget != CurrentKanbanDrop ){
+            $(CurrentStageDrop).removeClass('over');
+            CurrentKanbanDrop = e.currentTarget
+            $("#FantomKanban").remove();
+            $(CurrentStageDrop).addClass('over');
+            $(CurrentKanbanDrop).after(FantomCard(FantomKanbanHeight));
+            
+         }
+      });
+
 
       $(".KanbanColumn").on("dragover",function(e){
        if (e.preventDefault) {
             e.preventDefault();
           }
+          
+          if(e.currentTarget != CurrentStageDrop){
+            $("#FantomKanban").remove();
+            }
+          //$("#FantomKanban").detach();
+          //this.classList.('over');
           e.originalEvent.dropEffect = "move";
           return false;
       });
 
+      $(".KanbanColumn").children().on("dragover",function(e){
+        if (e.preventDefault) {
+             e.preventDefault();
+           }
+
+           e.originalEvent.dropEffect = "move";
+           return false;
+       });
       $(".KanbanColumn").on("dragend",function(e){
           $(".over").removeClass('over');
+          $("#FantomKanban").remove();
       });
 
 }
@@ -332,7 +376,7 @@ function StartModalWindow(th){
             form += AddInputRow("Решение","BlokerDecision","text",element.Diside,"");
             form += AddInputRow("Время начала","BlokerStart","text",element.Startdate,"");
             if (element.Enddate == "0001-01-01T00:00:00Z"){
-                form += AddInputRow("Время окончания","BlokerEnd","text",element.Enddate,(new Date()).toISOString());
+                form += AddInputRow("Время окончания","BlokerEnd","text",(new Date()).toISOString(),"Дата окончания");
             }else{
                 form += AddInputRow("Время окончания","BlokerEnd","text","",(new Date()).toISOString());
             }
@@ -393,4 +437,23 @@ function SaveModalWindow(th){
 
 function DeleteRow(th){
 
+}
+
+function FantomCard(height){
+    //var foo = jQuery('#FantomKanban');
+    //foo.detach(); //удаляем элемент
+    //много-много кода
+    //foo.appendTo('body'); 
+    const FantomCard = `
+    <div class="Kanban StandartClient" id="FantomKanban" style="height:`+height + `px">
+        <div class="KanbanName">
+        </div>
+        <div class="KanbanDescription">
+        </div>
+        <div class="KanbanDurationStatus">
+        </div>
+        <div class="KanbanUsers">
+        </div>
+    </div>`;
+    return FantomCard
 }
