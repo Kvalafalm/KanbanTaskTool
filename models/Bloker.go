@@ -1,6 +1,7 @@
 package Models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -48,7 +49,31 @@ func GetAllBlokersFromDB(idtask int) (ActiveBloker []Bloker, err error) {
 	return ActiveBloker, err
 }
 
-func UpdateBlokerInDB(task Bloker) (err error) {
+func UpdateBlokerInDB(bloker Bloker) (err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+	emptydate := time.Time{}
+	if bloker.Enddate != emptydate {
+		bloker.Finished = true
+	}
+	Param := orm.Params{
+
+		"idtask":      bloker.Idtask,
+		"description": bloker.Description,
+		"startdate":   bloker.Startdate.Format(time.RFC3339),
+		"enddate":     bloker.Enddate.Format(time.RFC3339),
+		"diside":      bloker.Diside,
+		"finished":    bloker.Finished,
+	}
+
+	if bloker.Id == 0 {
+		_, err = database.Insert(&bloker)
+	} else {
+		_, err = database.QueryTable(new(Bloker)).Filter("id", bloker.Id).Update(Param)
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	return nil
 }

@@ -95,6 +95,19 @@ func (this *KanbanToolAPI) Post() {
 		}
 		this.ServeJSON()
 
+	case "bloker.update":
+		bloker := service.Bloker{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
+		fmt.Println(bloker)
+		err := serv.UpdateBloker(bloker)
+
+		if err != nil {
+			this.Data["json"] = "{ \"successful\" : \"false\" }"
+		} else {
+			this.Data["json"] = "{ \"successful\" : \"true\" }"
+		}
+		this.ServeJSON()
+
 	default:
 		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \" }"
 		this.ServeJSON()

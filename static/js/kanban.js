@@ -128,7 +128,7 @@ function OutputKanban(Column,element){
             data: ""
     
        }).done(function (Kanbans) {
-           
+            $(".taskKanbanTool").attr("id", element.Id);
             $(".TitleBitrix24").append("<h3>№" + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
             let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
@@ -307,12 +307,13 @@ function StartModalWindow(th){
     let form;
     if (th.parentElement.className!="onhover"){
     form = `
-        <input type="hidden"  id="Id" value="" aria-hidden="true">
+        <input type="hidden"  id="BlokerId" value='' aria-hidden="true">
+        <input type="hidden"  id="BlokerIdtask" value="`+ th.parentElement.parentElement.id +`" aria-hidden="true">
         <input type="hidden" id="type" value="bloker" aria-hidden="true">`
 
     form += AddInputRow("Причина","BlokerReason","text","","укажите причину");
     form += AddInputRow("Решение","BlokerDecision","text","","");
-    form += AddInputRow("Время начала","BlokerStart","text",Date(),"");
+    form += AddInputRow("Время начала","BlokerStart","text",(new Date()).toISOString(),"");
     form += AddInputRow("Время окончания","BlokerEnd","text","","");
     }else{
         $.ajax({
@@ -324,12 +325,18 @@ function StartModalWindow(th){
     
        }).done(function (element) {
             form = `
-            <input type="hidden"  id="Id" value="`+element.Id+`" aria-hidden="true">
+            <input type="hidden"  id="BlokerId" value="`+element.Id+`" aria-hidden="true">
+            <input type="hidden"  id="BlokerIdtask" value="`+ element.Idtask +`" aria-hidden="true">
             <input type="hidden" id="type" value="bloker" aria-hidden="true">`
-        form += AddInputRow("Причина","BlokerReason","text",element.Description,);
-        form += AddInputRow("Решение","BlokerDecision","text",element.Diside,"");
-        form += AddInputRow("Время начала","BlokerStart","text",element.Startdate,"");
-        form += AddInputRow("Время окончания","BlokerEnd","text",element.Enddate,"");
+            form += AddInputRow("Причина","BlokerReason","text",element.Description,);
+            form += AddInputRow("Решение","BlokerDecision","text",element.Diside,"");
+            form += AddInputRow("Время начала","BlokerStart","text",element.Startdate,"");
+            if (element.Enddate == "0001-01-01T00:00:00Z"){
+                form += AddInputRow("Время окончания","BlokerEnd","text",element.Enddate,(new Date()).toISOString());
+            }else{
+                form += AddInputRow("Время окончания","BlokerEnd","text","",(new Date()).toISOString());
+            }
+        
         });
 
 
@@ -338,8 +345,7 @@ function StartModalWindow(th){
     $("#exampleModalLabel").append("Блокер");
 }
 function AddInputRow(Title,Id,type,value,placeholder){
-    let row;
-    row = `
+    const row = `
     <div class="form-group">
         <label >`+ Title + `</label>
         <input type="`+ type + `" class="form-control" value="`+value + `" id="`+ Id+ `" placeholder="`+ placeholder+ `">
@@ -347,5 +353,44 @@ function AddInputRow(Title,Id,type,value,placeholder){
     return row;
 }
 function SaveModalWindow(th){
+
+    let bloker =
+    {
+     "Id": $("#BlokerId")[0].value,
+     "Idtask": $("#BlokerIdtask")[0].value,
+     "Description": $("#BlokerReason")[0].value,
+     "Diside": $("#BlokerDecision")[0].value,
+     "Startdate": $("#BlokerStart")[0].value,
+     "Enddate": $("#BlokerEnd")[0].value,
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "/KanbanToolAPI/bloker.update/0",
+        contentType: "application/json; charset=utf-8",
+        crossDomain : true,
+        processData: false,
+        data: JSON.stringify(bloker)
+   }).done(function (element) {
+        if( $("#BlokerId")[0].value =="" ){
+        let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
+        const startDate = (new Date(bloker.Startdate)).toLocaleDateString();
+        let endDate 
+        if (bloker.Enddate =="0001-01-01T00:00:00Z"){
+            Stringdate = " настоящее время";
+        }else{
+            Stringdate = (new Date(bloker.Enddate)).toLocaleDateString();
+        }
+    
+        const StringSS = '<span id="'+bloker.Id +'" class="onhover"> <b>'+ bloker.Description +'</b> c ' + startDate + ' по ' 
+        + Stringdate + ' ('+ calculationGapDatesString(bloker.Startdate,bloker.Enddate) + '). '
+        + bloker.decision + DefaultButton + '</span>'
+
+        $(".BlokersMore").append(StringSS);
+        }
+    });   
+}
+
+function DeleteRow(th){
 
 }

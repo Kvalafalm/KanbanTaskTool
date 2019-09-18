@@ -14,7 +14,15 @@ import (
 
 type KanbanService struct {
 }
-
+type Bloker struct {
+	Id          int       `json:"Id,string"`
+	Idtask      int       `json:"Idtask,string"`
+	Description string    `json:"Description"`
+	Startdate   time.Time `json:"Startdate"`
+	Enddate     time.Time `json:"Enddate"`
+	Diside      string    `json:"Diside"`
+	Finished    bool      `json:"Finished,string"`
+}
 type Tasks struct {
 	ID             int       `json:"Id,string"`
 	IDBitrix24     int       `json:"IdBitrix24"`
@@ -298,4 +306,29 @@ func (Cb *KanbanService) GetBloker(id int) (bloker model.Bloker, err error) {
 	}
 
 	return bloker, nil
+}
+
+func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
+	blokerDb := model.Bloker{}
+	blokerDb.Id = bloker.Id
+	blokerDb.Idtask = bloker.Idtask
+	blokerDb.Startdate = bloker.Startdate
+	blokerDb.Enddate = bloker.Enddate
+	blokerDb.Description = bloker.Description
+	blokerDb.Diside = bloker.Diside
+	emptyDate := time.Time{}
+	fmt.Println(emptyDate)
+	fmt.Println(blokerDb.Enddate)
+	if blokerDb.Enddate != emptyDate {
+		blokerDb.Finished = true
+	} else {
+		blokerDb.Finished = false
+	}
+
+	err = model.UpdateBlokerInDB(blokerDb)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
