@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	service "KanbanTaskTool/services"
+	service "KanbanTaskTool/Services"
 	"encoding/json"
 	"strconv"
 	s "strings"

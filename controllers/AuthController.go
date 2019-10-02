@@ -2,6 +2,7 @@ package controllers
 
 import (
 	m "KanbanTaskTool/Models"
+	services "KanbanTaskTool/Services"
 
 	"github.com/astaxie/beego"
 )
@@ -14,20 +15,37 @@ type UserAnswer struct {
 	Password string `form:"Password"`
 }
 
-func (c *AuthController) Get() {
-	session := c.StartSession()
+func (this *AuthController) Get() {
+	session := this.StartSession()
 	userID := session.Get("User")
-	logout := c.GetString("logout")
+
+	logout := this.GetString("logout")
+	server_domain := this.GetString("server_domain")
+
 	if logout == "yes" {
 
 		if userID != nil {
 			session.Delete("User")
 		}
-		c.Redirect("/", 307)
+		this.Redirect("/", 307)
+		this.TplName = "login.tpl"
 		return
 	}
 
-	c.TplName = "login.tpl"
+	if server_domain == "oauth.bitrix.info" {
+		//User = services.GetUserOauth2Bitrix24();
+
+		User, err := services.GetUserOauth2Bitrix24(this.GetString("code"))
+		if err == nil {
+			session.Set("User", User)
+			this.Data["Website"] = beego.AppConfig.String("WebSite")
+			this.Redirect("/", 302)
+		} else {
+			this.Data["error"] = err
+			this.TplName = "login.tpl"
+		}
+	}
+	this.TplName = "login.tpl"
 }
 
 func (this *AuthController) Post() {

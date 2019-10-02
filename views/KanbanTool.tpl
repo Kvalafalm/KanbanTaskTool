@@ -9,9 +9,7 @@
 
 {{template "navbar.html" .}}
   <div class="container-fluid">
-  <div id="debug">
-  текст
-  </div>
+
   <div id="KanbanDesk1">
       <div id="preloaderbg" class="preloaderbg">
         <div class="centerbg2">

@@ -19,7 +19,7 @@ func (this *KanbanTool) Get() {
 
 	this.Data["Website"] = beego.AppConfig.String("WebSite")
 	this.Data["Email"] = "415@rernsk.ru"
-
+	this.Data["User"] = session.Get("User")
 	this.TplName = "KanbanTool.tpl"
 
 }

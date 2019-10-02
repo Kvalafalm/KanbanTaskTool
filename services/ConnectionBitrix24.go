@@ -1,13 +1,16 @@
 package Services
 
 import (
+	model "KanbanTaskTool/Models"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -248,7 +251,59 @@ type UserB24 struct {
 		UFDISTRICT         interface{} `json:"UF_DISTRICT"`
 		UFPHONEINNER       string      `json:"UF_PHONE_INNER"`
 	} `json:"result"`
-	Total int `json:"total"`
+}
+
+type CurrentUserB24 struct {
+	Result struct {
+		ID                 int    `json:"ID,string"`
+		ACTIVE             bool   `json:"ACTIVE"`
+		EMAIL              string `json:"EMAIL"`
+		NAME               string `json:"NAME"`
+		LASTNAME           string `json:"LAST_NAME"`
+		SECONDNAME         string `json:"SECOND_NAME"`
+		PERSONALGENDER     string `json:"PERSONAL_GENDER"`
+		PERSONALPROFESSION string `json:"PERSONAL_PROFESSION"`
+		PERSONALWWW        string `json:"PERSONAL_WWW"`
+		PERSONALBIRTHDAY   string `json:"PERSONAL_BIRTHDAY"`
+		PERSONALPHOTO      string `json:"PERSONAL_PHOTO"`
+		PERSONALPHOTOURL   template.HTML
+		PERSONALICQ        string      `json:"PERSONAL_ICQ"`
+		PERSONALPHONE      string      `json:"PERSONAL_PHONE"`
+		PERSONALFAX        string      `json:"PERSONAL_FAX"`
+		PERSONALMOBILE     string      `json:"PERSONAL_MOBILE"`
+		PERSONALPAGER      interface{} `json:"PERSONAL_PAGER"`
+		PERSONALSTREET     interface{} `json:"PERSONAL_STREET"`
+		PERSONALCITY       string      `json:"PERSONAL_CITY"`
+		PERSONALSTATE      interface{} `json:"PERSONAL_STATE"`
+		PERSONALZIP        interface{} `json:"PERSONAL_ZIP"`
+		PERSONALCOUNTRY    interface{} `json:"PERSONAL_COUNTRY"`
+		WORKCOMPANY        interface{} `json:"WORK_COMPANY"`
+		WORKPOSITION       string      `json:"WORK_POSITION"`
+		WORKPHONE          string      `json:"WORK_PHONE"`
+		UFDEPARTMENT       []int       `json:"UF_DEPARTMENT"`
+		UFINTERESTS        interface{} `json:"UF_INTERESTS"`
+		UFSKILLS           interface{} `json:"UF_SKILLS"`
+		UFWEBSITES         interface{} `json:"UF_WEB_SITES"`
+		UFXING             interface{} `json:"UF_XING"`
+		UFLINKEDIN         interface{} `json:"UF_LINKEDIN"`
+		UFFACEBOOK         interface{} `json:"UF_FACEBOOK"`
+		UFTWITTER          interface{} `json:"UF_TWITTER"`
+		UFSKYPE            string      `json:"UF_SKYPE"`
+		UFDISTRICT         interface{} `json:"UF_DISTRICT"`
+		UFPHONEINNER       string      `json:"UF_PHONE_INNER"`
+	} `json:"result"`
+}
+
+type Oauth2Succes struct {
+	AccessToken    string `json:"access_token"`
+	ClientEndpoint string `json:"client_endpoint"`
+	Domain         string `json:"domain"`
+	ExpiresIn      int    `json:"expires_in"`
+	MemberID       string `json:"member_id"`
+	RefreshToken   string `json:"refresh_token"`
+	Scope          string `json:"scope"`
+	ServerEndpoint string `json:"server_endpoint"`
+	Status         string `json:"status"`
 }
 
 type ListTask struct {
@@ -423,4 +478,47 @@ func (Cb *ConnectionBitrix24) GetProjectListById(filter string) (projects Projec
 	}
 
 	return projects, err
+}
+
+func GetUserOauth2Bitrix24(code string) (User model.User, err error) {
+
+	query := `https://oauth.bitrix.info/oauth/token/?grant_type=authorization_code&client_id=` +
+		beego.AppConfig.String("Bitrix24ClientId") +
+		`&client_secret=` + beego.AppConfig.String("Bitrix24ClientSecret") +
+		`&code=` + code
+	request := httplib.Post(query)
+
+	str, err := request.Bytes()
+
+	if err != nil {
+		return User, errors.New("Ошибка авторизации на сервере Битрикса24")
+	}
+	Oauth2Succes := Oauth2Succes{}
+	err = json.Unmarshal(str, &Oauth2Succes)
+	if err != nil {
+		return User, errors.New("Ошибка авторизации на сервере Битрикса24")
+	}
+	// Шаг 2 получаем текущего пользователя
+	query = `https://` + beego.AppConfig.String("BitrixDomen") + `/rest/user.current.json?auth=` + Oauth2Succes.AccessToken
+	request = httplib.Post(query)
+	str, err = request.Bytes()
+
+	if err != nil {
+		return User, errors.New("Ошибка получения данных пользователя, неверный AccessToken")
+	}
+	CurrentUserB24 := CurrentUserB24{}
+	err = json.Unmarshal(str, &CurrentUserB24)
+	if err != nil {
+		return User, errors.New("Ошибка получения данных пользователя, формат ответа JSON")
+	}
+
+	User.Firstname = CurrentUserB24.Result.NAME
+	User.Secondname = CurrentUserB24.Result.LASTNAME
+	User.Bitrix24id = CurrentUserB24.Result.ID
+	err = User.ValidCurentUserOrAdd()
+	if err != nil {
+		return User, errors.New("Ошибка Авторизации")
+	}
+
+	return User, nil
 }

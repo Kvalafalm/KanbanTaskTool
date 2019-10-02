@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	s "KanbanTaskTool/services"
+	services "KanbanTaskTool/Services"
 
 	"github.com/astaxie/beego"
 )
@@ -26,7 +26,7 @@ func (this *BitrixControllerApi) Get() {
 
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 
-	var connectionBitrix24 = s.ConnectionBitrix24{
+	var connectionBitrix24 = services.ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
@@ -74,7 +74,8 @@ func (this *BitrixControllerApi) Get() {
 
 }
 
-func GetTask(IdTask string, this *BitrixControllerApi, ConnectionBitrix24 s.ConnectionBitrix24) {
+// необходимо перенести в сервис
+func GetTask(IdTask string, this *BitrixControllerApi, ConnectionBitrix24 services.ConnectionBitrix24) {
 
 	if IdTask != "" {
 		idInt, _ := strconv.Atoi(IdTask)
@@ -97,7 +98,7 @@ func (this *BitrixControllerApi) Post() {
 		return
 	}
 
-	var ConnectionBitrix24 = s.ConnectionBitrix24{
+	var ConnectionBitrix24 = services.ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
