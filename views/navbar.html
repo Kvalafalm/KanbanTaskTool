@@ -1,49 +1,77 @@
-<!-- begin navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-      <!-- Brand and toggle get grouped for better mobile display -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+  <a class="navbar-brand" href="#">KanbanTool</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
-      <!-- Collect the nav links, forms, and other content for toggling -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-   
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item"><a class="nav-link" href="http://{{.Website}}">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://{{.Website}}/KanbanTool/">KanbanTool</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://{{.Website}}/KanbanToolAPI/">KanbanToolAPI</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://{{.Website}}/Bitrix24/tasklist/0">UpdateTaskList</a></li> 
-        </ul>
-        <script>
-        $(function () {
-            var location = window.location.href;
-            var path = window.location.pathname.split('/');
-            FirstPath = '';
-            if (path.length > 2){
-                FirstPath = '/' + path[1]+  '/'
-            }
-            var cur_url = 'http://'+{{.Website}} + FirstPath ;
-        
-            $('.navbar-nav').each(function () {
-                $(this).find('li').each(function () {
-                
-                var link = $(this).find('a').attr('href');
-        
-                    if (cur_url == link)
-                    {
-                        $(this).addClass('active');
-                    }
-                });
-            });
-        });
-        </script>
-        
-        {{.User.Firstname}}
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item"><a class="nav-link" href="/KanbanTool/">KanbanTool</a></li>
+      <li class="nav-item"><a class="nav-link" href="/KanbanToolAPI/">KanbanToolAPI</a></li>
+      <li class="nav-item"><a class="nav-link" href="/Bitrix24/tasklist/0">UpdateTaskList</a></li> 
+    </ul>
+      <!--<li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Dropdown
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li>-->
+    
+    <script>
+      $(function () {
+          var location = window.location.href;
+          var path = window.location.pathname.split('/');
+          FirstPath = '';
+          if (path.length > 2){
+              FirstPath = '/' + path[1]+  '/'
+          }
+          var cur_url = 'http://'+{{.Website}} + FirstPath ;
       
-        <ul class="nav navbar-nav navbar-right">
-          <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
-            <button class="btn btn-default" id="addBookButton">Login</button>        
-         </form>
-       </ul>
-      </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
+          $('.navbar-nav').each(function () {
+              $(this).find('li').each(function () {
+              
+              var link = $(this).find('a').attr('href');
+      
+                  if (cur_url == link)
+                  {
+                      $(this).addClass('active');
+                  }
+              });
+          });
+      });
+      </script>
+      {{if .User }} 
+      <span class="navbar-text">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{.User.Firstname}}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <div class="dropdown-divider"></div>
+                <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
+                  <input type="hidden" name="logout" id="logout" value="yes"/>
+                  <button class="btn btn-default" id="addBookButton">Logout</button>        
+                </form>
+              </div>
+          </li>
+        </ul>
+      </span>
+
+    {{else}}
+      <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
+        <button class="btn btn-default" id="addBookButton">Login</button>        
+     </form>
+     {{end}}
+  </div>
 </nav>
-<!--  end navbar -->
