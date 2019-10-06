@@ -19,11 +19,11 @@ func init() {
 
 }
 
-func GetTaskListFromDB() (taskListFromDB []Tasks, err error) {
+func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Tasks").All(&taskListFromDB)
+	_, err = database.QueryTable("Tasks").Filter("Desk", id).All(&taskListFromDB)
 
 	return taskListFromDB, err
 }

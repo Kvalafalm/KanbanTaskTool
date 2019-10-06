@@ -31,10 +31,21 @@ func (this *KanbanToolAPI) Get() {
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	var serv = service.KanbanService{}
 	fmt.Println(TypeAction)
+	idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
 	switch TypeAction {
 
 	case "tasklist":
-		task, _ := serv.GetTaskList("0")
+		task, _ := serv.GetTaskList(idInt)
+		this.Data["json"] = &task
+		this.ServeJSON()
+
+	case "desklist":
+		task, _ := serv.GetDeskList(idInt)
+		this.Data["json"] = &task
+		this.ServeJSON()
+
+	case "desk":
+		task, _ := serv.GetDeskById(idInt)
 		this.Data["json"] = &task
 		this.ServeJSON()
 
@@ -44,14 +55,13 @@ func (this *KanbanToolAPI) Get() {
 		this.ServeJSON()
 
 	case "task":
-		idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
 
 		taks, _ := serv.GetTask(idInt)
 		this.Data["json"] = &taks
 		this.ServeJSON()
 
 	case "bloker":
-		idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+
 		bloker, _ := serv.GetBloker(idInt)
 		this.Data["json"] = &bloker
 		this.ServeJSON()

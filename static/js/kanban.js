@@ -6,8 +6,9 @@ let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 window.onload = function() {
     //viewCollumn();
     $.event.addProp('dataTransfer');
-    FillInKanbanDesk();
-
+    refreshDeskList();
+    FillInKanbanDesk($("#DeskList option:selected").val());
+    
     $("#сloseButton").click(function(){
         $("#KanbanMore").hide("slow");
         $(".TitleBitrix24").empty();
@@ -20,19 +21,58 @@ window.onload = function() {
     });
     
 }
-
-function FillInKanbanDesk() {
-    Kanbans = [];
-
-    document.getElementById('preloaderbg').style.display = 'block'
+function refreshDeskList(){
+    
     $.ajax({
         type: "GET",
-        url: "/KanbanToolAPI/taskList/0",
+        url: "/KanbanToolAPI/desklist/0",
+        crossDomain : true,
+        async: false,
+        data: ""
+   }).done(function (DeskList) {
+        $("#DeskList").empty();
+        let FirstEvent=true;
+        DeskList.forEach(function(element) {
+            if (FirstEvent){
+                $("#DeskList").append('<option selected="selected" value="' + element.Id+ '">'+ element.Name + '</h3>');
+                FirstEvent = false;
+            }else{
+                $("#DeskList").append('<option value="' + element.Id+ '">'+ element.Name + '</h3>');
+            }
+
+        });
+    });  
+
+    $( "#DeskList" ).change(function() {
+        FillInKanbanDesk($("#DeskList option:selected").val());
+    });
+}
+
+function FillInKanbanDesk(DeskId) {
+    Kanbans = [];
+   
+    document.getElementById('preloaderbg').style.display = 'block'
+
+    $(".KanbanDeskCanvas").empty();
+    $(".KanbanDeskCanvas").attr('id', DeskId);    
+    $.ajax({
+        type: "GET",
+        url: "/KanbanToolAPI/desk/"+DeskId,
+        crossDomain : true,
+        data: ""
+
+    }).done(function (desk) {
+        $(".KanbanDeskCanvas").append(desk.Innerhtml)
+    });
+
+    $.ajax({
+        type: "GET",
+        url: "/KanbanToolAPI/taskList/"+DeskId,
         crossDomain : true,
         data: ""
 
    }).done(function (Kanbans) {
-       
+        
         Kanbans.forEach(function(element) {
             OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
         });

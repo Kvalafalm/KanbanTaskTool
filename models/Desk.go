@@ -1,13 +1,17 @@
 package Models
 
-import "github.com/astaxie/beego/orm"
+import (
+	"html/template"
+
+	"github.com/astaxie/beego/orm"
+)
 
 type Desk struct {
 	Id          int `orm:"auto"`
 	Name        string
 	Description string
-	ProjectsB24 string
-	Innerhtml   string
+	Projectsb24 string
+	Innerhtml   template.HTML
 }
 
 func init() {
@@ -18,14 +22,14 @@ func GetDeskFromDBById(id int) (desk Desk, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Desk").Filter("id", id).All(&desk)
+	err = database.QueryTable("Desk").Filter("id", id).One(&desk)
 	return desk, err
 }
 
-func GetDesksFromDBById() (desks []Desk, err error) {
+func GetDeskListFromDB() (desks []Desk, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Desk").OrderBy("Name").All(&desks)
+	_, err = database.QueryTable("Desk").OrderBy("Name").All(&desks, "Id", "Name", "Description")
 	return desks, err
 }

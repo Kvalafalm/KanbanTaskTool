@@ -23,6 +23,7 @@ type Bloker struct {
 	Diside      string    `json:"Diside"`
 	Finished    bool      `json:"Finished,string"`
 }
+
 type Tasks struct {
 	ID             int       `json:"Id,string"`
 	IDBitrix24     int       `json:"IdBitrix24"`
@@ -82,14 +83,14 @@ type Stages struct {
 	WIP  int    `json:"WIP"`
 }
 
-func (Cb *KanbanService) GetTaskList(id string) (tasks []Tasks, err error) {
+func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 
 	connectionBitrix24API := ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
 
-	TasksFromDB, err := model.GetTaskListFromDB()
+	TasksFromDB, err := model.GetTaskListFromDB(id)
 	if err != nil {
 		return nil, err
 
@@ -331,4 +332,14 @@ func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
 	}
 
 	return nil
+}
+
+func (Cb *KanbanService) GetDeskList(id int) (desk []model.Desk, err error) {
+	desk, err = model.GetDeskListFromDB()
+	return desk, err
+}
+
+func (Cb *KanbanService) GetDeskById(id int) (desk model.Desk, err error) {
+	desk, err = model.GetDeskFromDBById(id)
+	return desk, err
 }
