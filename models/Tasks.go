@@ -23,7 +23,14 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Tasks").Filter("Desk", id).All(&taskListFromDB)
+	cond := orm.NewCondition()
+	deskStages, _ := GetDeskStagesFromDB(id)
+	for _, Stage := range deskStages {
+		cond = cond.Or("stageid", Stage.Idstages)
+	}
+
+	fmt.Println(database.QueryTable("Tasks").SetCond(cond).Count())
+	database.QueryTable("Tasks").SetCond(cond).All(&taskListFromDB)
 
 	return taskListFromDB, err
 }
