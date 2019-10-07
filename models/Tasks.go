@@ -58,6 +58,8 @@ func SetTaskFromBitrix24(Id string) (err error) {
 
 	task := Tasks{}
 	task.Idbitrix24, _ = strconv.Atoi(Id)
+	task.Desk = 2
+	task.Stageid = 9
 	if created, id, err := database.ReadOrCreate(&task, "idbitrix24"); err == nil {
 		if created {
 			fmt.Println("New Insert an object. Id:", id)

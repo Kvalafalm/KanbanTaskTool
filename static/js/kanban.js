@@ -77,9 +77,15 @@ function FillInKanbanDesk(DeskId) {
             OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
         });
 
+        $(".KanbanColumn").each(function(){
+            $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+        });
+
         document.getElementById('preloaderbg').style.display = 'none';
 
         setFunctionDADOnCollumn();
+        
+        
     });
 }
 

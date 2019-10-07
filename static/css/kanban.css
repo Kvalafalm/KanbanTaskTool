@@ -26,14 +26,13 @@ body {
 }
 .KanbanRowView{
     display: grid;
-    
 }
 .Swimline{
     display: grid;
     grid-auto-columns: auto;
 }
 .KanbanColumnView{
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     display: grid;
 }
 .KanbanColumnContent{
@@ -104,7 +103,7 @@ body {
     margin: 5px;
     height:auto;
     min-height: 50px;
-    max-width: 250px;
+    max-width: 100%;
     min-width: 100px;
 
 }
