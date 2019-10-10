@@ -19,7 +19,7 @@ window.onload = function() {
         
         document.getElementById('preloaderbg').style.display = 'none';
     });
-    
+
 }
 function refreshDeskList(){
     
@@ -63,6 +63,15 @@ function FillInKanbanDesk(DeskId) {
 
     }).done(function (desk) {
         $(".KanbanDeskCanvas").append(desk.Innerhtml)
+        $(".KanbanColumn").each(function () {
+            $(this).find(".NameColumn").addClass("onhover").append(`
+            <button type="button" class="btn btn-light btn-xs " style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px"  class=""><i class="fa fa-clone" aria-hidden="true"></i></button>
+            `);
+        });
+        $(".openOnFullWindow").click(function(){
+            alert($(this).closest(".KanbanColumn").attr('id') );
+        });
     });
 
     $.ajax({
@@ -171,7 +180,7 @@ function OutputKanban(Column,element){
     
        }).done(function (Kanbans) {
             $(".taskKanbanTool").attr("id", element.Id);
-            $(".TitleBitrix24").append("<h3>№" + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</h3>");
+            $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
             let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
             Kanbans.StagesHistory.forEach(function(element) {
