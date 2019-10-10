@@ -8,7 +8,7 @@ type User struct {
 	Id         int
 	Firstname  string
 	Secondname string
-	Password   string
+	password   string
 	Bitrix24id int
 }
 
