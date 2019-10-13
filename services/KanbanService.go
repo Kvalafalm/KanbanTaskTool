@@ -124,8 +124,9 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].Stage = TaskFromDB.Stageid
 
 		for _, valuesB24 := range values.Result.Tasks {
-			tasks[i].Users = valuesB24.Responsible
+
 			if valuesB24.ID == tasks[i].IDBitrix24 {
+				tasks[i].Users = valuesB24.Responsible
 				tasks[i].Name = valuesB24.Title
 				tasks[i].IdProject = valuesB24.GroupID
 			}
