@@ -39,7 +39,7 @@ func (this *AuthController) Get() {
 		if err == nil {
 			session.Set("User", User)
 			this.Data["Website"] = beego.AppConfig.String("WebSite")
-			this.Redirect("/", 302)
+			this.Redirect("/KanbanTool/", 302)
 		} else {
 			this.Data["error"] = err
 			this.TplName = "login.tpl"
@@ -62,7 +62,7 @@ func (this *AuthController) Post() {
 	if err == "" {
 		session.Set("User", User)
 		this.Data["Website"] = beego.AppConfig.String("WebSite")
-		this.Redirect("/", 302)
+		this.Redirect("/KanbanTool/", 302)
 	} else {
 		this.Data["error"] = err
 		this.TplName = "login.tpl"
