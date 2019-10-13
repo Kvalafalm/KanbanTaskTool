@@ -67,10 +67,23 @@ function FillInKanbanDesk(DeskId) {
             $(this).find(".NameColumn").addClass("onhover").append(`
             <button type="button" class="btn btn-light btn-xs " style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px"  class=""><i class="fa fa-clone" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  class=""><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
             `);
         });
         $(".openOnFullWindow").click(function(){
             alert($(this).closest(".KanbanColumn").attr('id') );
+        });
+        $(".addKanban").click(function(){
+            //alert($(this).closest(".KanbanColumn").attr('id') );
+            $(this).closest(".KanbanColumn").append(`
+            <div draggable="true" class="Kanban StandartClient NewKanban">
+                <div class="KanbanDescription">
+                    <div class="input-group">
+                        <textarea class="form-control" id="NewKanban" aria-label="With textarea" onchange="SaveKanban(this)"></textarea>
+                    </div>
+                </div>
+            </div>`);
+            $("#NewKanban").focus();
         });
     });
 
@@ -98,6 +111,35 @@ function FillInKanbanDesk(DeskId) {
     });
 }
 
+function SaveKanban(e){
+
+    let task =
+    {
+     "name": e.value,
+     "stage": $(".NewKanban").closest(".KanbanColumn").attr('id').replace("Stage","")
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "/KanbanToolAPI/task.new/0",
+        contentType: "application/json; charset=utf-8",
+        crossDomain : true,
+        processData: false,
+        data: JSON.stringify(task),
+        async: true
+   }).done(function (element) {
+
+        $(".NewKanban").remove();
+
+        OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
+
+        $(".KanbanColumn").each(function(){
+            $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+        });
+
+   });
+   
+}
 function viewCollumn(){
     $.ajax({
         type: "GET",
@@ -144,10 +186,12 @@ function OutputKanban(Column,element){
     
     className = "KanbanName";
     innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
-    if (element.ActiveBlokers.description != "") {
-        //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
-        innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
-        className += " blocked";
+    if (element.ActiveBlokers != undefined) {
+        if (element.ActiveBlokers.description != "") {
+            //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
+            innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
+            className += " blocked";
+        }
     }
     NameKanban.innerHTML = innerHTML
     NameKanban.className = className;

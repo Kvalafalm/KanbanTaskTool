@@ -22,13 +22,13 @@ func init() {
 
 }
 
-func GetActiveBlokersFromDB(idtask int) (ActiveBloker Bloker, err error) {
+func GetActiveBlokersFromDB(idtask int) (ActiveBloker Bloker, count int, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
+	var count64 int64
+	count64, err = database.QueryTable("bloker").Filter("idtask", idtask).Filter("finished", false).All(&ActiveBloker)
 
-	_, err = database.QueryTable("bloker").Filter("idtask", idtask).Filter("finished", false).All(&ActiveBloker)
-
-	return ActiveBloker, err
+	return ActiveBloker, int(count64), err
 }
 
 func GetBlokerFromDBbyId(id int) (bloker Bloker, err error) {

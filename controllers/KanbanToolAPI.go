@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	Models "KanbanTaskTool/Models"
 	service "KanbanTaskTool/Services"
 	"encoding/json"
 	"strconv"
@@ -75,19 +76,18 @@ func (this *KanbanToolAPI) Get() {
 
 func (this *KanbanToolAPI) Post() {
 
-	//	session := this.StartSession()
-	//	User := session.Get("User")
-	//	if User == nil {
-	//		this.Redirect("/login", 307)
-	//	return
-	//}
+	session := this.StartSession()
+	User := session.Get("User")
+	if User == nil {
+		this.Redirect("/login", 307)
+		return
+	}
 
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	var serv = service.KanbanService{}
 	switch TypeAction {
 
 	case "task.update":
-
 		task := service.Tasks{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &task)
 		err := serv.SetTask(task)
@@ -96,6 +96,14 @@ func (this *KanbanToolAPI) Post() {
 		} else {
 			this.Data["json"] = "{ \"successful\" : \"true\" }"
 		}
+		this.ServeJSON()
+
+	case "task.new":
+		task := service.Task{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &task)
+		id, _ := serv.NewTask(task, User.(Models.User))
+		newTask, _ := serv.GetTaskForDesk(id)
+		this.Data["json"] = &newTask
 		this.ServeJSON()
 
 	case "task.create":

@@ -58,25 +58,27 @@ func UpdateTaskInDB(task Tasks) (err error) {
 	return err
 }
 
-func SetTaskFromBitrix24(Id string) (err error) {
+func SetTaskFromBitrix24(Id string, stage int) (id int, err error) {
 
 	database := orm.NewOrm()
 	database.Using("default")
 
 	task := Tasks{}
 	task.Idbitrix24, _ = strconv.Atoi(Id)
-	task.Desk = 2
-	task.Stageid = 9
+	task.Stageid = stage
+	var idint int
+
 	if created, id, err := database.ReadOrCreate(&task, "idbitrix24"); err == nil {
 		if created {
 			fmt.Println("New Insert an object. Id:", id)
 		} else {
 			fmt.Println("Get an object. Id:", id)
 		}
+		idint = int(id)
 	} else {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return idint, nil
 
 }

@@ -66,6 +66,58 @@ type Comments struct {
 	} `json:"result"`
 }
 
+type RespondeAddtask struct {
+	Result struct {
+		Task TaskB `json:"task"`
+	} `json:"result"`
+}
+
+type TaskB struct {
+	TITLE                 string        `json:"TITLE"`
+	STAGEID               string        `json:"STAGE_ID"`
+	DESCRIPTION           string        `json:"DESCRIPTION"`
+	DESCRIPTIONHTML       template.HTML `json:"DESCRIPTION_HTML"`
+	DEADLINE              string        `json:"DEADLINE"`
+	STARTDATEPLAN         string        `json:"START_DATE_PLAN"`
+	ENDDATEPLAN           string        `json:"END_DATE_PLAN"`
+	PRIORITY              string        `json:"PRIORITY"`
+	AUDITORS              []string      `json:"AUDITORS"`
+	ALLOWCHANGEDEADLINE   string        `json:"ALLOW_CHANGE_DEADLINE"`
+	TASKCONTROL           string        `json:"TASK_CONTROL"`
+	GROUPID               string        `json:"GROUP_ID"`
+	RESPONSIBLEID         string        `json:"RESPONSIBLE_ID"`
+	TIMEESTIMATE          string        `json:"TIME_ESTIMATE"`
+	ID                    string        `json:"ID"`
+	CREATEDBY             string        `json:"CREATED_BY"`
+	DESCRIPTIONINBBCODE   string        `json:"DESCRIPTION_IN_BBCODE"`
+	REALSTATUS            string        `json:"REAL_STATUS"`
+	STATUS                string        `json:"STATUS"`
+	RESPONSIBLENAME       string        `json:"RESPONSIBLE_NAME"`
+	RESPONSIBLELASTNAME   string        `json:"RESPONSIBLE_LAST_NAME"`
+	RESPONSIBLESECONDNAME string        `json:"RESPONSIBLE_SECOND_NAME"`
+	DATESTART             string        `json:"DATE_START"`
+	DURATIONTYPE          string        `json:"DURATION_TYPE"`
+	CREATEDBYNAME         string        `json:"CREATED_BY_NAME"`
+	CREATEDBYLASTNAME     string        `json:"CREATED_BY_LAST_NAME"`
+	CREATEDBYSECONDNAME   string        `json:"CREATED_BY_SECOND_NAME"`
+	CREATEDDATE           string        `json:"CREATED_DATE"`
+	CHANGEDBY             string        `json:"CHANGED_BY"`
+	CHANGEDDATE           string        `json:"CHANGED_DATE"`
+	STATUSCHANGEDBY       string        `json:"STATUS_CHANGED_BY"`
+	STATUSCHANGEDDATE     string        `json:"STATUS_CHANGED_DATE"`
+	CLOSEDDATE            string        `json:"CLOSED_DATE"`
+	GUID                  string        `json:"GUID"`
+	VIEWEDDATE            string        `json:"VIEWED_DATE"`
+	FAVORITE              string        `json:"FAVORITE"`
+	ALLOWTIMETRACKING     string        `json:"ALLOW_TIME_TRACKING"`
+	MATCHWORKTIME         string        `json:"MATCH_WORK_TIME"`
+	ADDINREPORT           string        `json:"ADD_IN_REPORT"`
+	COMMENTSCOUNT         string        `json:"COMMENTS_COUNT"`
+	SITEID                string        `json:"SITE_ID"`
+	SUBORDINATE           string        `json:"SUBORDINATE"`
+	MULTITASK             string        `json:"MULTITASK"`
+}
+
 type TaskB24 struct {
 	Result struct {
 		TITLE               string        `json:"TITLE"`
@@ -339,6 +391,30 @@ func (Cb *ConnectionBitrix24) GetTask(id int) (app TaskB24, err error) {
 
 	app.Result.DESCRIPTIONHTML = template.HTML(strings.Replace(app.Result.DESCRIPTION, "\n", "\n<br>", -1))
 	return app, nil
+}
+
+func (Cb *ConnectionBitrix24) AddTask(task map[string]string) (newtask TaskB, err error) {
+	app := RespondeAddtask{}
+
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/tasks.task.add"
+
+	req := httplib.Post(request)
+
+	for key, value := range task {
+		req.Param(string("fields["+key+"]"), value)
+	}
+
+	str, err := req.Bytes()
+	if err != nil {
+		return newtask, err
+	}
+
+	err = json.Unmarshal(str, &app)
+	if err != nil {
+		return newtask, err
+	}
+
+	return app.Result.Task, nil
 }
 
 func (Cb *ConnectionBitrix24) GetUser(id string) (app UserB24, err error) {
