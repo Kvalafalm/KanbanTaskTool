@@ -12,6 +12,8 @@ type Tasks struct {
 	Desk       int
 	Idbitrix24 int
 	Stageid    int
+	Finished   bool
+	Typetask   int
 }
 
 func init() {
@@ -24,11 +26,14 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	database.Using("default")
 
 	cond := orm.NewCondition()
+	cond = cond.And("finished", false)
+
+	cond2 := orm.NewCondition()
 	deskStages, _ := GetDeskStagesFromDB(id)
 	for _, Stage := range deskStages {
-		cond = cond.Or("stageid", Stage.Idstages)
+		cond2 = cond2.Or("stageid", Stage.Idstages)
 	}
-
+	cond = cond.AndCond(cond2)
 	fmt.Println(database.QueryTable("Tasks").SetCond(cond).Count())
 	database.QueryTable("Tasks").SetCond(cond).All(&taskListFromDB)
 

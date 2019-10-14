@@ -15,14 +15,16 @@ body {
     display:inline-block;
 }
 .KanbanColumn{
-    min-width: 246px;
-    min-height: 200px;
+    /*min-width: 246px;*/
+    /*min-height: 200px;*/
+    font-size: x-small;
     overflow: auto;
     border-radius: 10px;
     border: 1px solid black;
     margin: 2px;
     padding: 2px;
-    background-color: rgba(197, 197, 182, 0.43);
+    /*background-color: rgba(197, 197, 182, 0.43);*/
+
 }
 .KanbanRowView{
     display: grid;
@@ -93,7 +95,7 @@ body {
     color: #ffffff;
     clear: right;
     font-family: "New Century Schoolbook", Georgia, Serif;
-    font-size: x-large;
+    
 }
 .Kanban{
     background-color: rgba(255, 255, 255, 0.9);
@@ -131,18 +133,19 @@ body {
     border-style: dotted;
 }
 
-.VIPClient{
-    background-color: rgb(76, 175, 80);
+.typeTask1{
+    background-color: rgb(76, 175, 80, 0.7);
 }
-.StandartClient{
-    background-color: rgb(255, 255, 255);
+.typeTask2{
+    background-color: rgba(255, 136, 0, 0.726);
+}
+.typeTask0{
+    background-color: rgba(197, 197, 182, 0.43);
 }
 .Warning{
     font-size: medium;
 }
-.nameClient{
-    font-size:larger;
-}
+
 .Title{
     display: block;
     margin: 10px;

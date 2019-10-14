@@ -43,7 +43,7 @@ type Tasks struct {
 		Startdate   time.Time `json:"startdate"`
 	} `json:"ActiveBlokers"`
 	Swimlane     int    `json:"Swimlane"`
-	Type         string `json:"Type"`
+	TypeTask     int    `json:"typeTask"`
 	IdProject    int    `json:"IdProject"`
 	ImageProject string `json:"ImageProject"`
 	NameProject  string `json:"NameProject"`
@@ -122,6 +122,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].ID = TaskFromDB.Idtasks
 		tasks[i].IDBitrix24 = TaskFromDB.Idbitrix24
 		tasks[i].Stage = TaskFromDB.Stageid
+		tasks[i].TypeTask = TaskFromDB.Typetask
 
 		for _, valuesB24 := range values.Result.Tasks {
 

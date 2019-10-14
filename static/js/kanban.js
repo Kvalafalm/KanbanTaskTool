@@ -179,7 +179,7 @@ function OutputColumn(KanbanDiv,element){
 function OutputKanban(Column,element){
     var Kanban = document.createElement('div');
     Kanban.draggable = "true";
-    Kanban.className = "Kanban StandartClient";
+    Kanban.className = "Kanban";
     Kanban.id = element.Id;
 
     var NameKanban = document.createElement('div');
@@ -193,6 +193,11 @@ function OutputKanban(Column,element){
             className += " blocked";
         }
     }
+    if (element.typeTask != undefined ){
+        Kanban.className = Kanban.className + " typeTask" + element.typeTask;
+    }else{
+        Kanban.className = Kanban.className + " StandartClient";
+    }
     NameKanban.innerHTML = innerHTML
     NameKanban.className = className;
     var KanbanDescription = document.createElement('div');
@@ -201,7 +206,7 @@ function OutputKanban(Column,element){
 
     var KanbanDurationStatus = document.createElement('div');
     KanbanDurationStatus.className = "KanbanDurationStatus"
-    KanbanDurationStatus.innerHTML = "В этом статусе: " + calculationDateStatusString(element.DateSart) ;
+    /*KanbanDurationStatus.innerHTML = "В этом статусе: " + calculationDateStatusString(element.DateSart) ;*/
 
     var KanbanUsers = document.createElement('div');
     KanbanUsers.className = "KanbanUsers"
