@@ -12,14 +12,7 @@
 
 {{template "navbar.html" .}}
   <div class="container-fluid">
-    <div class="form-group" Style="width: 200px;">
-      <label for="DeskList">Список досок</label>
-      <select class="form-control" id="DeskList">
-      </select>
-      <button type="button" class="btn btn-second btn-xs" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-info-circle" aria-hidden="true"></i></button> 
-      <button type="button" class="btn btn-second btn-xs" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button> 
-      
-    </div>
+
   <div id="KanbanDesk1">
       <div id="preloaderbg" class="preloaderbg">
         <div class="centerbg2">

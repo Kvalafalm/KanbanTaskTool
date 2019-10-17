@@ -185,19 +185,19 @@ function OutputKanban(Column,element){
     var NameKanban = document.createElement('div');
     
     className = "KanbanName";
-    innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
+    //innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
+    innerHTML = `<div class="">`;
     if (element.ActiveBlokers != undefined) {
         if (element.ActiveBlokers.description != "") {
             //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
             innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
-            className += " blocked";
         }
     }
+    innerHTML += "№" + element.IdBitrix24 + `</div><img class="UserIcon" src=` + element.Users.icon + `>` ;
     if (element.typeTask != undefined ){
         Kanban.className = Kanban.className + " typeTask" + element.typeTask;
-    }else{
-        Kanban.className = Kanban.className + " StandartClient";
     }
+
     NameKanban.innerHTML = innerHTML
     NameKanban.className = className;
     var KanbanDescription = document.createElement('div');
@@ -210,7 +210,7 @@ function OutputKanban(Column,element){
 
     var KanbanUsers = document.createElement('div');
     KanbanUsers.className = "KanbanUsers"
-    KanbanUsers.innerHTML = `<div ><img class="UserIcon" src=` + element.Users.icon + `></div>`;
+    KanbanUsers.innerHTML = `<div style="display: flex;"><span class="projectName">` + element.NameProject + `</span> </div>`;
 
     Kanban.append(NameKanban);
     Kanban.append(KanbanDescription);

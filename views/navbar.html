@@ -10,6 +10,13 @@
       <li class="nav-item"><a class="nav-link" href="/KanbanToolGraph/">KanbanToolGraph</a></li>
       <!-- <li class="nav-item"><a class="nav-link" href="/Bitrix24/tasklist/0">UpdateTaskList</a></li>--> 
     </ul>
+    <ul class="navbar-text">
+        <div class="navbar-nav">
+            <label for="DeskList"> Доска </label>
+            <select class="form-control" id="DeskList">
+            </select>
+          </div>
+    </ul>
       <!--<li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Dropdown
@@ -49,7 +56,9 @@
       });
       </script>
       {{if .User }} 
+ 
       <span class="navbar-text">
+
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

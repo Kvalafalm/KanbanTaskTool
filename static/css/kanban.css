@@ -52,6 +52,9 @@ body {
 .UserIcon {
     border-radius: 30px;
     width: 30px;
+    display: block;
+    margin-left: auto;
+    margin-right: unset;
 }
 .NameColumn{
     margin: 2px;
@@ -68,6 +71,21 @@ body {
     margin-right: 10px;
     margin-left: 10px;
     border: 1px solid gray;
+    margin-left: auto;
+    margin-right: unset;
+}
+.KanbanUsers{
+    padding-bottom: 2px;
+    padding-top: 3px;
+}
+.projectName{
+    background-color: rgba(125, 125, 125, 0.25);
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: 20px;
+    margin-left: auto;
+    /*border: 1px solid gray;*/
+    font-weight: bold;
 }
 
 .Benchmarks {
@@ -98,7 +116,7 @@ body {
     
 }
 .Kanban{
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(236, 234, 234, 0.9);
     border-radius: 5px;
     border-left: 3px solid #bc0005;
     padding: 5px;
@@ -121,7 +139,8 @@ body {
     font-style: inherit;
     padding: 1px;
     margin: 1px;
-
+    display: flex;
+    font-weight: bold;
 }
 .blocked{
     background: #ef9bb7;
@@ -134,13 +153,19 @@ body {
 }
 
 .typeTask1{
-    background-color: rgb(76, 175, 80, 0.7);
+    border-left: 7px solid rgb(76, 175, 80, 1);
 }
 .typeTask2{
-    background-color: rgba(255, 136, 0, 0.726);
+   border-left: 7px solid rgba(255, 136, 0, 1);
 }
 .typeTask0{
-    background-color: rgba(197, 197, 182, 0.43);
+    border-left: 7px solid rgb(160, 158, 158);
+}
+.typeTask3{
+    border-left: 7px solid rgba(233, 87, 87, 1);
+}
+.typeTask4{
+    border-left: 7px solid rgba(246, 143, 255, 1);
 }
 .Warning{
     font-size: medium;
