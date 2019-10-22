@@ -64,6 +64,9 @@ body {
     font-weight: bold
 
 }
+.finished{
+    opacity: 0.5;
+}
 .projetcicon{
     border-radius: 30px;
     height: 30px;
@@ -86,6 +89,7 @@ body {
     margin-left: auto;
     /*border: 1px solid gray;*/
     font-weight: bold;
+    height: 18px;
 }
 
 .Benchmarks {

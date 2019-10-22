@@ -210,7 +210,9 @@ function OutputKanban(Column,element){
 
     var KanbanUsers = document.createElement('div');
     KanbanUsers.className = "KanbanUsers"
-    KanbanUsers.innerHTML = `<div style="display: flex;"><span class="projectName">` + element.NameProject + `</span> </div>`;
+    let finishButton = `<button type="button" class="btn btn-light btn-xs" style="padding:0px" onclick="FinishTask(this)" ><i class="fa fa-flag" aria-hidden="true"></i></button>`
+ 
+    KanbanUsers.innerHTML = `<div style="display: flex;" class="onhover">`+finishButton + `<span class="projectName">` + element.NameProject + `</span> </div>`;
 
     Kanban.append(NameKanban);
     Kanban.append(KanbanDescription);
@@ -281,7 +283,21 @@ function OutputKanban(Column,element){
         });
     });
 }
+function FinishTask(e){
+    $.ajax({
+        type: "POST",
+        url: "/KanbanToolAPI/task.complete/"+$(e).closest(".Kanban").attr("id"),
 
+        crossDomain : true,
+        async:false,
+        data: ""
+
+   }).done(function (element) {
+    if (element){
+        $(e).closest(".Kanban").addClass("finished");
+    }
+   });
+}
 
 /* Блока перетаскивания
 *

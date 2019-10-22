@@ -107,10 +107,21 @@ func (this *KanbanToolAPI) Post() {
 		this.ServeJSON()
 
 	case "task.create":
-		param := getParamBitrix24(string(this.Ctx.Input.RequestBody))
+		param := getParamBitrix24(this.Ctx.Input.Param(":Type"))
 		if param["auth[application_token]"] == beego.AppConfig.String("BitrixWebHookIncoming") {
 			serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
 		}
+		this.ServeJSON()
+
+	case "task.complete":
+		id, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+		err := serv.CompleteTask(id)
+		if err != nil {
+			this.Data["json"] = "false"
+		} else {
+			this.Data["json"] = "true"
+		}
+
 		this.ServeJSON()
 
 	case "bloker.update":

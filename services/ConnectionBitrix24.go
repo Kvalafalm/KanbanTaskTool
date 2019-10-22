@@ -417,6 +417,20 @@ func (Cb *ConnectionBitrix24) AddTask(task map[string]string) (newtask TaskB, er
 	return app.Result.Task, nil
 }
 
+func (Cb *ConnectionBitrix24) CompleteTask(idTaskBitrix24 int) (err error) {
+
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/tasks.task.complete"
+	req := httplib.Post(request)
+	req.Param("taskId", strconv.Itoa(idTaskBitrix24))
+
+	_, err = req.Bytes()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (Cb *ConnectionBitrix24) GetUser(id string) (app UserB24, err error) {
 	app = UserB24{}
 

@@ -63,6 +63,20 @@ func UpdateTaskInDB(task Tasks) (err error) {
 	return err
 }
 
+func FinishTask(task Tasks) (err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	_, err = database.QueryTable(new(Tasks)).Filter("idtasks", task.Idtasks).Update(orm.Params{
+		"finished": true,
+	})
+
+	if err == nil {
+		return nil
+	}
+	return err
+}
+
 func SetTaskFromBitrix24(Id string, stage int) (id int, err error) {
 
 	database := orm.NewOrm()

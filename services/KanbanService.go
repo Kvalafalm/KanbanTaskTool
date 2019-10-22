@@ -248,6 +248,36 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	return id, err
 }
 
+func (Cb *KanbanService) CompleteTask(taskId int) (err error) {
+
+	taskDb, err := model.GetTaskFromDB(taskId)
+
+	connectionBitrix24API := ConnectionBitrix24{
+		beego.AppConfig.String("BitrixDomen"),
+		beego.AppConfig.String("BitrixUser"),
+		beego.AppConfig.String("BitrixWebHook")}
+
+	err = connectionBitrix24API.CompleteTask(taskDb.Idbitrix24)
+	if err != nil {
+		return err
+	}
+	rowHistory, err := model.GetCurrentTaskStage(taskId)
+	timeNow := time.Now()
+	if rowHistory.Id > 0 {
+		rowHistory.Finised = true
+		rowHistory.End = timeNow
+		err = model.SetCurrentTaskStage(rowHistory)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	model.FinishTask(taskDb)
+
+	return nil
+}
+
 func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 	connectionBitrix24API := ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
