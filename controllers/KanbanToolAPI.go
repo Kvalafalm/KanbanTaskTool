@@ -50,8 +50,8 @@ func (this *KanbanToolAPI) Get() {
 		this.Data["json"] = &task
 		this.ServeJSON()
 
-	case "stages":
-		stages, _ := serv.GetStages("0")
+	case "stage":
+		stages, _ := serv.GetStages(idInt)
 		this.Data["json"] = &stages
 		this.ServeJSON()
 

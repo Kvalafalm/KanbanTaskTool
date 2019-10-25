@@ -1,7 +1,7 @@
 <html>
 <head>
-  <title>Beego</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>КанбанТул РЭР</title>
+  <link rel="shortcut icon" href="../static/img/favicon.ico" type="image/x-icon">
   <script>
   var Bitrix24id = {{.User.Bitrix24id}}
   </script>

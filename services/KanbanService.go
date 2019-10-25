@@ -78,9 +78,10 @@ type Task struct {
 }
 
 type Stages struct {
-	ID   int    `json:"Id"`
-	Name string `json:"Name"`
-	WIP  int    `json:"WIP"`
+	ID          int    `json:"Id"`
+	Name        string `json:"Name"`
+	WIP         int    `json:"WIP"`
+	Description string `json:"Description"`
 }
 
 func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
@@ -156,20 +157,14 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 	return tasks, nil
 }
 
-func (Cb *KanbanService) GetStages(id string) (stagesAPI []Stages, err error) {
+func (Cb *KanbanService) GetStages(id int) (stagesAPI Stages, err error) {
 
-	stagesFromDB, err := model.GetStageFromDB()
+	stagesFromDB, err := model.GetStageFromDB(id)
 	if err != nil {
-		return nil, err
+		return stagesAPI, err
 	}
 
-	stagesAPI = make([]Stages, len(stagesFromDB))
-
-	for i, stageFromDB := range stagesFromDB {
-
-		stagesAPI[i].ID = stageFromDB.Idstage
-		stagesAPI[i].Name = stageFromDB.Name
-	}
+	stagesAPI = Stages{stagesFromDB.Idstage, stagesFromDB.Name, 0, stagesFromDB.Description}
 
 	return stagesAPI, nil
 }

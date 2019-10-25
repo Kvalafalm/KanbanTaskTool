@@ -14,11 +14,11 @@ func init() {
 
 }
 
-func GetStageFromDB() (Stages []Stage, err error) {
+func GetStageFromDB(id int) (Stages Stage, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
 	//_, err = database.QueryTable("Stage").OrderBy("Order").All(&Stages)
-	_, err = database.QueryTable("Stage").All(&Stages)
+	_, err = database.QueryTable("Stage").Filter("Idstage", id).All(&Stages)
 	return Stages, err
 }

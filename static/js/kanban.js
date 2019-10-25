@@ -4,7 +4,7 @@ var Kanbans;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 
 window.onload = function() {
-    //viewCollumn();
+
     $.event.addProp('dataTransfer');
     refreshDeskList();
     FillInKanbanDesk($("#DeskList option:selected").val());
@@ -65,7 +65,7 @@ function FillInKanbanDesk(DeskId) {
         $(".KanbanDeskCanvas").append(desk.Innerhtml)
         $(".KanbanColumn").each(function () {
             $(this).find(".NameColumn").addClass("onhover").append(`
-            <button type="button" class="btn btn-light btn-xs " style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-light btn-xs infoCollumn" style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px"  class=""><i class="fa fa-clone" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  class=""><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
             `);
@@ -85,6 +85,20 @@ function FillInKanbanDesk(DeskId) {
             </div>`);
             $("#NewKanban").focus();
         });
+        $(".infoCollumn").click(function(){
+            
+            $.ajax({
+                type: "GET",
+                url: "/KanbanToolAPI/stage/"+$(this).closest(".KanbanColumn").attr("id").replace("Stage",""),
+                crossDomain : true,
+                data: "",
+                async: false
+           }).done(function (stages) {
+        
+                alert(stages.Description)
+        
+            });
+        });      
     });
 
     $.ajax({
@@ -140,25 +154,7 @@ function SaveKanban(e){
    });
    
 }
-function viewCollumn(){
-    $.ajax({
-        type: "GET",
-        url: "/KanbanToolAPI/stages/0",
-        crossDomain : true,
-        data: "",
-        async: false
-   }).done(function (Stages) {
-        KanbanDesk = document.getElementById("KanbanDesk");
-        CountColum = "";
-        Stages.forEach(function(element) {
-            OutputColumn(KanbanDesk,element);
-            CountColum += " 1fr";
-        });
-        KanbanDesk.style.gridTemplateColumns =  CountColum ;
 
-    });
-
-}
 
 function OutputColumn(KanbanDiv,element){
 
