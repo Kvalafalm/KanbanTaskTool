@@ -16,11 +16,68 @@ type Stagehistory struct {
 	Durationinmin int
 	Finised       bool
 }
+type RawStageHistoryForCFD struct {
+	Idstage   int
+	Counttask int
+	Date      time.Time
+}
 
 func init() {
 	orm.RegisterModel(new(Stagehistory))
 
 }
+
+func GetDataForCFDFromBD(param map[string]string) (raws []orm.Params, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	var mapRaw []orm.Params
+
+	endTime, err := time.Parse(time.RFC3339, param[`date`])
+	utcLocation, _ := time.LoadLocation("UTC")
+	endTimeUTC := endTime.In(utcLocation)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	num, err := database.Raw(`SELECT 
+    deskstages.idstages,
+    CASE
+        WHEN Stages.counttask IS NULL THEN 0
+        ELSE Stages.counttask
+    END AS counttask,
+    Stages.date
+FROM
+    kanbantool.deskstages
+        LEFT JOIN
+    (SELECT 
+        stagehistory.idstage,
+            COUNT(stagehistory.idtask) AS counttask,
+            MAX(CASE
+                WHEN stagehistory.end IS NULL THEN ?
+                ELSE stagehistory.end
+            END) AS date
+    FROM
+        kanbantool.stagehistory
+    INNER JOIN kanbantool.deskstages ON stagehistory.idstage = deskstages.idstages
+    INNER JOIN kanbantool.stage ON stagehistory.idstage = stage.idstage
+    WHERE
+        stagehistory.start <= ?
+            AND (stagehistory.end >= ?
+            OR stagehistory.end IS NULL)
+            AND deskstages.iddesk = ?
+    GROUP BY stagehistory.idstage
+    ORDER BY stage.order DESC) AS Stages ON Stages.idstage = deskstages.idstages
+WHERE
+    deskstages.iddesk = ?`, endTimeUTC, endTimeUTC, endTimeUTC, param[`desk`], param[`desk`]).Values(&mapRaw)
+	//.QueryRows(&raws)
+	if err != nil && num > 0 {
+		return mapRaw, err // slene
+	}
+
+	return mapRaw, nil
+}
+
 func GetCurrentTaskStage(TaskId int) (rowTaskHistory Stagehistory, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
@@ -61,6 +118,5 @@ func GetTaskHistoryStages(TaskId int) (rowTaskHistory []Stagehistory, err error)
 	database.Using("default")
 
 	_, err = database.QueryTable("Stagehistory").Filter("idtask", TaskId).All(&rowTaskHistory)
-	fmt.Println(rowTaskHistory)
 	return rowTaskHistory, err
 }

@@ -39,10 +39,18 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 func ValidUser(Username string, Password string) (user User, err string) {
 
 	err = ""
-	if (Username == "1") && (Password == "1") {
-		user = User{1, "Nikolay", "Kutnyashenko", "1", 0}
-	} else if (Username == "2") && (Password == "2") {
-		user = User{2, "Колямба", "Хохотамба", "2", 0}
+	if (Username == "Kutnashnko") && (Password == "") {
+		user = User{1, "Николай", "Кутняшенко", "1", 8}
+	} else if (Username == "Shapkin") && (Password == "") {
+		user = User{2, "Дима", "Шапкин", "2", 208}
+	} else if (Username == "Popova") && (Password == "") {
+		user = User{2, "Ксения", "Попова", "2", 208}
+	} else if (Username == "Tarabarov") && (Password == "") {
+		user = User{2, "Антон", "Тарабаров", "2", 361}
+	} else if (Username == "Kiselev") && (Password == "") {
+		user = User{2, "Антон", "Кисилев", "2", 407}
+	} else if (Username == "Maklyak") && (Password == "") {
+		user = User{2, "Сергей", "Макляк", "2", 409}
 	} else {
 		err = "Error Auth "
 	}
