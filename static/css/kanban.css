@@ -171,6 +171,10 @@ body {
 .typeTask4{
     border-left: 7px solid rgba(246, 143, 255, 1);
 }
+.typeTask5{
+    border-left: 7px solid rgb(224, 214, 86);
+}
+
 .Warning{
     font-size: medium;
 }

@@ -60,8 +60,8 @@ func UpdateBlokerInDB(bloker Bloker) (err error) {
 
 		"idtask":      bloker.Idtask,
 		"description": bloker.Description,
-		"startdate":   bloker.Startdate.Format(time.RFC3339),
-		"enddate":     bloker.Enddate.Format(time.RFC3339),
+		"startdate":   bloker.Startdate.UTC(),
+		"enddate":     bloker.Enddate.UTC(),
 		"diside":      bloker.Diside,
 		"finished":    bloker.Finished,
 	}

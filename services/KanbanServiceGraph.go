@@ -32,6 +32,10 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 
 		currentYear, currentMonth, currentDay = startDay.Add(time.Minute * 24 * 60 * day).Date()
 		dateForSQL := time.Date(currentYear, currentMonth, currentDay, 23, 59, 59, 0, startDay.Add(time.Minute*24*60*day).Location())
+		if dateForSQL.Weekday() == 0 || dateForSQL.Weekday() == 6 {
+			day++
+			continue
+		}
 		paramMap[`date`] = dateForSQL.Format(time.RFC3339)
 
 		dataStage, _ := model.GetDataForCFDFromBD(paramMap)
