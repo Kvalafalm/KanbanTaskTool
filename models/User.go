@@ -39,7 +39,7 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 func ValidUser(Username string, Password string) (user User, err string) {
 
 	err = ""
-	if (Username == "Kutnashnko") && (Password == "") {
+	if (Username == "1") && (Password == "") {
 		user = User{1, "Николай", "Кутняшенко", "1", 8}
 	} else if (Username == "Shapkin") && (Password == "") {
 		user = User{2, "Дима", "Шапкин", "2", 208}

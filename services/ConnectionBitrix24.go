@@ -173,6 +173,12 @@ type TaskB24 struct {
 	} `json:"result"`
 }
 
+type ResponsibleUser struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Link string `json:"link"`
+	Icon string `json:"icon"`
+}
 type TasksB24 struct {
 	Result struct {
 		Tasks []struct {
@@ -224,10 +230,10 @@ type TasksB24 struct {
 			DurationType        string      `json:"durationType"`
 			DescriptionInBbcode string      `json:"descriptionInBbcode"`
 			//UfTaskWebdavFiles   []interface{} `json:"ufTaskWebdavFiles"`
-			UfMailMessage      interface{}   `json:"ufMailMessage"`
-			UfAuto557352811672 interface{}   `json:"ufAuto557352811672"`
-			Auditors           []string      `json:"auditors"`
-			Accomplices        []interface{} `json:"accomplices"`
+			UfMailMessage      interface{} `json:"ufMailMessage"`
+			UfAuto557352811672 interface{} `json:"ufAuto557352811672"`
+			Auditors           []string    `json:"auditors"`
+			Accomplices        []string    `json:"accomplices,string"`
 			//Accomplices      string `json:"accomplices`
 			NewCommentsCount int    `json:"newCommentsCount"`
 			SubStatus        string `json:"subStatus"`
@@ -237,12 +243,7 @@ type TasksB24 struct {
 				Link string `json:"link"`
 				Icon string `json:"icon"`
 			} `json:"creator"`
-			Responsible struct {
-				ID   string `json:"id"`
-				Name string `json:"name"`
-				Link string `json:"link"`
-				Icon string `json:"icon"`
-			} `json:"responsible"`
+			Responsible ResponsibleUser `json:"responsible"`
 		} `json:"tasks"`
 	} `json:"result"`
 }
@@ -369,6 +370,43 @@ type ListTask struct {
 	} `json:"result"`
 	Total int `json:"total"`
 }
+type UserFromChat struct {
+	Result struct {
+		ID               string    `json:"id"`
+		Name             string    `json:"name"`
+		FirstName        string    `json:"first_name"`
+		LastName         string    `json:"last_name"`
+		WorkPosition     string    `json:"work_position"`
+		Color            string    `json:"color"`
+		Avatar           string    `json:"avatar"`
+		Gender           string    `json:"gender"`
+		Birthday         string    `json:"birthday"`
+		Extranet         bool      `json:"extranet"`
+		Network          bool      `json:"network"`
+		Bot              bool      `json:"bot"`
+		Connector        bool      `json:"connector"`
+		ExternalAuthID   string    `json:"external_auth_id"`
+		Status           string    `json:"status"`
+		Idle             bool      `json:"idle"`
+		LastActivityDate time.Time `json:"last_activity_date"`
+		MobileLastDate   time.Time `json:"mobile_last_date"`
+		Departments      []int     `json:"departments"`
+		Absent           bool      `json:"absent"`
+		Phones           struct {
+			PersonalMobile string `json:"personal_mobile"`
+			InnerPhone     string `json:"inner_phone"`
+		} `json:"phones"`
+		DesktopLastDate time.Time `json:"desktop_last_date"`
+	} `json:"result"`
+	Time struct {
+		Start      float64   `json:"start"`
+		Finish     float64   `json:"finish"`
+		Duration   float64   `json:"duration"`
+		Processing float64   `json:"processing"`
+		DateStart  time.Time `json:"date_start"`
+		DateFinish time.Time `json:"date_finish"`
+	} `json:"time"`
+}
 
 func (Cb *ConnectionBitrix24) GetTask(id int) (app TaskB24, err error) {
 	app = TaskB24{}
@@ -449,6 +487,24 @@ func (Cb *ConnectionBitrix24) GetUser(id string) (app UserB24, err error) {
 	return app, nil
 }
 
+func (Cb *ConnectionBitrix24) GetUserFromChat(id string) (app UserFromChat, err error) {
+	app = UserFromChat{}
+
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/im.user.get?ID=" + id
+	req := httplib.Get(request)
+	str, err := req.Bytes()
+
+	if err != nil {
+		return app, err
+	}
+
+	err = json.Unmarshal(str, &app)
+	if err != nil {
+		return app, err
+	}
+	return app, nil
+}
+
 func (Cb *ConnectionBitrix24) GetCommentsById(id string) (comments Comments, err error) {
 	comments = Comments{}
 
@@ -470,7 +526,7 @@ func (Cb *ConnectionBitrix24) GetCommentsById(id string) (comments Comments, err
 
 func (Cb *ConnectionBitrix24) GetTaskList(id string) (app ListTask, err error) {
 	app = ListTask{}
-	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/task.item.list.json?Order[]=&FILTER[GROUP_ID]=" + id + "&FILTER[!REAL_STATUS]=5&PARAMS[]=&SELECTED[]=[ID,TITLE]"
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/tasks.item.list.json?Order[]=&FILTER[GROUP_ID]=" + id + "&FILTER[!REAL_STATUS]=5&PARAMS[]=&SELECTED[]=[ID,TITLE]"
 	req := httplib.Get(request)
 	str, err := req.Bytes()
 

@@ -31,13 +31,8 @@ type Tasks struct {
 	Stage          int       `json:"Stage,string"`
 	DateSart       time.Time `json:"DateSart"`
 	DateStartStage time.Time `json:"DateStartStage"`
-	Users          struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-		Link string `json:"link"`
-		Icon string `json:"icon"`
-	} `json:"Users"`
-	ActiveBlokers struct {
+	Users          []User    `json:"Users"`
+	ActiveBlokers  struct {
 		Id          int       `json:"id"`
 		Description string    `json:"description"`
 		Startdate   time.Time `json:"startdate"`
@@ -49,6 +44,13 @@ type Tasks struct {
 	NameProject  string `json:"NameProject"`
 }
 
+type User struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Link string `json:"link"`
+	Icon string `json:"icon"`
+}
+
 type Task struct {
 	ID              int           `json:"Id,string"`
 	IDBitrix24      int           `json:"IdBitrix24"`
@@ -57,13 +59,8 @@ type Task struct {
 	DateSart        time.Time     `json:"DateSart"`
 	DateStartStage  time.Time     `json:"DateStartStage"`
 	DescriptionHTML template.HTML `json:"DescriptionHTML"`
-	Users           struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-		Link string `json:"link"`
-		Icon string `json:"icon"`
-	} `json:"Users"`
-	Comments struct {
+	Users           []User        `json:"Users"`
+	Comments        struct {
 		ID              string `json:"Id"`
 		User            string `json:"User"`
 		DescriptionHTML string `json:"DescriptionHTML"`
@@ -128,10 +125,31 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		for _, valuesB24 := range values.Result.Tasks {
 
 			if valuesB24.ID == tasks[i].IDBitrix24 {
-				tasks[i].Users = valuesB24.Responsible
+				Users := make([]User, 0)
+				user := User{
+					ID:   valuesB24.Responsible.ID,
+					Name: valuesB24.Responsible.Name,
+					Link: valuesB24.Responsible.Link,
+					Icon: valuesB24.Responsible.Icon}
+				Users = append(Users, user)
+
+				for _, addUser := range valuesB24.Accomplices {
+					UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(addUser)
+					user := User{
+						ID:   UserAccomplices.Result.ID,
+						Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
+						Link: "",
+						Icon: UserAccomplices.Result.Avatar}
+					Users = append(Users, user)
+
+				}
+				tasks[i].Users = make([]User, len(Users))
+				copy(tasks[i].Users, Users)
+
 				tasks[i].Name = valuesB24.Title
 				tasks[i].IdProject = valuesB24.GroupID
 			}
+
 		}
 
 		for _, valuesB24projects := range projects.Result {
@@ -309,8 +327,28 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 	task.Stage = TaskFromDB.Stageid
 
 	for _, valuesB24 := range values.Result.Tasks {
-		task.Users = valuesB24.Responsible
 		if valuesB24.ID == task.IDBitrix24 {
+			Users := make([]User, 0)
+			user := User{
+				ID:   valuesB24.Responsible.ID,
+				Name: valuesB24.Responsible.Name,
+				Link: valuesB24.Responsible.Link,
+				Icon: valuesB24.Responsible.Icon}
+			Users = append(Users, user)
+
+			for _, addUser := range valuesB24.Accomplices {
+				UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(addUser)
+				user := User{
+					ID:   UserAccomplices.Result.ID,
+					Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
+					Link: "",
+					Icon: UserAccomplices.Result.Avatar}
+				Users = append(Users, user)
+
+			}
+			task.Users = make([]User, len(Users))
+			copy(task.Users, Users)
+
 			task.Name = valuesB24.Title
 			task.IdProject = valuesB24.GroupID
 		}

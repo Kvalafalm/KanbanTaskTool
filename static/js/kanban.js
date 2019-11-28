@@ -74,7 +74,6 @@ function FillInKanbanDesk(DeskId) {
             alert($(this).closest(".KanbanColumn").attr('id') );
         });
         $(".addKanban").click(function(){
-            //alert($(this).closest(".KanbanColumn").attr('id') );
             $(this).closest(".KanbanColumn").append(`
             <div draggable="true" class="Kanban StandartClient NewKanban">
                 <div class="KanbanDescription">
@@ -189,7 +188,13 @@ function OutputKanban(Column,element){
             innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
         }
     }
-    innerHTML += "№" + element.IdBitrix24 + `</div><img class="UserIcon" src=` + element.Users.icon + `>` ;
+    innerHTML += "№" + element.IdBitrix24 + `</div>`;
+
+    element.Users.forEach(function(item, i, arr) {
+        //alert( i + ": " + item + " (массив:" + arr + ")" );
+        innerHTML += `<img class="UserIcon" src=` + item.icon + `>` ;
+    });
+        
     if (element.typeTask != undefined ){
         Kanban.className = Kanban.className + " typeTask" + element.typeTask;
     }
@@ -204,16 +209,16 @@ function OutputKanban(Column,element){
     KanbanDurationStatus.className = "KanbanDurationStatus"
     /*KanbanDurationStatus.innerHTML = "В этом статусе: " + calculationDateStatusString(element.DateSart) ;*/
 
-    var KanbanUsers = document.createElement('div');
-    KanbanUsers.className = "KanbanUsers"
+    var KanbanNameProject = document.createElement('div');
+    KanbanNameProject.className = "KanbanNameProject"
     let finishButton = `<button type="button" class="btn btn-light btn-xs" style="padding:0px" onclick="FinishTask(this)" ><i class="fa fa-flag" aria-hidden="true"></i></button>`
  
-    KanbanUsers.innerHTML = `<div style="display: flex;" class="onhover">`+finishButton + `<span class="projectName">` + element.NameProject + `</span> </div>`;
+    KanbanNameProject.innerHTML = `<div style="display: flex;" class="onhover">`+finishButton + `<span class="projectName">` + element.NameProject + `</span> </div>`;
 
     Kanban.append(NameKanban);
     Kanban.append(KanbanDescription);
     Kanban.append(KanbanDurationStatus);
-    KanbanDurationStatus.append(KanbanUsers);
+    KanbanDurationStatus.append(KanbanNameProject);
     Column.append(Kanban);
     
     $("#"+element.Id).dblclick(function(){
