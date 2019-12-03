@@ -37,11 +37,12 @@ type Tasks struct {
 		Description string    `json:"description"`
 		Startdate   time.Time `json:"startdate"`
 	} `json:"ActiveBlokers"`
-	Swimlane     int    `json:"Swimlane"`
-	TypeTask     int    `json:"typeTask"`
-	IdProject    int    `json:"IdProject"`
-	ImageProject string `json:"ImageProject"`
-	NameProject  string `json:"NameProject"`
+	Swimlane      int    `json:"Swimlane"`
+	TypeTask      int    `json:"typeTask"`
+	IdProject     int    `json:"IdProject"`
+	ImageProject  string `json:"ImageProject"`
+	NameProject   string `json:"NameProject"`
+	СommentsCount string `json:"СommentsCount"`
 }
 
 type User struct {
@@ -148,6 +149,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 
 				tasks[i].Name = valuesB24.Title
 				tasks[i].IdProject = valuesB24.GroupID
+				tasks[i].СommentsCount = valuesB24.CommentsCount
 			}
 
 		}

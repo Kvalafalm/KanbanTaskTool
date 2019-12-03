@@ -212,8 +212,11 @@ function OutputKanban(Column,element){
     var KanbanNameProject = document.createElement('div');
     KanbanNameProject.className = "KanbanNameProject"
     let finishButton = `<button type="button" class="btn btn-light btn-xs" style="padding:0px" onclick="FinishTask(this)" ><i class="fa fa-flag" aria-hidden="true"></i></button>`
- 
-    KanbanNameProject.innerHTML = `<div style="display: flex;" class="onhover">`+finishButton + `<span class="projectName">` + element.NameProject + `</span> </div>`;
+    let Comments="";
+    if (element.СommentsCount> 0) {
+        Comments = `<i class="fa fa-comments-o fa-lg" aria-hidden="true">`+element.СommentsCount+`</i>`;
+    }
+    KanbanNameProject.innerHTML = `<div style="display: flex;" class="onhover">`+finishButton + Comments + `<span class="projectName">` + element.NameProject + `</span> </div>`;
 
     Kanban.append(NameKanban);
     Kanban.append(KanbanDescription);
