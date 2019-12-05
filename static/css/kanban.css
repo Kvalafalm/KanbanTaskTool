@@ -282,3 +282,7 @@ body {
 .onhover:hover button {
   display: inline-block;
 }
+
+.comments{
+    padding: 10px;
+}

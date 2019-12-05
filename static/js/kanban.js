@@ -277,9 +277,9 @@ function OutputKanban(Column,element){
 
                 $(".BlokersMore").append(StringSS);
             });
-          /*  Kanbans.Comments.forEach(function(element) {
-                $(".KanbanMoreComents").append("<span>"+ +"<span>")
-            });*/
+            Kanbans.Comments.forEach(function(element) {
+                $(".KanbanMoreComents").append("<div class='comments'>"+ element.AUTHOR_NAME + '<br>'+ element.POST_MESSAGE_HTML +"</div>")
+            });
             
             document.getElementById('preloaderbg').style.display = 'none';
         

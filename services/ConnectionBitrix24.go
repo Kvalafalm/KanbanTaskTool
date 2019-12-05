@@ -4,7 +4,6 @@ import (
 	model "KanbanTaskTool/Models"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
@@ -43,27 +42,28 @@ type ConnectionBitrix24 struct {
 	UserID  string
 	Webhook string
 }
+type CommentsR struct {
+	Result []Comments
+}
 
 type Comments struct {
-	Result []struct {
-		POSTMESSAGEHTML string    `json:"POST_MESSAGE_HTML"`
-		ID              string    `json:"ID"`
-		AUTHORID        string    `json:"AUTHOR_ID"`
-		AUTHORNAME      string    `json:"AUTHOR_NAME"`
-		AUTHOREMAIL     string    `json:"AUTHOR_EMAIL"`
-		POSTDATE        time.Time `json:"POST_DATE"`
-		POSTMESSAGE     string    `json:"POST_MESSAGE"`
-		ATTACHEDOBJECTS struct {
-			Num601 struct {
-				ATTACHMENTID string `json:"ATTACHMENT_ID"`
-				NAME         string `json:"NAME"`
-				SIZE         string `json:"SIZE"`
-				FILEID       string `json:"FILE_ID"`
-				DOWNLOADURL  string `json:"DOWNLOAD_URL"`
-				VIEWURL      string `json:"VIEW_URL"`
-			} `json:"601"`
-		} `json:"ATTACHED_OBJECTS,omitempty"`
-	} `json:"result"`
+	POSTMESSAGEHTML string    `json:"POST_MESSAGE_HTML"`
+	ID              string    `json:"ID"`
+	AUTHORID        string    `json:"AUTHOR_ID"`
+	AUTHORNAME      string    `json:"AUTHOR_NAME"`
+	AUTHOREMAIL     string    `json:"AUTHOR_EMAIL"`
+	POSTDATE        time.Time `json:"POST_DATE"`
+	POSTMESSAGE     string    `json:"POST_MESSAGE"`
+	ATTACHEDOBJECTS struct {
+		Num601 struct {
+			ATTACHMENTID string `json:"ATTACHMENT_ID"`
+			NAME         string `json:"NAME"`
+			SIZE         string `json:"SIZE"`
+			FILEID       string `json:"FILE_ID"`
+			DOWNLOADURL  string `json:"DOWNLOAD_URL"`
+			VIEWURL      string `json:"VIEW_URL"`
+		} `json:"601"`
+	} `json:"ATTACHED_OBJECTS,omitempty"`
 }
 
 type RespondeAddtask struct {
@@ -408,10 +408,9 @@ type UserFromChat struct {
 	} `json:"time"`
 }
 
-func (Cb *ConnectionBitrix24) GetTask(id int) (app TaskB24, err error) {
+func (Cb *ConnectionBitrix24) GetTask(id string) (app TaskB24, err error) {
 	app = TaskB24{}
-	fmt.Println(strconv.Itoa(id))
-	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/task.item.getdata.json?taskId=" + strconv.Itoa(id)
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/task.item.getdata.json?taskId=" + id
 
 	req := httplib.Get(request)
 	str, err := req.Bytes()
@@ -505,10 +504,11 @@ func (Cb *ConnectionBitrix24) GetUserFromChat(id string) (app UserFromChat, err 
 	return app, nil
 }
 
-func (Cb *ConnectionBitrix24) GetCommentsById(id string) (comments Comments, err error) {
-	comments = Comments{}
+func (Cb *ConnectionBitrix24) GetCommentsById(id string) (comments CommentsR, err error) {
+	comments = CommentsR{}
 
 	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/task.commentitem.getlist?TASKID=" + id
+
 	req := httplib.Get(request)
 	str, err := req.Bytes()
 

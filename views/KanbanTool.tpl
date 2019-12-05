@@ -107,7 +107,6 @@
 
           </div>
           <div class="KanbanMoreComents">
-            <span>Комментарий 1</span>
           </div>
         </div>
 

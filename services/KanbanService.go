@@ -61,11 +61,7 @@ type Task struct {
 	DateStartStage  time.Time     `json:"DateStartStage"`
 	DescriptionHTML template.HTML `json:"DescriptionHTML"`
 	Users           []User        `json:"Users"`
-	Comments        struct {
-		ID              string `json:"Id"`
-		User            string `json:"User"`
-		DescriptionHTML string `json:"DescriptionHTML"`
-	} `json:"Comments"`
+
 	Blokers       []model.Bloker       `json:"Blokers"`
 	Swimlane      int                  `json:"Swimlane"`
 	Type          string               `json:"Type"`
@@ -73,6 +69,7 @@ type Task struct {
 	ImageProject  string               `json:"ImageProject"`
 	NameProject   string               `json:"NameProject"`
 	StagesHistory []model.Stagehistory `json:"StagesHistory"`
+	Comments      []Comments           `json:"Comments"`
 }
 
 type Stages struct {
@@ -110,7 +107,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 	}
 
 	// Получаем данные из Битрикс24 по проектам
-	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131", "125", "117", "111", "109"]`)
+	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131","64", "125", "117", "111", "109"]`)
 	if errB24Pr != nil {
 		fmt.Println(errB24Pr)
 		return nil, errB24Pr
@@ -248,7 +245,22 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	if err != nil {
 		return 0, err
 	}
-
+	// TODO
+	commitmentPointId := 1
+	if task.Stage != commitmentPointId {
+		newRowHistory := model.Stagehistory{
+			Idtask:  id,
+			Idstage: commitmentPointId,
+			Start:   time.Now(),
+			End:     time.Now(),
+			Finised: true,
+		}
+		err = model.SetCurrentTaskStage(newRowHistory)
+		if err != nil {
+			fmt.Println(err)
+			return 0, err
+		}
+	}
 	newRowHistory := model.Stagehistory{
 		Idtask:  id,
 		Idstage: task.Stage,
@@ -318,7 +330,7 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 	}
 
 	// Получаем данные из Битрикс24 по проектам
-	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131", "125", "117", "111", "109"]`)
+	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131","64", "125", "117", "111", "109"]`)
 	if errB24Pr != nil {
 		fmt.Println(errB24Pr)
 		return task, errB24Pr
@@ -392,7 +404,7 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 	task.IDBitrix24 = taskBD.Idbitrix24
 	task.Stage = taskBD.Stageid
 
-	taskB24, errB24 := connectionBitrix24API.GetTask(taskBD.Idbitrix24)
+	taskB24, errB24 := connectionBitrix24API.GetTask(strconv.Itoa(taskBD.Idbitrix24))
 	if errB24 != nil {
 		fmt.Println(errB24)
 		return task, errB24
@@ -403,54 +415,17 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 	task.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
 	task.StagesHistory, _ = model.GetTaskHistoryStages(id)
 	task.Blokers, _ = model.GetAllBlokersFromDB(id)
-	/*task.Users= ;
-	task.Blokers = ;
-	task.Type= ;
-	task.IdProject= taskB24.Result.;
-	task.ImageProject= ;
-	task.NameProject= ;
-	task.StagesHistory= ;*/
-	// Получаем данные из Битрикс24 по проектам
-	/*projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131", "125", "117", "111", "109"]`)
-	if errB24Pr != nil {
-		fmt.Println(errB24Pr)
-		return nil, errB24Pr
+	CommentsB24, err := connectionBitrix24API.GetCommentsById(taskB24.Result.ID)
+
+	if err != nil {
+		fmt.Println(err)
+		return task, err
+	}
+	task.Comments = make([]Comments, 0)
+	for _, row := range CommentsB24.Result {
+		task.Comments = append(task.Comments, row)
 	}
 
-	for i, TaskFromDB := range TasksFromDB {
-
-		tasks[i].ID = TaskFromDB.Idtasks
-		tasks[i].IDBitrix24 = TaskFromDB.Idbitrix24
-		tasks[i].Stage = TaskFromDB.Stageid
-
-		for _, valuesB24 := range values.Result.Tasks {
-			tasks[i].Users = valuesB24.Responsible
-			if valuesB24.ID == tasks[i].IDBitrix24 {
-				tasks[i].Name = valuesB24.Title
-				tasks[i].IdProject = valuesB24.GroupID
-			}
-		}
-
-		for _, valuesB24projects := range projects.Result {
-			if valuesB24projects.ID == tasks[i].IdProject {
-				tasks[i].ImageProject = valuesB24projects.IMAGE
-				tasks[i].NameProject = valuesB24projects.NAME
-			}
-		}
-
-		//Блокеры
-		Bloker, err := model.GetActiveBlokersFromDB(TaskFromDB.Idtasks)
-		if err != nil {
-			return nil, err
-		}
-		tasks[i].ActiveBlokers.Id = Bloker.Id
-		tasks[i].ActiveBlokers.Description = Bloker.Description
-		tasks[i].ActiveBlokers.Startdate = Bloker.Startdate
-
-	}
-
-	return tasks, nil
-	*/
 	return task, nil
 }
 
@@ -460,9 +435,9 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
-	idInt, _ := strconv.Atoi(Id)
-	taskBitrix24, _ := ConnectionBitrix24.GetTask(idInt)
-	projects := `["131", "125", "117", "111", "109"]`
+	//idInt, _ := strconv.Atoi(Id)
+	taskBitrix24, _ := ConnectionBitrix24.GetTask(Id)
+	projects := `["131","64", "125", "117", "111", "109"]`
 
 	if str.Count(projects, taskBitrix24.Result.GROUPID) > 0 && taskBitrix24.Result.GROUPID != "0" {
 		model.SetTaskFromBitrix24(taskBitrix24.Result.ID, 9)
