@@ -26,7 +26,6 @@ func (this *KanbanToolGraphAPI) Get() {
 		this.Redirect("/", 307)
 		return
 	}
-	//TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 
 }
 
@@ -53,11 +52,21 @@ func (this *KanbanToolGraphAPI) Post() {
 
 		}
 
-		//jsonString, err := json.Marshal(data)
 		this.Data["json"] = data
 		this.ServeJSON()
-		//this.Ctx.Output.JSON()
 
+	case "schart":
+		param := service.Params{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
+		fmt.Println(param)
+		data, err := serv.GetSpectralChartData(param)
+
+		if err != nil {
+
+		}
+
+		this.Data["json"] = data
+		this.ServeJSON()
 	default:
 		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \" }"
 		this.ServeJSON()
