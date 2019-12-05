@@ -3,7 +3,6 @@ package controllers
 import (
 	model "KanbanTaskTool/Models"
 	"fmt"
-	"strconv"
 	"strings"
 
 	services "KanbanTaskTool/Services"
@@ -34,8 +33,8 @@ func (this *BitrixControllerApi) Get() {
 	switch TypeAction {
 
 	case "task":
-		idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
-		task, _ := connectionBitrix24.GetTask(idInt)
+		//idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+		task, _ := connectionBitrix24.GetTask(this.Ctx.Input.Param(":id"))
 		this.Data["json"] = &task
 		this.ServeJSON()
 
@@ -75,7 +74,7 @@ func (this *BitrixControllerApi) Get() {
 }
 
 // необходимо перенести в сервис
-func GetTask(IdTask string, this *BitrixControllerApi, ConnectionBitrix24 services.ConnectionBitrix24) {
+/*func GetTask(IdTask string, this *BitrixControllerApi, ConnectionBitrix24 services.ConnectionBitrix24) {
 
 	if IdTask != "" {
 		idInt, _ := strconv.Atoi(IdTask)
@@ -85,7 +84,7 @@ func GetTask(IdTask string, this *BitrixControllerApi, ConnectionBitrix24 servic
 		}
 		(*this).Data["Comments"], _ = ConnectionBitrix24.GetCommentsById(IdTask)
 	}
-}
+}*/
 
 func (this *BitrixControllerApi) Post() {
 
@@ -105,8 +104,8 @@ func (this *BitrixControllerApi) Post() {
 
 	switch TypeAction {
 	case "task":
-		idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
-		task, _ := ConnectionBitrix24.GetTask(idInt)
+		//idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+		task, _ := ConnectionBitrix24.GetTask(this.Ctx.Input.Param(":id"))
 		fmt.Println(this.Ctx.Input.Param(":id"))
 		this.Data["json"] = &task
 		this.ServeJSON()
