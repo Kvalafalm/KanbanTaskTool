@@ -2,6 +2,7 @@ package Services
 
 import (
 	model "KanbanTaskTool/Models"
+	"strconv"
 	"time"
 )
 
@@ -12,6 +13,8 @@ type Params struct {
 	Startdate time.Time `json:"Startdate"`
 	Enddate   time.Time `json:"Enddate"`
 	Desk      string    `json:"Desk"`
+	StartId   string    `json:"startId"`
+	EndId     string    `json:"endId"`
 }
 
 func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[string]string, err error) {
@@ -50,4 +53,59 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 	}
 
 	return CFDdataReturn, nil
+}
+func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralChart []map[string]int, err error) {
+
+	paramMap := make(map[string]string)
+
+	paramMap[`desk`] = params.Desk
+
+	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
+	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
+	paramMap[`endId`] = params.EndId
+	paramMap[`startId`] = params.StartId
+	data, _ := model.GetDataForSpectralChart(paramMap)
+	maxDay := 0
+	for _, raw := range data {
+		dayBe := false
+
+		for _, rawGlobal := range dataSpectralChart {
+			value, _ := strconv.Atoi(raw["duration"].(string))
+			if value == rawGlobal["day"] {
+				rawGlobal[raw["typetask"].(string)]++
+				dayBe = true
+			} else {
+				dayBe = false
+			}
+		}
+		if !dayBe {
+			newRaw := make(map[string]int)
+			duration, _ := strconv.Atoi(raw["duration"].(string))
+			newRaw["day"] = duration
+			newRaw[raw["typetask"].(string)]++
+			dataSpectralChart = append(dataSpectralChart, newRaw)
+			if maxDay < duration {
+				maxDay = duration
+			}
+		}
+	}
+
+	for i := 0; i <= maxDay; i++ {
+		dayBe := false
+		for _, rawGlobal := range dataSpectralChart {
+			if i == rawGlobal["day"] {
+				dayBe = true
+			} else {
+				dayBe = false
+			}
+		}
+
+		if !dayBe {
+			newRaw := make(map[string]int)
+			newRaw["day"] = i
+			dataSpectralChart = append(dataSpectralChart, newRaw)
+		}
+	}
+
+	return dataSpectralChart, nil
 }

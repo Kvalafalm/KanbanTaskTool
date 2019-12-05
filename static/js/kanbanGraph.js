@@ -1,6 +1,6 @@
 var Columns = [];
 var Kanbans;
-var CFD
+var CFD,CTH;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 
 window.onload = function() {
@@ -13,7 +13,9 @@ window.onload = function() {
         {
             "Startdate":new Date($("#DateStart").val()),
             "Enddate": new Date($("#DateEnd").val()),
-            "Desk" : $("#DeskList option:selected").val()
+            "Desk" : $("#DeskList option:selected").val(),
+            "startId":"1",
+            "endId":"8"
         }
 
         $.ajax({
@@ -26,6 +28,19 @@ window.onload = function() {
                 CFD.data = cfdJson; 
         });  
 
+        $.ajax({
+          type: "POST",
+          url: "/KanbanToolGraphAPI/SChart/",
+          crossDomain : true,
+          async: false,
+          data: JSON.stringify(JSONData),
+        }).done(function (SpectralChartJSON) {
+          CTH.data = SpectralChartJSON.sort(function(obj1, obj2) {
+            if (obj1.day < obj2.day) return -1;
+            if (obj1.day > obj2.day) return 1;
+            return 0;
+          });; 
+          });
     });
 }
 
@@ -66,6 +81,10 @@ function CFD(){
         
         CFD = am4core.create("chartdiv", am4charts.XYChart);
 
+        CFD.exporting.menu = new am4core.ExportMenu();
+        CFD.exporting.menu.align = "left";
+        CFD.exporting.menu.verticalAlign = "top";
+
         CFD.dateFormatter.inputDateFormat = "yyyy-MM-dd";
         var dateAxis = CFD.xAxes.push(new am4charts.DateAxis());
         dateAxis.renderer.minGridDistance = 5;
@@ -73,12 +92,19 @@ function CFD(){
         dateAxis.endLocation = 0.5;
         dateAxis.baseInterval = {
           timeUnit: "day",
-          
           count: 1
-        }
+        };
+
         dateAxis.dateFormats.setKey("day", "[font-size: 12px]dd");
         dateAxis.periodChangeDateFormats.setKey("day", "[bold]MM ");
-        
+        dateAxis.skipEmptyPeriods = true; 
+
+        dateAxis.groupData = true;
+        dateAxis.groupIntervals.setAll([
+            { timeUnit: "day", count: 1 },
+            { timeUnit: "day", count: 5 },
+            { timeUnit: "month", count: 1 }
+          ]);
         CFD.colors.list = [
           am4core.color("#000000"),
           am4core.color("#009999"),
@@ -94,6 +120,7 @@ function CFD(){
         var valueAxis = CFD.yAxes.push(new am4charts.ValueAxis());
         valueAxis.tooltip.disabled = true;
         
+        valueAxis.extraMax = 0.5;       
         var series = CFD.series.push(new am4charts.LineSeries());
         series.dataFields.dateX = "date";
         series.name = "Done";
@@ -246,5 +273,66 @@ function CFD(){
         CFD.legend = new am4charts.Legend();
         CFD.legend.position = "top";
         
-        });
+CTH = am4core.create("SChart", am4charts.XYChart);
+
+
+// Add data
+
+  CTH.colors.list = [
+    am4core.color("#cccc00"),
+    am4core.color("#4caf50"),
+    am4core.color("#e95757"),
+    am4core.color("#ff8800"),
+    am4core.color("#f68fff"),
+  ];
+
+// Create axes
+var categoryAxis = CTH.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis.dataFields.category = "day";
+categoryAxis.renderer.grid.template.location = 0;
+
+CTH.cursor = new am4charts.XYCursor();
+CTH.cursor.xAxis = dateAxis;
+CTH.scrollbarX = new am4core.Scrollbar();
+
+var valueAxis = CTH.yAxes.push(new am4charts.ValueAxis());
+valueAxis.renderer.inside = true;
+valueAxis.renderer.labels.template.disabled = true;
+valueAxis.min = 0;
+
+// Create series
+function createSeries(field, name) {
+  
+  // Set up series
+  var series = CTH.series.push(new am4charts.ColumnSeries());
+  series.name = name;
+  series.dataFields.valueY = field;
+  series.dataFields.categoryX = "day";
+  series.sequencedInterpolation = true;
+  
+  // Make it stacked
+  series.stacked = true;
+  
+  // Configure columns
+  series.columns.template.width = am4core.percent(60);
+  series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: {valueY}";
+  
+  // Add label
+  var labelBullet = series.bullets.push(new am4charts.LabelBullet());
+  labelBullet.label.text = "{valueY}";
+  labelBullet.locationY = 0.5;
+  
+  return series;
+}
+
+createSeries(0, "Стандартные");
+createSeries(1, "НМА");
+createSeries(3, "Ошибки");
+createSeries(2, "Тех.поддержка");
+createSeries(4, "Проекты");
+
+// Legend
+CTH.legend = new am4charts.Legend();
+
+})
 }

@@ -120,3 +120,49 @@ func GetTaskHistoryStages(TaskId int) (rowTaskHistory []Stagehistory, err error)
 	_, err = database.QueryTable("Stagehistory").Filter("idtask", TaskId).All(&rowTaskHistory)
 	return rowTaskHistory, err
 }
+
+func GetDataForSpectralChart(param map[string]string) (raws []orm.Params, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	var mapRaw []orm.Params
+
+	num, err := database.Raw(`SELECT
+	stageStart.idtask,
+	stageStart.start as start,
+	stageEnd.start as end,
+	CEIL((stageEnd.start - stageStart.start)/10/60/60/24) as duration,
+	tasks.typetask
+	FROM 
+	(SELECT 
+		stagehistory.idtask,
+		stagehistory.start
+	FROM
+		kanbantool.stagehistory
+	WHERE
+		stagehistory.idstage = ?
+			AND stagehistory.start >= ?
+			AND stagehistory.start <= ?
+	) as stageStart
+		LEFT JOIN 
+		(SELECT 
+		stagehistory.idtask,
+		MAX(stagehistory.start) as start 
+	FROM
+		kanbantool.stagehistory
+	WHERE
+		stagehistory.idstage = ?
+	group by
+		stagehistory.idtask) as stageEnd
+		ON stageStart.idtask =stageEnd.idtask
+		LEFT JOIN kanbantool.tasks
+		ON stageStart.idtask = tasks.idtasks
+	 WHERE   
+	 tasks.finished
+	 AND stageEnd.start IS NOT NULL`, param[`startId`], param[`startDate`], param[`endDate`], param[`endId`]).Values(&mapRaw)
+	if err != nil && num > 0 {
+		return mapRaw, err
+	}
+
+	return mapRaw, nil
+}

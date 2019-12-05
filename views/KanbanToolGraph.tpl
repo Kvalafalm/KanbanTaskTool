@@ -48,7 +48,9 @@
 <div class="graph" id="chartdiv"></div>
 
 </div>      
- 
+<div class="graph" id="SChart"></div>
+
+</div> 
  <!-- HTML -->
 <div class="graph" id="CFD"></div>
 
