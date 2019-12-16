@@ -30,4 +30,5 @@ func main() {
 	go beego.GlobalSessions.GC()
 
 	beego.Run()
+
 }

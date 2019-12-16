@@ -325,11 +325,11 @@ function createSeries(field, name) {
   return series;
 }
 
-createSeries(0, "Стандартные");
-createSeries(1, "НМА");
-createSeries(3, "Ошибки");
-createSeries(2, "Тех.поддержка");
-createSeries(4, "Проекты");
+createSeries("id5", "Стандартные");
+createSeries("id1", "НМА");
+createSeries("id3", "Ошибки");
+createSeries("id2", "Тех.поддержка");
+createSeries("id4", "Проекты");
 
 // Legend
 CTH.legend = new am4charts.Legend();

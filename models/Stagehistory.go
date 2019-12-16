@@ -117,7 +117,7 @@ func GetTaskHistoryStages(TaskId int) (rowTaskHistory []Stagehistory, err error)
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Stagehistory").Filter("idtask", TaskId).All(&rowTaskHistory)
+	_, err = database.QueryTable("Stagehistory").Filter("idtask", TaskId).OrderBy("start").All(&rowTaskHistory)
 	return rowTaskHistory, err
 }
 
@@ -131,7 +131,7 @@ func GetDataForSpectralChart(param map[string]string) (raws []orm.Params, err er
 	stageStart.idtask,
 	stageStart.start as start,
 	stageEnd.start as end,
-	CEIL((stageEnd.start - stageStart.start)/10/60/60/24) as duration,
+	CEIL((TO_DAYS(stageEnd.start) - TO_DAYS(stageStart.start))) as duration,
 	tasks.typetask
 	FROM 
 	(SELECT 

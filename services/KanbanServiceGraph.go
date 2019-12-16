@@ -69,20 +69,24 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 	for _, raw := range data {
 		dayBe := false
 
+		durationInWorkDays := DifferenceInDays(raw["start"].(string), raw["end"].(string))
 		for _, rawGlobal := range dataSpectralChart {
-			value, _ := strconv.Atoi(raw["duration"].(string))
-			if value == rawGlobal["day"] {
-				rawGlobal[raw["typetask"].(string)]++
+			_, _ = strconv.Atoi(raw["duration"].(string))
+			if durationInWorkDays == rawGlobal["day"] {
+				rawGlobal["id"+raw["typetask"].(string)]++
 				dayBe = true
+				break
 			} else {
 				dayBe = false
 			}
 		}
+
 		if !dayBe {
 			newRaw := make(map[string]int)
 			duration, _ := strconv.Atoi(raw["duration"].(string))
-			newRaw["day"] = duration
-			newRaw[raw["typetask"].(string)]++
+			newRaw["day"] = durationInWorkDays
+			newRaw["id"+raw["typetask"].(string)]++
+
 			dataSpectralChart = append(dataSpectralChart, newRaw)
 			if maxDay < duration {
 				maxDay = duration
@@ -95,6 +99,7 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 		for _, rawGlobal := range dataSpectralChart {
 			if i == rawGlobal["day"] {
 				dayBe = true
+				break
 			} else {
 				dayBe = false
 			}
@@ -108,4 +113,28 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 	}
 
 	return dataSpectralChart, nil
+}
+
+func DifferenceInDays(start string, end string) (day int) {
+	days := 0
+
+	if start > end {
+		return 0
+	}
+
+	f1, _ := time.Parse("2006-01-02 15:04:05", end)
+	f := time.Date(f1.Year(), f1.Month(), f1.Day(), 0, 0, 0, 0, time.UTC)
+
+	t1, _ := time.Parse("2006-01-02 15:04:05", start)
+	t := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, time.UTC)
+	for {
+		if t.Equal(f) {
+			return days
+		}
+		if t.Weekday() != 6 && t.Weekday() != 7 {
+			days++
+		}
+		t = t.Add(time.Hour * 24)
+	}
+
 }

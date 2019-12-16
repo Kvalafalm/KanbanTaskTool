@@ -237,7 +237,17 @@ function OutputKanban(Column,element){
             $(".taskKanbanTool").attr("id", element.Id);
             $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
-            let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
+            let DefaultButton = `
+            <button type="button" class="btn btn-link btn-xs " 
+                                style="padding:1px" 
+                                onclick="StartModalWindow(this)" 
+                                data-toggle="modal" 
+                                data-target="#exampleModal">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button> 
+            <button type="button" class="btn btn-link btn-xs" style="padding:1px">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </button> `
             Kanbans.StagesHistory.forEach(function(element) {
 
                 const startDate = (new Date(element.Start)).toLocaleDateString();
@@ -248,7 +258,10 @@ function OutputKanban(Column,element){
                     Stringdate = (new Date(element.End)).toLocaleDateString();
                 }
 
-                const StringSS = '<span id="'+element.Id+'" class="onhover"> На этапе '+element.Idstage +' c ' + startDate + ' по ' + Stringdate + ' ('+ calculationGapDatesString(element.Start,element.End) + ')'+ DefaultButton + '</span>' 
+                const StringSS = `
+                    <span id="`+element.Id+`" class="onhover"> 
+                        <b>`+element.Name +'</b> c ' + startDate + ' по ' + Stringdate + ' ('+ calculationGapDatesString(element.Start,element.End) + ')'+ DefaultButton + `
+                    </span>` 
                 $(".StageMore").append(StringSS);
             });
             Kanbans.Blokers.forEach(function(element) {
@@ -278,7 +291,18 @@ function OutputKanban(Column,element){
                 $(".BlokersMore").append(StringSS);
             });
             Kanbans.Comments.forEach(function(element) {
-                $(".KanbanMoreComents").append("<div class='comments'>"+ element.AUTHOR_NAME + '<br>'+ element.POST_MESSAGE_HTML +"</div>")
+                const date = new Date(element.POST_DATE)
+                $(".KanbanMoreComents").append(`<div class="comments"><div class="CMauthor">`+ element.AUTHOR_NAME + `
+                 <span style="position: absolute;
+                                        right: 41%;
+                                        font-weight: normal;
+                                        font-size: smaller;" 
+                > `+ date.toLocaleDateString() +' ' +   date.toLocaleTimeString() + `
+                    </span>
+                    </div>
+                    <div class="CMdescription">`+ element.POST_MESSAGE_HTML +`
+                    </div>
+                </div>`)
             });
             
             document.getElementById('preloaderbg').style.display = 'none';

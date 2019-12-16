@@ -62,16 +62,24 @@ type Task struct {
 	DescriptionHTML template.HTML `json:"DescriptionHTML"`
 	Users           []User        `json:"Users"`
 
-	Blokers       []model.Bloker       `json:"Blokers"`
-	Swimlane      int                  `json:"Swimlane"`
-	Type          string               `json:"Type"`
-	IdProject     int                  `json:"IdProject"`
-	ImageProject  string               `json:"ImageProject"`
-	NameProject   string               `json:"NameProject"`
-	StagesHistory []model.Stagehistory `json:"StagesHistory"`
-	Comments      []Comments           `json:"Comments"`
+	Blokers       []model.Bloker `json:"Blokers"`
+	Swimlane      int            `json:"Swimlane"`
+	Type          string         `json:"Type"`
+	IdProject     int            `json:"IdProject"`
+	ImageProject  string         `json:"ImageProject"`
+	NameProject   string         `json:"NameProject"`
+	StagesHistory []StageHistory `json:"StagesHistory"`
+	Comments      []Comments     `json:"Comments"`
 }
 
+type StageHistory struct {
+	Id      int
+	Idtask  int
+	Idstage int
+	Start   time.Time
+	End     time.Time
+	Name    string
+}
 type Stages struct {
 	ID          int    `json:"Id"`
 	Name        string `json:"Name"`
@@ -198,7 +206,7 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 	}
 
 	rowHistory, err := model.GetCurrentTaskStage(tasks.ID)
-	timeNow := time.Now()
+	timeNow := time.Now().UTC()
 	if rowHistory.Id > 0 {
 		rowHistory.Finised = true
 		rowHistory.End = timeNow
@@ -413,7 +421,31 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 	//task.DateSart = taskB24.Result.DATESTART
 	//task.DateStartStage		= ;
 	task.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
-	task.StagesHistory, _ = model.GetTaskHistoryStages(id)
+	stages, _ := model.GetStages()
+
+	StagesHistory, _ := model.GetTaskHistoryStages(id)
+
+	if err != nil {
+		return task, err
+	}
+	task.StagesHistory = make([]StageHistory, 0)
+	for _, row := range StagesHistory {
+		newRow := StageHistory{
+			row.Id,
+			row.Idtask,
+			row.Idstage,
+			row.Start,
+			row.End,
+			"",
+		}
+		for _, rowStage := range stages {
+			if rowStage.Idstage == row.Idstage {
+				newRow.Name = rowStage.Name
+			}
+		}
+		task.StagesHistory = append(task.StagesHistory, newRow)
+	}
+
 	task.Blokers, _ = model.GetAllBlokersFromDB(id)
 	CommentsB24, err := connectionBitrix24API.GetCommentsById(taskB24.Result.ID)
 
