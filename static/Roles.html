@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///C:/Users/rerknv/go/src/KanbanTaskTool/views/Roles.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>КанбанТул РЭР</title>
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+  
+</head>
+
+<body style="background-color: #e7e7e7;">
+<!-- Styles -->
+<style>
+/* CSS */
+
+.list-counter-circle {
+  list-style: none;
+  counter-reset: list;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.list-counter-circle>li {
+  position: relative;
+  display: block;
+  height: 2rem;
+  line-height: 2rem;
+  margin-left: 1.75rem;
+  margin-bottom: .25rem;
+  padding-left: 1rem;
+  padding-right: .5rem;
+  color: #e7e7e7;
+  background: #27ac49;
+  white-space: nowrap;
+  border-radius: .25rem;
+  white-space: pre-wrap;
+    height: auto;
+}
+.list-counter-circle>li:last-child {
+  margin-bottom: 0;
+}
+.list-counter-circle>li::before {
+  content: counter(list);
+  counter-increment: list;
+  position: absolute;
+  left: -2rem;
+  top: -.25rem;
+  bottom: -.25rem;
+  width: 2.5rem;
+  line-height: 2rem;
+  border-radius: 1.25rem;
+  border: .25rem solid #e7e7e7;
+  text-align: center;
+  color: #e7e7e7;
+  background: #1e8827;
+}
+.header-h1 {
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+    .header-h1 h1 {
+      display: inline-block;
+      position: relative;
+      background: #0097a7;
+      color: #e7e7e7;
+      margin-bottom: 0;
+      padding: .5rem 3rem;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+    }
+    .header-h1 h1::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+    .header-h1 h1::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+  .role{
+    width: 80%;
+    position: absolute;
+    left: 10%;
+    padding: 20px;
+  }
+  .roleInfo{
+    background: url("img/background.png") no-repeat center center fixed;
+    background-color: #e7e7e7;
+    background-size: 100% 100%;
+    width: 100%;
+    height: 800px;
+  }
+ 
+</style>
+    
+    <!-- Resources -->
+    <!-- BEGIN Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+      <a class="navbar-brand" href="#">KanbanTool</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="/KanbanTool/">Доски</a></li>
+          <li class="nav-item"><a class="nav-link" href="/KanbanToolGraph/">Анализ графиков</a></li>
+          <li class="nav-item"><a class="nav-link" href="/static/roles.html">Описание ролей</a></li>
+        </ul>
+
+        <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
+          <button class="btn btn-default" id="addBookButton">Login</button>        
+        </form>
+
+      </div>
+    </nav>
+
+<nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <a class="nav-item nav-link" id="panel0-tab" data-toggle="tab" href="#panel0" role="tab" aria-controls="panel0" aria-selected="false">Приоритерты</a>
+    <a class="nav-item nav-link active" id="panel1-tab" data-toggle="tab" href="#panel1" role="tab" aria-controls="panel1" aria-selected="true">Стратег = Лидер</a>
+    <a class="nav-item nav-link" id="panel2-tab" data-toggle="tab" href="#panel2" role="tab" aria-controls="panel2" aria-selected="false">Технический писатель</a>
+    <a class="nav-item nav-link" id="panel3-tab" data-toggle="tab" href="#panel3" role="tab" aria-controls="panel3" aria-selected="false">Разработчик</a>
+    <a class="nav-item nav-link" id="panel4-tab" data-toggle="tab" href="#panel4" role="tab" aria-controls="panel4" aria-selected="false">Архитектор ПО</a>
+    <a class="nav-item nav-link" id="panel5-tab" data-toggle="tab" href="#panel5" role="tab" aria-controls="panel5" aria-selected="false">Консультант</a>
+    <a class="nav-item nav-link" id="panel6-tab" data-toggle="tab" href="#panel6" role="tab" aria-controls="panel6" aria-selected="false">Аналитик</a>
+    <a class="nav-item nav-link" id="panel7-tab" data-toggle="tab" href="#panel7" role="tab" aria-controls="panel7" aria-selected="false">-Менеджер проектов</a>
+    <a class="nav-item nav-link" id="panel8-tab" data-toggle="tab" href="#panel8" role="tab" aria-controls="panel8" aria-selected="false">-Тестировщик</a>
+    <a class="nav-item nav-link" id="panel9-tab" data-toggle="tab" href="#panel9" role="tab" aria-controls="panel9" aria-selected="false">-Снабженец</a>
+    <a class="nav-item nav-link" id="panel10-tab" data-toggle="tab" href="#panel10" role="tab" aria-controls="panel10" aria-selected="false">-Тех.инжинер</a>
+  </div>
+</nav>
+
+
+<div class="tab-content" id="nav-tabContent">
+  
+  <div class="tab-pane fade active show" id="panel1" role="tabpanel" aria-labelledby="panel1-tab">
+      <div class="role">  
+        <div class="header-h1">
+          <h1>Стратег = Лидер</h1>
+        </div>
+      <div class="roleInfo">
+        <div class="discription" style="
+    position: absolute;
+    top: 10%;
+    right: 53%;
+    width: 30%;
+">
+          <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+            слаженная работа команды соглаованная с вектором компании в соответствии с предназначением к
+            команды и попаданием в ожидания заказчика
+        </div>
+        <div class="discription"  style="
+    position: absolute;
+    bottom: 10%;
+    right: 30%;
+    width: 30%;
+">
+            <h4><img src="img/value.png">ЦКП:</h4>
+            Команда в соответствии со своим предназначением
+        </div>
+        <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+          <b>Срок годности 30.06.2020</b>
+         </div>
+        <div class="discription"  style="
+    position: absolute;
+    top: 10%;
+    right: 17%;
+    width: 30%;
+">
+            <h4><img src="img/view.png">Видение:</h4>
+            прокаченный скилл менторсва, понимание F4P и KMM
+        </div>
+    
+      <div class="discription"  style="
+      position: absolute;     
+      right: 10%;
+      top: 60%;
+      width: 30%
+      
+      ">
+          <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+          <ol class="list-counter-circle">
+          <li>команда</li>
+          <li>идеалогия команды</li>
+        </ol>
+      </div>
+    
+      <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+          <h4><img src="img/KPI.png">Метрики:</h4>
+          <ol class="list-counter-circle">
+          <li>количество решенных здач/проектов</li>
+          <li>стабильнось предсказуемость команды</li>
+        </ol>
+      </div>
+    
+      <div class="discription" style="position: absolute;
+      right: 10%;
+      top: 25%;
+      width: 30%;">
+        <h4><img src="img/actions.png">Действия</h4>
+          <ol class="list-counter-circle">
+            <li style="
+    white-space: pre-wrap;
+    height: auto;
+"> Адаптация стратегических концепций компании для команды</li>
+            <li>Координация рабочих процессов</li>
+            <li>Введенив в роль новых членов команды</li>
+            <li>Развитие команды(менторство)</li>
+            <li>Представление интересов команды</li>
+          </ol>
+      </div>
+      
+        <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+          <h4><img src="img/emotions.png">Эмоции</h4>
+            <ol class="list-counter-circle">
+              <li>Дальновидность</li>
+              <li>Амбициозность</li>
+              <li>Коммуникабельность</li>
+              <li>Волевые качества(Высокий тон)</li>
+            </ol>
+        </div>
+      </div>
+      </div>
+  </div>
+
+  <div class="tab-pane fade" id="panel2" role="tabpanel" aria-labelledby="panel2-tab">
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Технический писатель</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+              Описание и сохранение передача накопленной информации об информационной системе
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              Актуальная, понятная, инструкция, база знаний.
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Единая платформа Wiki
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Инструкции</li>
+            <li>Wiki-Администатора</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>% инструкций и база знаний по основным процессам</li>
+  
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Составление инструкций по 1с (для внутренних и внешних пользователей</li>
+              <li>Составление базы знаний по инфраструктуре</li>
+              <li>Актуализация информации</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Усидчивость</li>
+                <li>Внимательность</li>
+                <li>Простота изложения мысли</li>
+  
+              </ol>
+          </div>
+        </div>
+        </div>
+  </div>
+
+  <div class="tab-pane fade" id="panel3" role="tabpanel" aria-labelledby="panel3-tab">
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Разработчик</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+              Практическое вооплозение задач в програмном коде
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              "Чистый код" (удобно поддерживать, лаконичность, грамотное использование паттернов)
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Рефакторинг кода . Привидение кода в соответствии с ЦКП
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Код</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>Количество возвратов от тестировщика</li>
+  
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Посильное участик в постановке задачи</li>
+              <li>Программирование</li>
+              <li>Рефакторинг кода</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Системность</li>
+                <li>Логичность</li>
+                <li>Сосредаточонность</li>
+  
+              </ol>
+          </div>
+        </div>
+        </div>
+  </div>
+
+
+  <div class="tab-pane fade" id="panel4" role="tabpanel" aria-labelledby="panel4-tab">
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Архитектор ПО</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+              Подготовка задачи для разработки программного кода
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              ТЗ (качественное в спец нотации согласованная архитектура )
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Основение роли
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Архитектура ПО, ТЗ</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>Количество возвратов ТЗ на доработку</li>
+            <li>Количество архитектурных ошибок</li>
+  
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Оценка задачи на соответствие возможностям системы</li>
+              <li>Принятие архитектурных решений(разбиение на подсистемы и модули определение интерфейсов, взаимодейтсвия компонентов</li>
+              <li>Описание архитектурного решения с использованием спец.нотаций(UML)</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Системность</li>
+                <li>Логичность</li>
+                <li>Коммуникабельность</li>
+  
+              </ol>
+          </div>
+        </div>
+        </div>
+  </div>
+
+
+  <div class="tab-pane fade" id="panel5" role="tabpanel" aria-labelledby="panel5-tab">
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Консультант</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+              Оперативное решение запросов пользователей
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              Компетентные пользователи
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Основение роли
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Программа HelpDesk</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>Количетсво запросов пользователей</li>
+            <li>количество повторяющихся запросов</li>
+  
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Оперативное реагирование на запрос пользователя</li>
+              <li>Анализ запрос</li>
+              <li>Решение</li>
+              <li>Обратная связь от пользователя получил решение или консультацию</li>
+              <li>Фиксирование запросов от пользователей(проблемма, категория ,время)</li>
+              <li>Обучение составление и проведение</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Стрессоустойчивость</li>
+                <li>Коммуникабельность</li>
+                <li>Логичность</li>
+                <li>Системное мышление</li>
+  
+              </ol>
+          </div>
+        </div>
+        </div>
+  </div>
+
+  <div class="tab-pane fade" id="panel6" role="tabpanel" aria-labelledby="panel6-tab">
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Аналитик</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+              Отвечает на вопрос - "Как решить ситуацию и есть ли проблемма"
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              Рабочий и понятный для пользователя Бизнес процесс. Формализованная задача.
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Приммнение гибких методологий. Гибкий БизнесПроцесс.
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Методологии сбора данный с пользователей</li>
+            <li>Инструменты для описнаи Бизнес процессов</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>% процент описанных бизнес процессо</li>
+            <li>% увеличение КПД разработки</li>
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Анализ и планирование ситуаций</li>
+              <li>Сбор информации</li>
+              <li>Обработка полученной информации</li>
+              <li>Выработка рекомендаций</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Системность</li>
+                <li>Коммуникабельность</li>
+                <li>Логичность</li>
+              </ol>
+          </div>
+        </div>
+      </div>
+      <div     style="position: absolute; top: 100%;">
+      <h4>Ссессия согласия</h4>
+      <img src="img/AnaliticsSession.jpg" >
+      </div>
+  </div>
+
+  <div class="tab-pane fade" id="panel8" role="tabpanel" aria-labelledby="panel8-tab">
+  </div>
+  <div class="tab-pane fade" id="panel9" role="tabpanel" aria-labelledby="panel9-tab">
+    </div>  
+    <div class="tab-pane fade" id="panel10" role="tabpanel" aria-labelledby="panel10-tab">
+      </div>
+      <div class="tab-pane fade" id="panel0" role="tabpanel" aria-labelledby="panel0-tab">
+        <img src="img/Типы работ.bmp">
+        </div>
+</div>
+
+
+
+<!--<div class="role">  
+    <div class="header-h1">
+      <h1>Стратег = Лидер</h1>
+    </div>
+  <div class="roleInfo">
+    <div>
+      <h4 ><img src="img\target.png" width="40" height="40">Смысл</h5>
+        слаженная работа команды соглаованная с вектором компании в соответствии с предназначением к
+        команды и попаданием в ожидания заказчика
+    </div>
+    <div>
+        <h4 ><img src="img\value.png" >ЦКП:</h4>
+        Команда в соответствии со своим предназначением
+    </div>
+
+    <div>
+        <h4 ><img src="img\view.png" >Видение:</h4>
+        прокаченный скилл менторсва
+        понимание F4P и KMM
+    </div>
+
+  <div style="position: absolute;top: 40%; right: 20%; width: 300px;" >
+      <label><abbr title="Домен- область ">ДОмен:</abbr></label>
+      <ol class="list-counter-circle">
+      <li>команда</li>
+      <li>идеалогия команды</li>
+    </ol>
+  </div>
+
+  <div style="position: absolute;left:0%; width: 300px;">
+      <h4><img src="img\KPI.png" >Метрики:</h4>
+      <ol class="list-counter-circle">
+      <li>количество решенных здач/проектов</li>
+      <li>стабильнось предсказуемость команды</li>
+    </ol>
+  </div>
+
+  <div style="position: absolute;right: 20%; width: 300px;">
+    <h4><img src="img\actions.png" >Действия</h4>
+      <ol class="list-counter-circle">
+        <li> Адаптация стратегических концепций компании для команды</li>
+        <li>Координация рабочих процессов</li>
+        <li>Введенив в роль новых членов команды</li>
+        <li>Развитие команды(менторство)</li>
+        <li>Представление интересов команды</li>
+      </ol>
+  </div>
+  
+    <div style="position: absolute;top: 40%; width: 300px;" >
+      <h4><img src="img\emotions.png" >Эмоции</h4>
+        <ol class="list-counter-circle">
+          <li>Дальновидность</li>
+          <li>Амбициозность</li>
+          <li>Коммуникабельность</li>
+          <li>Волевые качества(Высокий тон)</li>
+        </ol>
+    </div>
+  </div>
+</div>-->
+
+</body></html>
