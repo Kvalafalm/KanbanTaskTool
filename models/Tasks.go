@@ -9,6 +9,7 @@ import (
 
 type Tasks struct {
 	Idtasks    int `orm:"auto"`
+	Title      string
 	Desk       int
 	Idbitrix24 int
 	Stageid    int
@@ -18,7 +19,6 @@ type Tasks struct {
 
 func init() {
 	orm.RegisterModel(new(Tasks))
-
 }
 
 func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
@@ -77,14 +77,16 @@ func FinishTask(task Tasks) (err error) {
 	return err
 }
 
-func SetTaskFromBitrix24(Id string, stage int) (id int, err error) {
+func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 
 	database := orm.NewOrm()
 	database.Using("default")
 
 	task := Tasks{}
-	task.Idbitrix24, _ = strconv.Atoi(Id)
-	task.Stageid = stage
+	task.Idbitrix24, _ = strconv.Atoi(NewTask["idBitrix"])
+	task.Stageid, _ = strconv.Atoi(NewTask["Stage"])
+	task.Title = NewTask["Title"]
+	task.Typetask, _ = strconv.Atoi(NewTask["Typetask"])
 	var idint int
 
 	if created, id, err := database.ReadOrCreate(&task, "idbitrix24"); err == nil {

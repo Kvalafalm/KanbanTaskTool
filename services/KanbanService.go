@@ -127,7 +127,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].IDBitrix24 = TaskFromDB.Idbitrix24
 		tasks[i].Stage = TaskFromDB.Stageid
 		tasks[i].TypeTask = TaskFromDB.Typetask
-
+		tasks[i].Name = TaskFromDB.Title
 		for _, valuesB24 := range values.Result.Tasks {
 
 			if valuesB24.ID == tasks[i].IDBitrix24 {
@@ -151,8 +151,9 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 				}
 				tasks[i].Users = make([]User, len(Users))
 				copy(tasks[i].Users, Users)
-
-				tasks[i].Name = valuesB24.Title
+				if tasks[i].Name == "" {
+					tasks[i].Name = valuesB24.Title
+				}
 				tasks[i].IdProject = valuesB24.GroupID
 				tasks[i].СommentsCount = valuesB24.CommentsCount
 			}
@@ -242,13 +243,25 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	taskMap["GROUP_ID"] = "109"
 	taskMap["RESPONSIBLE_ID"] = strconv.Itoa(user.Bitrix24id)
 
-	taskB24, err := connectionBitrix24API.AddTask(taskMap)
-	//Записать задачу в нашу базу
-	if err != nil {
-		return 0, err
+	newtaskK := make(map[string]string)
+	newtaskK["Title"] = task.Name + " [KT]"
+	newtaskK["Stage"] = strconv.Itoa(task.Stage)
+	newtaskK["Typetask"] = "0"
+	newtaskK["idBitrix"] = "9675"
+
+	if task.Stage != 8 {
+
+		taskB24, err := connectionBitrix24API.AddTask(taskMap)
+		//Записать задачу в нашу базу
+		if err != nil {
+			return 0, err
+		}
+		newtaskK["idBitrix"] = taskB24.ID
+	} else {
+		newtaskK["Typetask"] = "3"
 	}
 
-	id, err = model.SetTaskFromBitrix24(taskB24.ID, task.Stage)
+	id, err = model.SetTaskFromBitrix24(newtaskK)
 
 	if err != nil {
 		return 0, err
@@ -347,7 +360,7 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 	task.ID = TaskFromDB.Idtasks
 	task.IDBitrix24 = TaskFromDB.Idbitrix24
 	task.Stage = TaskFromDB.Stageid
-
+	task.Name = TaskFromDB.Title
 	for _, valuesB24 := range values.Result.Tasks {
 		if valuesB24.ID == task.IDBitrix24 {
 			Users := make([]User, 0)
@@ -370,8 +383,9 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 			}
 			task.Users = make([]User, len(Users))
 			copy(task.Users, Users)
-
-			task.Name = valuesB24.Title
+			if task.Name == "" {
+				task.Name = valuesB24.Title
+			}
 			task.IdProject = valuesB24.GroupID
 		}
 	}
@@ -472,7 +486,10 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 	projects := `["131","64", "125", "117", "111", "109"]`
 
 	if str.Count(projects, taskBitrix24.Result.GROUPID) > 0 && taskBitrix24.Result.GROUPID != "0" {
-		model.SetTaskFromBitrix24(taskBitrix24.Result.ID, 9)
+		task := make(map[string]string)
+		task["Id"] = taskBitrix24.Result.ID
+		task["Stage"] = "9"
+		model.SetTaskFromBitrix24(task)
 	}
 
 }

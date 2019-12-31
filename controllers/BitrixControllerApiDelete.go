@@ -59,8 +59,9 @@ func (this *BitrixControllerApi) Get() {
 		}
 		for _, project := range bitrix24Projects {
 			tasks, _ := connectionBitrix24.GetTaskList(project)
-			for _, element := range tasks.Result {
-				model.SetTaskFromBitrix24(element.ID, 9)
+			for _, _ = range tasks.Result {
+				task := make(map[string]string)
+				_, _ = model.SetTaskFromBitrix24(task)
 			}
 		}
 

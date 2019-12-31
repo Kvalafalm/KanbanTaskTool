@@ -2,7 +2,7 @@ var Columns = [];
 var Kanbans;
 var CFD,CTH;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
-
+var range2 
 window.onload = function() {
 
     refreshDeskList();
@@ -39,7 +39,17 @@ window.onload = function() {
             if (obj1.day < obj2.day) return -1;
             if (obj1.day > obj2.day) return 1;
             return 0;
-          });; 
+          });
+
+          range2.category   = 19;
+
+          range2.grid.strokeOpacity = 0.6;
+          range2.grid.strokeDasharray = "5,2";
+          range2.label.text = "85%";
+          range2.axisFill.tooltip = new am4core.Tooltip();
+          range2.axisFill.tooltipText = "Range:\n[bold]{category}[] to [bold]{endCategory}[/]";
+          range2.axisFill.interactionsEnabled = true;
+          range2.axisFill.isMeasured = true;
           });
     });
 }
@@ -299,7 +309,7 @@ var valueAxis = CTH.yAxes.push(new am4charts.ValueAxis());
 valueAxis.renderer.inside = true;
 valueAxis.renderer.labels.template.disabled = true;
 valueAxis.min = 0;
-
+valueAxis.calculateTotals = true;
 // Create series
 function createSeries(field, name) {
   
@@ -333,6 +343,13 @@ createSeries("id4", "Проекты");
 
 // Legend
 CTH.legend = new am4charts.Legend();
+CTH.exporting.menu = new am4core.ExportMenu();
+CTH.exporting.menu.align = "left";
+CTH.exporting.menu.verticalAlign = "top";
 
+range2 = categoryAxis.axisRanges.create();
+
+//range2.label.horizontalCenter = "right";
+//range2.label.verticalCenter = "bottom";
 })
 }

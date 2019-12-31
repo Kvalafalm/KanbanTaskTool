@@ -8,6 +8,37 @@
 
 <body style="background-color: #e7e7e7;">
 <!-- Styles -->
+<script>
+  data = `{
+"Role":"Стратег=Лидер",
+"Id":"1",
+"Point":"слаженная работа команды соглаованная с вектором компании в соответствии с предназначением к  команды и попаданием в ожидания заказчика",
+"EndValue":"Команда в соответствии со своим предназначением",
+"Vison":"Прокаченный скилл менторсва, понимание F4P и KMM",
+"expiredData":"30.06.2020",
+"mertics":[
+  {"value":"Количество решенных здач/проектов"},
+  {"value":"Стабильнось предсказуемость команды"}
+],
+"Domen":[
+  {"value":"Команда"},
+  {"value":"Идеалогия команды"}
+],
+"Actions":[
+  {"value":"Адаптация стратегических концепций компании для команды"},
+  {"value":"Координация рабочих процессов"},
+  {"value":"Введенив в роль новых членов команды"},
+  {"value":"Развитие команды(менторство)"},
+  {"value":"Представление интересов команды"}
+],
+"Emotions":[
+  {"value":"Дальновидность"},
+  {"value":"Амбициозность"},
+  {"value":"Коммуникабельность"},
+  {"value":"Волевые качества(Высокий тон)"}
+]}`;
+</script>
+
 <style>
 /* CSS */
 
@@ -93,7 +124,7 @@
     padding: 20px;
   }
   .roleInfo{
-    background: url("img/background.png") no-repeat center center fixed;
+    background: url("img/background.png") no-repeat;
     background-color: #e7e7e7;
     background-size: 100% 100%;
     width: 100%;
@@ -140,7 +171,7 @@
     <a class="nav-item nav-link" id="panel5-tab" data-toggle="tab" href="#panel5" role="tab" aria-controls="panel5" aria-selected="false">Консультант</a>
     <a class="nav-item nav-link" id="panel6-tab" data-toggle="tab" href="#panel6" role="tab" aria-controls="panel6" aria-selected="false">Аналитик</a>
     <a class="nav-item nav-link" id="panel7-tab" data-toggle="tab" href="#panel7" role="tab" aria-controls="panel7" aria-selected="false">-Менеджер проектов</a>
-    <a class="nav-item nav-link" id="panel8-tab" data-toggle="tab" href="#panel8" role="tab" aria-controls="panel8" aria-selected="false">-Тестировщик</a>
+    <a class="nav-item nav-link" id="panel8-tab" data-toggle="tab" href="#panel8" role="tab" aria-controls="panel8" aria-selected="false">Тестировщик</a>
     <a class="nav-item nav-link" id="panel9-tab" data-toggle="tab" href="#panel9" role="tab" aria-controls="panel9" aria-selected="false">-Снабженец</a>
     <a class="nav-item nav-link" id="panel10-tab" data-toggle="tab" href="#panel10" role="tab" aria-controls="panel10" aria-selected="false">-Тех.инжинер</a>
   </div>
@@ -667,8 +698,94 @@
       <img src="img/AnaliticsSession.jpg" >
       </div>
   </div>
-
+  <div class="tab-pane fade" id="panel7" role="tabpanel" aria-labelledby="panel7-tab">
+    </div>  
   <div class="tab-pane fade" id="panel8" role="tabpanel" aria-labelledby="panel8-tab">
+
+      <div class="role">  
+          <div class="header-h1">
+            <h1>Тестировщик</h1>
+          </div>
+        <div class="roleInfo">
+          <div class="discription" style="
+      position: absolute;
+      top: 10%;
+      right: 53%;
+      width: 30%;
+  ">
+            <h4><img src="img/target.png" width="40" height="40">Смысл</h4>
+            Повышение уровня качества продукта, через тестирование
+          </div>
+          <div class="discription"  style="
+      position: absolute;
+      bottom: 10%;
+      right: 30%;
+      width: 30%;
+  ">
+              <h4><img src="img/value.png">ЦКП:</h4>
+              Отсутствие ошибок в разрабатываемом ПО
+          </div>
+          <div class="discription"  style="position: absolute; top: 5%; right: 5%;">
+            <b>Срок годности хх.хх.хххх</b>
+           </div>
+          <div class="discription"  style="
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 30%;
+  ">
+              <h4><img src="img/view.png">Видение:</h4>
+              Максимальное (100%) покрытие собственных разработок автотестированием
+          </div>
+      
+        <div class="discription"  style="
+        position: absolute;     
+        right: 10%;
+        top: 60%;
+        width: 30%
+        
+        ">
+            <h4><abbr title="Домен- область ">Домен:</abbr></h4>
+            <ol class="list-counter-circle">
+            <li>Тест-кейс</li>
+            <li>Программа для автотестирования</li>
+          </ol>
+        </div>
+      
+        <div class="discription"  style="position: absolute;left: 5%;top: 25%;     width: 30%">
+            <h4><img src="img/KPI.png">Метрики:</h4>
+            <ol class="list-counter-circle">
+            <li>'% покрытия автотестами  (качество разработки ПО)</li>
+
+          </ol>
+        </div>
+      
+        <div class="discription" style="position: absolute;
+        right: 10%;
+        top: 25%;
+        width: 30%;">
+          <h4><img src="img/actions.png">Действия</h4>
+            <ol class="list-counter-circle">
+              <li>Составление тест-кейса (Критерии приемки от пользователей и от ОИО)</li>
+              <li>Выполниить тестирование (Автотест)</li>
+              <li>Обратная связь разработчику : Исправление ошибок (доработка), Выполнено</li>
+            </ol>
+        </div>
+        
+          <div class="discription" style="position: absolute;left: 5%;top: 60%;     width: 30%">
+            <h4><img src="img/emotions.png">Эмоции</h4>
+              <ol class="list-counter-circle">
+                <li>Сконцентрированность</li>
+                <li>Внимательность</li>
+                <li>Системность</li>
+                <li>Усидчивость</li>
+                
+              </ol>
+          </div>
+        </div>
+      </div>
+
+
   </div>
   <div class="tab-pane fade" id="panel9" role="tabpanel" aria-labelledby="panel9-tab">
     </div>  
