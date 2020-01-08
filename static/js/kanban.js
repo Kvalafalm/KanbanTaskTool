@@ -78,10 +78,20 @@ function FillInKanbanDesk(DeskId) {
             <div draggable="true" class="Kanban StandartClient NewKanban">
                 <div class="KanbanDescription">
                     <div class="input-group">
-                        <textarea class="form-control" id="NewKanban" aria-label="With textarea" onchange="SaveKanban(this)"></textarea>
+                        <textarea class="form-control" id="NewKanban" aria-label="With textarea"></textarea>
                     </div>
                 </div>
             </div>`);
+            $("#NewKanban").keydown(function(e) {
+                if (e.keyCode == 27) {
+                    e.target.value = "";
+                    $(".NewKanban").remove();
+                    e.target.blur();     
+                }else if(e.ctrlKey && e.keyCode == 13  ){
+                    SaveKanban(this);
+                }
+            });
+
             $("#NewKanban").focus();
         });
         $(".infoCollumn").click(function(){
@@ -123,6 +133,8 @@ function FillInKanbanDesk(DeskId) {
         
     });
 }
+
+
 
 function SaveKanban(e){
 

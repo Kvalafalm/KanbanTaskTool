@@ -244,11 +244,12 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	taskMap["RESPONSIBLE_ID"] = strconv.Itoa(user.Bitrix24id)
 
 	newtaskK := make(map[string]string)
-	newtaskK["Title"] = task.Name + " [KT]"
+
 	newtaskK["Stage"] = strconv.Itoa(task.Stage)
 	newtaskK["Typetask"] = "0"
 	newtaskK["idBitrix"] = "9675"
-
+	newtaskK["CheckUnicColluumn"] = "idbitrix24"
+	// TO DO
 	if task.Stage != 8 {
 
 		taskB24, err := connectionBitrix24API.AddTask(taskMap)
@@ -258,7 +259,9 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 		}
 		newtaskK["idBitrix"] = taskB24.ID
 	} else {
-		newtaskK["Typetask"] = "3"
+		newtaskK["Title"] = task.Name + ""
+		newtaskK["CheckUnicColluumn"] = ""
+		newtaskK["Typetask"] = "2"
 	}
 
 	id, err = model.SetTaskFromBitrix24(newtaskK)

@@ -88,16 +88,23 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	task.Title = NewTask["Title"]
 	task.Typetask, _ = strconv.Atoi(NewTask["Typetask"])
 	var idint int
-
-	if created, id, err := database.ReadOrCreate(&task, "idbitrix24"); err == nil {
-		if created {
-			fmt.Println("New Insert an object. Id:", id)
+	if NewTask["CheckUnicColluumn"] != "" {
+		if created, id, err := database.ReadOrCreate(&task, NewTask["CheckUnicColluumn"]); err == nil {
+			if created {
+				fmt.Println("New Insert an object. Id:", id)
+			} else {
+				fmt.Println("Get an object. Id:", id)
+			}
+			idint = int(id)
 		} else {
-			fmt.Println("Get an object. Id:", id)
+			return 0, err
+		}
+	} else {
+		id, err := database.Insert(&task)
+		if err != nil {
+			return 0, err
 		}
 		idint = int(id)
-	} else {
-		return 0, err
 	}
 
 	return idint, nil
