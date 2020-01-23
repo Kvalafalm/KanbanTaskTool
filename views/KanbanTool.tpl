@@ -8,12 +8,17 @@
   </script>
   {{template "bootstrap.html" .}}
   <script src="../static/js/kanban.js"></script>
+  <script src="../static/js/websocket.js"></script>
   <link href="../static/css/kanban.css" rel="stylesheet">
 </head>
 
 <body>
 
 {{template "navbar.html" .}}
+  <div class="notifications">
+ 
+  </div>
+  
   <div class="container-fluid">
 
   <div id="KanbanDesk1">

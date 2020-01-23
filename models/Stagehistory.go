@@ -159,7 +159,9 @@ func GetDataForSpectralChart(param map[string]string) (raws []orm.Params, err er
 		ON stageStart.idtask = tasks.idtasks
 	 WHERE   
 	 tasks.finished
-	 AND stageEnd.start IS NOT NULL`, param[`startId`], param[`startDate`], param[`endDate`], param[`endId`]).Values(&mapRaw)
+	 AND stageEnd.start IS NOT NULL 
+	 ORDER BY 
+	 stageEnd.start `, param[`startId`], param[`startDate`], param[`endDate`], param[`endId`]).Values(&mapRaw)
 	if err != nil && num > 0 {
 		return mapRaw, err
 	}

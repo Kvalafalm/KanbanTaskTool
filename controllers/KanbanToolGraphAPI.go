@@ -26,7 +26,7 @@ func (this *KanbanToolGraphAPI) Get() {
 		this.Redirect("/", 307)
 		return
 	}
-
+	defer session.SessionRelease(this.Ctx.ResponseWriter)
 }
 
 func (this *KanbanToolGraphAPI) Post() {
@@ -36,8 +36,8 @@ func (this *KanbanToolGraphAPI) Post() {
 	if User == nil {
 		this.Redirect("/login", 307)
 		return
-	}*/
-
+	}
+	defer session.SessionRelease(this.Ctx.ResponseWriter)*/
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	var serv = service.KanbanServiceGraph{}
 	switch TypeAction {
@@ -47,6 +47,19 @@ func (this *KanbanToolGraphAPI) Post() {
 		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
 		fmt.Println(param)
 		data, err := serv.GetCFDData(param)
+
+		if err != nil {
+
+		}
+
+		this.Data["json"] = data
+		this.ServeJSON()
+
+	case "controlchart":
+		param := service.Params{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
+		fmt.Println(param)
+		data, err := serv.ControlChart(param)
 
 		if err != nil {
 

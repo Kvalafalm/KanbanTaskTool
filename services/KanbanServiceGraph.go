@@ -54,6 +54,30 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 
 	return CFDdataReturn, nil
 }
+
+func (Cb *KanbanServiceGraph) ControlChart(params Params) (dataControlChart []map[string]string, err error) {
+
+	paramMap := make(map[string]string)
+
+	paramMap[`desk`] = params.Desk
+
+	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
+	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
+	paramMap[`endId`] = params.EndId
+	paramMap[`startId`] = params.StartId
+	data, _ := model.GetDataForSpectralChart(paramMap)
+	for i, raw := range data {
+		newRaw := make(map[string]string)
+		durationInWorkDays := DifferenceInDays(raw["start"].(string), raw["end"].(string))
+		newRaw["id"+raw["typetask"].(string)+"_x"] = strconv.Itoa(i)
+		newRaw["id"+raw["typetask"].(string)+"_y"] = strconv.Itoa(durationInWorkDays)
+		newRaw["id"+raw["typetask"].(string)+"id"] = raw["idtask"].(string)
+		dataControlChart = append(dataControlChart, newRaw)
+	}
+
+	return dataControlChart, nil
+}
+
 func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralChart []map[string]int, err error) {
 
 	paramMap := make(map[string]string)

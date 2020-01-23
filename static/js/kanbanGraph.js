@@ -1,12 +1,90 @@
 var Columns = [];
 var Kanbans;
-var CFD,CTH;
+let CFD, CTH, ControlChart;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 var range2 
+
+class FunctionTrend {
+
+  constructor(data) {
+    this.data   = data;
+    this.sumX   = 0;
+    this.sumY   = 0;
+    this.sumX2  = 0;
+    this.sumXY  = 0;
+    this.deltaX = 0;
+    this.deltaY = 0;
+    this.FillTable();
+    this.calculateDelta();
+    this.calculateDeltaX(); 
+    this.calculateDeltaY();  
+
+  }
+
+  GetY (x) {
+    return this.deltaX * x + this.deltaY;
+  }
+
+  FillTable(){
+    this.sumX  = 0;
+    this.sumY  = 0;
+    this.sumX2 = 0;
+    this.sumXY = 0;
+    for (let i = 0; i < this.data.length; i++) {
+      this.sumX  = this.sumX  + this.data[i].X;
+      this.sumY  = this.sumY  +  this.data[i].Y;
+      this.sumX2 = this.sumX2 + (this.data[i].X * this.data[i].X);
+      this.sumXY = this.sumXY + (this.data[i].X * this.data[i].Y);
+    }
+    this.n     = this.data.length;
+  }
+
+  HasOneDesicion() {
+    if (this.delta >0 ){
+      return true
+    }else {
+      return false
+    }
+  }
+
+  calculateDelta() {
+    this.delta = this.sumX2 * this.n - this.sumX * this.sumX
+  }
+
+//fun.sumX2 * a + b * fun.sumX  = fun.sumXY
+//fun.sumX * a + fun.n * b = fun.sumY 
+
+  calculateDeltaX() {
+
+    if ( this.HasOneDesicion() ){
+      this.deltaX = ( this.sumXY * this.n - this.sumX * this.sumY ) / this.delta
+    }
+
+  }
+
+  calculateDeltaY() {
+    if ( this.HasOneDesicion() ){
+      this.deltaY = ( this.sumX2 * this.sumY - this.sumXY * this.sumX ) / this.delta
+    }
+  } 
+
+  checkDecision () {
+    firstD = (this.sumX2 * this.deltaX + this.deltaY * this.sumX == this.sumXY)
+    secondD = (this.sumX * this.deltaX + this.n * this.deltaY == fun.sumY)
+    if (firstD && secondD) {
+      return true
+    }else{
+      return false
+    }
+
+  }
+
+}
+
 window.onload = function() {
 
     refreshDeskList();
-    CFD();
+    Diagrams();
 
     $("#refreshButton").click(function(){
         let JSONData =
@@ -26,6 +104,17 @@ window.onload = function() {
             data: JSON.stringify(JSONData),
        }).done(function (cfdJson) {
                 CFD.data = cfdJson; 
+        });  
+
+        $.ajax({
+          type: "POST",
+          url: "/KanbanToolGraphAPI/controlchart/",
+          crossDomain : true,
+          async: false,
+          data: JSON.stringify(JSONData),
+          }).done(function (Json) {
+              ControlChart.data = Json; 
+
         });  
 
         $.ajax({
@@ -82,14 +171,14 @@ function refreshDeskList(){
 }
 
 
-function CFD(){
+function Diagrams(){
     am4core.ready(function() {
 
         // Themes begin
         am4core.useTheme(am4themes_animated);
         // Themes end
         
-        CFD = am4core.create("chartdiv", am4charts.XYChart);
+        CFD = am4core.create("CFD", am4charts.XYChart);
 
         CFD.exporting.menu = new am4core.ExportMenu();
         CFD.exporting.menu.align = "left";
@@ -349,7 +438,84 @@ CTH.exporting.menu.verticalAlign = "top";
 
 range2 = categoryAxis.axisRanges.create();
 
-//range2.label.horizontalCenter = "right";
-//range2.label.verticalCenter = "bottom";
-})
+
+ControlChart = am4core.create("ControlChart", am4charts.XYChart);
+
+
+
+
+ControlChart.legend = new am4charts.Legend();
+ControlChart.exporting.menu = new am4core.ExportMenu();
+ControlChart.exporting.menu.align = "left";
+ControlChart.exporting.menu.verticalAlign = "top";
+
+// Create axes
+var valueAxisX = ControlChart.xAxes.push(new am4charts.ValueAxis());
+valueAxisX.title.text = 'Задача';
+valueAxisX.renderer.minGridDistance = 40;
+
+// Create value axis
+var valueAxisY = ControlChart.yAxes.push(new am4charts.ValueAxis());
+valueAxisY.title.text = 'Дни';
+
+// Create series
+
+function NewSeries(id,color,name) {
+    var lineSeries = ControlChart.series.push(new am4charts.LineSeries());
+    lineSeries.name = name;
+    lineSeries.dataFields.valueY = id + "_y";
+    lineSeries.dataFields.valueX = id + "_x";
+    lineSeries.strokeOpacity = 0;
+    // Add a bullet
+    var bullet = lineSeries.bullets.push(new am4charts.Bullet());
+    // Add a triangle to act as am arrow
+    var arrow = bullet.createChild(am4core.Circle);
+    arrow.stroke = am4core.color('rgba(0, 0, 0, 0.4)');
+    arrow.horizontalCenter = "middle";
+    arrow.verticalCenter = "middle";
+    arrow.strokeWidth = 1;
+    arrow.fill = am4core.color(color);
+    arrow.direction = "top";
+    arrow.width = 10;
+    arrow.height = 10;
+}
+
+
+NewSeries("id1","#4caf50", "НМА");
+NewSeries("id2","#ff8800", "Тех.поддержка");
+NewSeries("id3","#e95757", "Ошибки");
+NewSeries("id4","#f68fff", "Проекты");
+NewSeries("id5","#cccc00", "Стандартные");
+
+
+
+//add the trendlines
+/*var trend = chart.series.push(new am4charts.LineSeries());
+trend.dataFields.valueY = "value2";
+trend.dataFields.valueX = "value";
+trend.strokeWidth = 2
+trend.stroke = chart.colors.getIndex(0);
+trend.strokeOpacity = 0.7;
+trend.data = [
+  { "value": 1, "value2": 2 },
+  { "value": 12, "value2": 11 }
+];
+
+var trend2 = chart.series.push(new am4charts.LineSeries());
+trend2.dataFields.valueY = "value2";
+trend2.dataFields.valueX = "value";
+trend2.strokeWidth = 2
+trend2.stroke = chart.colors.getIndex(3);
+trend2.strokeOpacity = 0.7;
+trend2.data = [
+  { "value": 1, "value2": 1 },
+  { "value": 12, "value2": 19 }
+];*/
+
+//scrollbars
+ControlChart.scrollbarX = new am4core.Scrollbar();
+ControlChart.scrollbarY = new am4core.Scrollbar();
+
+}); // end am4core.ready()
+
 }
