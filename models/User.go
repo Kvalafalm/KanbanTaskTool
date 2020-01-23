@@ -41,9 +41,9 @@ func ValidUser(Username string, Password string) (user User, err string) {
 	err = ""
 	if (Username == "1") && (Password == "") {
 		user = User{1, "Николай", "Кутняшенко", "1", 8}
-	} else if (Username == "Shapkin") && (Password == "") {
+	} else if (Username == "2") && (Password == "") {
 		user = User{2, "Дима", "Шапкин", "2", 208}
-	} else if (Username == "Popova") && (Password == "") {
+	} else if (Username == "3") && (Password == "") {
 		user = User{2, "Ксения", "Попова", "2", 208}
 	} else if (Username == "Tarabarov") && (Password == "") {
 		user = User{2, "Антон", "Тарабаров", "2", 361}

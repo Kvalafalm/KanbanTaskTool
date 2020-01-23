@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	Models "KanbanTaskTool/Models"
 	m "KanbanTaskTool/Models"
 	services "KanbanTaskTool/Services"
 
@@ -17,16 +18,19 @@ type UserAnswer struct {
 
 func (this *AuthController) Get() {
 	session := this.StartSession()
-	userID := session.Get("User")
+	defer session.SessionRelease(this.Ctx.ResponseWriter)
+	User := session.Get("User")
 
 	logout := this.GetString("logout")
 	server_domain := this.GetString("server_domain")
 
 	if logout == "yes" {
 
-		if userID != nil {
+		if User != nil {
+			Leave(User.(Models.User).Firstname)
 			session.Delete("User")
 		}
+
 		this.Redirect("/", 307)
 		this.TplName = "login.tpl"
 		return

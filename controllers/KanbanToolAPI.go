@@ -18,26 +18,34 @@ type KanbanToolAPI struct {
 }
 
 func (this *KanbanToolAPI) Get() {
-	session := this.StartSession()
-	userID := session.Get("User")
-	logout := this.GetString("logout")
-	if logout == "yes" {
 
-		if userID != nil {
-			session.Delete("User")
-		}
-		this.Redirect("/", 307)
+	session := this.StartSession()
+	User := session.Get("User")
+	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
+
+	if User == nil {
+		this.Data["json"] = "{ \"error\" : \"Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"401\" } }"
+		this.ServeJSON()
 		return
 	}
-	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
+
+	defer session.SessionRelease(this.Ctx.ResponseWriter)
+
 	var serv = service.KanbanService{}
-	fmt.Println(TypeAction)
+
 	idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+
+	beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+
 	switch TypeAction {
 
 	case "tasklist":
 		task, _ := serv.GetTaskList(idInt)
 		this.Data["json"] = &task
+		this.ServeJSON()
+
+	case "ping":
+		this.Data["json"] = "{ \"error\" : \"Все хорошо\", \"errorId\" : \"200\" }"
 		this.ServeJSON()
 
 	case "desklist":
@@ -68,7 +76,7 @@ func (this *KanbanToolAPI) Get() {
 		this.ServeJSON()
 
 	default:
-		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \" }"
+		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"402\" } }"
 		this.ServeJSON()
 	}
 
@@ -78,12 +86,16 @@ func (this *KanbanToolAPI) Post() {
 
 	session := this.StartSession()
 	User := session.Get("User")
+	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	if User == nil {
-		this.Redirect("/login", 307)
+		this.Data["json"] = "{ \"error\" : \"Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"401\" } }"
+		this.ServeJSON()
 		return
 	}
 
-	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
+	defer session.SessionRelease(this.Ctx.ResponseWriter)
+	beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+
 	var serv = service.KanbanService{}
 	switch TypeAction {
 
