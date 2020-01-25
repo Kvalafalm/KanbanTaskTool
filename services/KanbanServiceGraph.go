@@ -69,9 +69,10 @@ func (Cb *KanbanServiceGraph) ControlChart(params Params) (dataControlChart []ma
 	for i, raw := range data {
 		newRaw := make(map[string]string)
 		durationInWorkDays := DifferenceInDays(raw["start"].(string), raw["end"].(string))
+		newRaw["typetask"] = raw["typetask"].(string)
 		newRaw["id"+raw["typetask"].(string)+"_x"] = strconv.Itoa(i)
 		newRaw["id"+raw["typetask"].(string)+"_y"] = strconv.Itoa(durationInWorkDays)
-		newRaw["id"+raw["typetask"].(string)+"id"] = raw["idtask"].(string)
+		newRaw["id"+raw["typetask"].(string)+"_idtask"] = raw["idtask"].(string)
 		dataControlChart = append(dataControlChart, newRaw)
 	}
 

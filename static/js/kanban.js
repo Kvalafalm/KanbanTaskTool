@@ -30,6 +30,10 @@ function refreshDeskList(){
         async: false,
         data: ""
    }).done(function (DeskList) {
+    if( DeskList.errorId != undefined && DeskList.errorId == "401" ){
+        window.location.replace("/login")
+        return
+    }
         $("#DeskList").empty();
         let FirstEvent=true;
         DeskList.forEach(function(element) {
@@ -62,6 +66,10 @@ function FillInKanbanDesk(DeskId) {
         data: ""
 
     }).done(function (desk) {
+        if( desk.errorId != undefined && desk.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
         $(".KanbanDeskCanvas").append(desk.Innerhtml)
         $(".KanbanColumn").each(function () {
             $(this).find(".NameColumn").addClass("onhover").append(`
@@ -103,7 +111,11 @@ function FillInKanbanDesk(DeskId) {
                 data: "",
                 async: false
            }).done(function (stages) {
-        
+            if( stages.errorId != undefined && stages.errorId == "401" ){
+                window.location.replace("/login")
+                return
+            }
+                    
                 alert(stages.Description)
         
             });
@@ -117,19 +129,22 @@ function FillInKanbanDesk(DeskId) {
         data: ""
 
    }).done(function (Kanbans) {
-        
-        Kanbans.forEach(function(element) {
-            OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
-        });
+        if( Kanbans.errorId != undefined && Kanbans.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
+            Kanbans.forEach(function(element) {
+                OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
+            });
 
-        $(".KanbanColumn").each(function(){
-            $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
-        });
+            $(".KanbanColumn").each(function(){
+                $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+            });
 
-        document.getElementById('preloaderbg').style.display = 'none';
+            document.getElementById('preloaderbg').style.display = 'none';
 
-        setFunctionDADOnCollumn();
-        
+            setFunctionDADOnCollumn();
+
         
     });
 }
@@ -153,14 +168,17 @@ function SaveKanban(e){
         data: JSON.stringify(task),
         async: true
    }).done(function (element) {
+            if( element.errorId != undefined && element.errorId == "401" ){
+                window.location.replace("/login")
+                return
+            }
+            $(".NewKanban").remove();
 
-        $(".NewKanban").remove();
+            OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
 
-        OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
-
-        $(".KanbanColumn").each(function(){
-            $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
-        });
+            $(".KanbanColumn").each(function(){
+                $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+            });
 
    });
    
@@ -246,6 +264,10 @@ function OutputKanban(Column,element){
             data: ""
     
        }).done(function (Kanbans) {
+        if( Kanbans.errorId != undefined && Kanbans.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
             $(".taskKanbanTool").attr("id", element.Id);
             $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
@@ -334,6 +356,10 @@ function FinishTask(e){
 
    }).done(function (element) {
     if (element){
+        if( element.errorId != undefined && element.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
         $(e).closest(".Kanban").addClass("finished");
     }
    });
@@ -452,7 +478,14 @@ function updateKanban (id,stage){
         processData: false,
         data: JSON.stringify(task),
         async: true
-   });
+   }).done(function (element) {
+    if (element){
+        if( element.errorId != undefined && element.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
+    }
+   });;
 }
 
 function allowDrop(eventKanban) {
@@ -576,6 +609,11 @@ function SaveModalWindow(th){
         processData: false,
         data: JSON.stringify(bloker)
    }).done(function (element) {
+        if( element.errorId != undefined && element.errorId == "401" ){
+            window.location.replace("/login")
+            return
+        }
+
         if( $("#BlokerId")[0].value =="" ){
         let DefaultButton = `<button type="button" class="btn btn-link btn-xs " style="padding:1px" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-pencil" aria-hidden="true"></i></button> <button type="button" class="btn btn-link btn-xs" style="padding:1px"><i class="fa fa-trash" aria-hidden="true"></i></button> `
         const startDate = (new Date(bloker.Startdate)).toLocaleDateString();

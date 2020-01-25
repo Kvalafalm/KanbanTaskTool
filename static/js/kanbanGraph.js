@@ -3,26 +3,58 @@ var Kanbans;
 let CFD, CTH, ControlChart;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 var range2 
+let taskTypes =[
+  {id:"id1",name:"НМА",color:"#4caf50"},
+  {id:"id2",name:"Тех.поддержка",color:"#ff8800"},
+  {id:"id3",name:"Ошибки",color:"#e95757"},
+  {id:"id4",name:"Проекты",color:"#f68fff"},
+  {id:"id5",name:"Стандартные",color:"#cccc00"},
+];
 
 class FunctionTrend {
 
-  constructor(data) {
+  constructor(data,name,color) {
     this.data   = data;
     this.sumX   = 0;
     this.sumY   = 0;
     this.sumX2  = 0;
     this.sumXY  = 0;
-    this.deltaX = 0;
-    this.deltaY = 0;
+    this.deltaA = 0;
+    this.deltaB = 0;
     this.FillTable();
     this.calculateDelta();
-    this.calculateDeltaX(); 
-    this.calculateDeltaY();  
+    this.calculateDeltaA(); 
+    this.calculateDeltaB();  
 
+    //var trend = chart.series.push(new am4charts.LineSeries());
+    if (this.HasOneDesicion()){
+      this.trend = ControlChart.series.push(new am4charts.LineSeries());
+
+      let bullet = this.trend.bullets.push(new am4charts.CircleBullet());
+      bullet.strokeWidth = 2;
+      //bullet.stroke = am4core.color(color);
+      bullet.tooltipText = "Y = " + Math.round(this.deltaA*1000)/1000 + " X + "+ + Math.round(this.deltaB*1000)/1000 ;
+      this.trend.typeSeries = "trend";
+      this.trend.name = name;
+      this.trend.dataFields.valueY = "Y";
+      this.trend.dataFields.valueX = "X";
+      this.trend.strokeWidth = 3;
+      this.trend.stroke = am4core.color(color);
+      this.trend.strokeOpacity = 0.7;
+      this.trend.data = [
+        { "Y": this.calculateY(data[0].X), "X": data[0].X },
+        { "Y": this.calculateY(data[data.length-1].X), "X": data[data.length-1].X }
+      ];
+    }
+    }
+  
+
+  getTrend(){
+    return this.trend;
   }
 
-  GetY (x) {
-    return this.deltaX * x + this.deltaY;
+  calculateY (x) {
+    return this.deltaA * x + this.deltaB;
   }
 
   FillTable(){
@@ -51,26 +83,23 @@ class FunctionTrend {
     this.delta = this.sumX2 * this.n - this.sumX * this.sumX
   }
 
-//fun.sumX2 * a + b * fun.sumX  = fun.sumXY
-//fun.sumX * a + fun.n * b = fun.sumY 
-
-  calculateDeltaX() {
+  calculateDeltaA() {
 
     if ( this.HasOneDesicion() ){
-      this.deltaX = ( this.sumXY * this.n - this.sumX * this.sumY ) / this.delta
+      this.deltaA = ( this.sumXY * this.n - this.sumX * this.sumY ) / this.delta
     }
 
   }
 
-  calculateDeltaY() {
+  calculateDeltaB() {
     if ( this.HasOneDesicion() ){
-      this.deltaY = ( this.sumX2 * this.sumY - this.sumXY * this.sumX ) / this.delta
+      this.deltaB = ( this.sumX2 * this.sumY - this.sumXY * this.sumX ) / this.delta
     }
   } 
 
   checkDecision () {
-    firstD = (this.sumX2 * this.deltaX + this.deltaY * this.sumX == this.sumXY)
-    secondD = (this.sumX * this.deltaX + this.n * this.deltaY == fun.sumY)
+    firstD = (this.sumX2 * this.deltaA + this.deltaB * this.sumX == this.sumXY)
+    secondD = (this.sumX * this.deltaA + this.n * this.deltaB == fun.sumY)
     if (firstD && secondD) {
       return true
     }else{
@@ -79,6 +108,56 @@ class FunctionTrend {
 
   }
 
+}
+
+class Persentil{
+
+  constructor(name,percentage,data ) {
+    this.data = data
+    this.range = CTH.xAxes.values[0].axisRanges.create();
+    this.range.category   =  this.Quartile(percentage)+ 1 ;
+     
+    this.range.grid.strokeOpacity = 1;
+    this.range.grid.strokeDasharray = "10";
+    this.range.typeSeries == "Persentil";
+
+    this.range.label.text = name + "-" + this.Quartile(percentage) +"д.";
+    this.range.grid.stroke = am4core.color("#396478");
+    this.range.grid.strokeWidth = 2;
+    this.range.label.location = -0.5;
+    this.range.label.disabled = false;
+    this.range.label.adapter.add("horizontalCenter", function() {
+      return "middle";
+    });
+
+
+  }
+
+  Quartile85() {
+    return Quartile(0.85);
+  }
+
+  Quartile95() {
+    return Quartile(0.85);
+  }
+
+  Quartile(q) {
+    this.data=this.Array_Sort_Numbers(this.data);
+    var pos = (this.data.length - 1) * q;
+    var base = Math.ceil(pos);
+    var rest = pos - base;
+    if( (this.data[base]==undefined) ) {
+      return Math.ceil(this.data[this.data.length-1]);
+    } else {
+      return Math.ceil(this.data[base]);
+    }
+  }
+
+  Array_Sort_Numbers(inputarray){
+    return inputarray.sort(function(a, b) {
+      return a - b;
+    });
+  }
 }
 
 window.onload = function() {
@@ -100,9 +179,9 @@ window.onload = function() {
             type: "POST",
             url: "/KanbanToolGraphAPI/CFD/",
             crossDomain : true,
-            async: false,
+            async: true,
             data: JSON.stringify(JSONData),
-       }).done(function (cfdJson) {
+        }).done(function (cfdJson) {
                 CFD.data = cfdJson; 
         });  
 
@@ -110,18 +189,18 @@ window.onload = function() {
           type: "POST",
           url: "/KanbanToolGraphAPI/controlchart/",
           crossDomain : true,
-          async: false,
+          async: true,
           data: JSON.stringify(JSONData),
           }).done(function (Json) {
               ControlChart.data = Json; 
-
+              checkedTrend($("#showTrend").is(':checked'))
         });  
-
+        // SChart
         $.ajax({
           type: "POST",
           url: "/KanbanToolGraphAPI/SChart/",
           crossDomain : true,
-          async: false,
+          async: true,
           data: JSON.stringify(JSONData),
         }).done(function (SpectralChartJSON) {
           CTH.data = SpectralChartJSON.sort(function(obj1, obj2) {
@@ -129,20 +208,116 @@ window.onload = function() {
             if (obj1.day > obj2.day) return 1;
             return 0;
           });
+          checkedPercentils($("#showPercentils").is(':checked'));
 
-          range2.category   = 19;
 
-          range2.grid.strokeOpacity = 0.6;
-          range2.grid.strokeDasharray = "5,2";
-          range2.label.text = "85%";
-          range2.axisFill.tooltip = new am4core.Tooltip();
-          range2.axisFill.tooltipText = "Range:\n[bold]{category}[] to [bold]{endCategory}[/]";
-          range2.axisFill.interactionsEnabled = true;
-          range2.axisFill.isMeasured = true;
-          });
+        });
     });
+
+    // Модальное окно
+    $("#сloseButton").click(function(){
+      $("#KanbanMore").hide("slow");
+      $(".TitleBitrix24").empty();
+      $(".Descripion").empty();
+      $(".StageMore").empty();
+      $(".BlokersMore").empty();
+      $(".KanbanMoreComents").empty();
+  });
+
+}
+function checkedPercentils(ev){
+
+  /*CTH.xAxes.values[0].axisRanges.values.forEach(function(value,index,array){
+    
+  });*/
+  for (var i = CTH.xAxes.values[0].axisRanges.length; i > 0; i--) { 
+    CTH.xAxes.values[0].axisRanges.removeValue(CTH.xAxes.values[0].axisRanges.values[i-1]);
+  }
+
+  if (typeof ev === "boolean"){
+    cheked = ev;
+  }else{
+    cheked = ev.checked;
+  }
+  
+  if ( cheked ) {
+    showPercentils(CTH.data);
+  }
+ 
 }
 
+function showPercentils(data){
+  myMap = new Map();
+  newData = [];
+  CTH.series.values.forEach(function (value, index,array){
+    myMap.set(value.id, value._isHidden);
+  });
+
+  data.forEach(function (value, index,array){
+    for (key in value){
+      if (myMap.has(key) &&  !myMap.get(key) ){
+        for(i=0;i <value[key];i++){
+          newData.push(value["day"]);
+        }
+      }
+    }
+  });
+  showPercentil85 = new Persentil("85%",0.85,newData); 
+  showPercentil50 = new Persentil("50%",0.5,newData); 
+  showPercentil95 = new Persentil("95%",0.95,newData); 
+  
+}
+
+function checkedTrend(ev){
+
+  let seriesForDelete = new Array();
+  ControlChart.series.values.forEach(function (row, index) {
+    if (row.typeSeries == "trend"){
+      seriesForDelete.push(row);
+    }
+  });
+
+  seriesForDelete.forEach(function (row, index) {
+    ControlChart.series.removeIndex(
+      ControlChart.series.indexOf(row)
+    ).dispose();
+  });
+
+  if (typeof ev === "boolean"){
+    cheked = ev;
+  }else{
+    cheked = ev.checked;
+  }
+
+  if ( cheked ) {
+    showTrend(ControlChart.data);
+  }
+  
+}
+
+function showTrend(Json){
+  dataArray = new Array ();
+  dataArray.push({id:taskTypes[0].id,name:taskTypes[0].name,color:taskTypes[0].color,data:new Array()});
+  dataArray.push({id:taskTypes[1].id,name:taskTypes[1].name,color:taskTypes[1].color,data:new Array()});
+  dataArray.push({id:taskTypes[2].id,name:taskTypes[2].name,color:taskTypes[2].color,data:new Array()});
+  dataArray.push({id:taskTypes[4].id,name:taskTypes[4].name,color:taskTypes[4].color,data:new Array()});
+  dataArray.push({id:taskTypes[3].id,name:taskTypes[3].name,color:taskTypes[3].color,data:new Array()});
+  
+
+  Json.forEach(function (row, index){
+      let dataRow = {X:parseInt(row["id"+row.typetask + "_x"]),Y:parseInt(row["id"+row.typetask + "_y"])}
+      element = dataArray.find(function(element, index, array){
+        if (element.id == ("id"+row.typetask)){
+          return element;
+        }
+      },row);
+      element.data.push(dataRow);
+  });
+
+  dataArray.forEach(function (row, index) {
+    let trend = new FunctionTrend(row.data,row.name,row.color)
+  });
+}
 function refreshDeskList(){
     
     $.ajax({
@@ -390,6 +565,7 @@ var categoryAxis = CTH.xAxes.push(new am4charts.CategoryAxis());
 categoryAxis.dataFields.category = "day";
 categoryAxis.renderer.grid.template.location = 0;
 
+
 CTH.cursor = new am4charts.XYCursor();
 CTH.cursor.xAxis = dateAxis;
 CTH.scrollbarX = new am4core.Scrollbar();
@@ -404,12 +580,11 @@ function createSeries(field, name) {
   
   // Set up series
   var series = CTH.series.push(new am4charts.ColumnSeries());
+  series.id = field;
   series.name = name;
   series.dataFields.valueY = field;
   series.dataFields.categoryX = "day";
   series.sequencedInterpolation = true;
-  
-  // Make it stacked
   series.stacked = true;
   
   // Configure columns
@@ -436,9 +611,9 @@ CTH.exporting.menu = new am4core.ExportMenu();
 CTH.exporting.menu.align = "left";
 CTH.exporting.menu.verticalAlign = "top";
 
-range2 = categoryAxis.axisRanges.create();
-
-
+//*********************************************
+//Control Chart
+//
 ControlChart = am4core.create("ControlChart", am4charts.XYChart);
 
 
@@ -465,9 +640,15 @@ function NewSeries(id,color,name) {
     lineSeries.name = name;
     lineSeries.dataFields.valueY = id + "_y";
     lineSeries.dataFields.valueX = id + "_x";
+    lineSeries.dataFields.idtask = id + "_idtask";
     lineSeries.strokeOpacity = 0;
     // Add a bullet
     var bullet = lineSeries.bullets.push(new am4charts.Bullet());
+    bullet.tooltipText = "idTask - {idtask}, leadTime: {valueY} ";
+    bullet.events.on("doublehit", function(ev) {
+      getTask(ev.target.dataItem.idtask)
+      //alert("Clicked on " + ev.target.dataItem.idtask + ": " + ev.target.dataItem.valueY);
+    }); 
     // Add a triangle to act as am arrow
     var arrow = bullet.createChild(am4core.Circle);
     arrow.stroke = am4core.color('rgba(0, 0, 0, 0.4)');
@@ -487,35 +668,116 @@ NewSeries("id3","#e95757", "Ошибки");
 NewSeries("id4","#f68fff", "Проекты");
 NewSeries("id5","#cccc00", "Стандартные");
 
-
-
-//add the trendlines
-/*var trend = chart.series.push(new am4charts.LineSeries());
-trend.dataFields.valueY = "value2";
-trend.dataFields.valueX = "value";
-trend.strokeWidth = 2
-trend.stroke = chart.colors.getIndex(0);
-trend.strokeOpacity = 0.7;
-trend.data = [
-  { "value": 1, "value2": 2 },
-  { "value": 12, "value2": 11 }
-];
-
-var trend2 = chart.series.push(new am4charts.LineSeries());
-trend2.dataFields.valueY = "value2";
-trend2.dataFields.valueX = "value";
-trend2.strokeWidth = 2
-trend2.stroke = chart.colors.getIndex(3);
-trend2.strokeOpacity = 0.7;
-trend2.data = [
-  { "value": 1, "value2": 1 },
-  { "value": 12, "value2": 19 }
-];*/
-
 //scrollbars
 ControlChart.scrollbarX = new am4core.Scrollbar();
 ControlChart.scrollbarY = new am4core.Scrollbar();
 
 }); // end am4core.ready()
 
+}
+
+
+function getTask (id){
+  $("#KanbanMore").show("slow");
+  $.ajax({
+      type: "GET",
+      url: "/KanbanToolAPI/task/"+ id ,
+      crossDomain : true,
+      data: ""
+
+ }).done(function (Kanbans) {
+  if( Kanbans.errorId != undefined && Kanbans.errorId == "401" ){
+      window.location.replace("/login")
+      return
+  }
+      $(".taskKanbanTool").attr("id", element.Id);
+      $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
+      $(".Descripion").append(Kanbans.DescriptionHTML);
+      let DefaultButton = `
+      <button type="button" class="btn btn-link btn-xs " 
+                          style="padding:1px" 
+                          onclick="StartModalWindow(this)" 
+                          data-toggle="modal" 
+                          data-target="#exampleModal">
+                              <i class="fa fa-pencil" aria-hidden="true"></i>
+      </button> 
+      <button type="button" class="btn btn-link btn-xs" style="padding:1px">
+          <i class="fa fa-trash" aria-hidden="true"></i>
+      </button> `
+      Kanbans.StagesHistory.forEach(function(element) {
+
+          const startDate = (new Date(element.Start)).toLocaleDateString();
+          let endDate 
+          if (element.End =="0001-01-01T00:00:00Z"){
+              Stringdate = " настоящее время";
+          }else{
+              Stringdate = (new Date(element.End)).toLocaleDateString();
+          }
+
+          const StringSS = `
+              <span id="`+element.Id+`" class="onhover"> 
+                  <b>`+element.Name +'</b> c ' + startDate + ' по ' + Stringdate + ' ('+ calculationGapDatesString(element.Start,element.End) + ')'+ DefaultButton + `
+              </span>` 
+          $(".StageMore").append(StringSS);
+      });
+      Kanbans.Blokers.forEach(function(element) {
+
+
+          const startDate = (new Date(element.Startdate)).toLocaleDateString();
+          let endDate 
+          if (element.Enddate =="0001-01-01T00:00:00Z"){
+              Stringdate = " настоящее время";
+          }else{
+              Stringdate = (new Date(element.Enddate)).toLocaleDateString();
+          }
+          let decision = '';
+          
+          if (element.Finished) {
+              decision = element.Diside;
+          }else{
+              //decision= `<button type="button" class="btn btn-outline-danger" onclick="Alert("Тест")">Danger</button>`
+              
+              //decision= ` <button type="button" class="close" aria-label="Close" id="`+element.Id+`" data-toggle="modal" data-target="#exampleModal" "><span aria-hidden="true">&times;</span></button>`;
+          }
+         
+          const StringSS = '<span id="'+element.Id +'" class="onhover"> <b>'+ element.Description +'</b> c ' + startDate + ' по ' 
+          + Stringdate + ' ('+ calculationGapDatesString(element.Startdate,element.Enddate) + '). '
+          + decision + DefaultButton + '</span>'
+
+          $(".BlokersMore").append(StringSS);
+      });
+      Kanbans.Comments.forEach(function(element) {
+          const date = new Date(element.POST_DATE)
+          $(".KanbanMoreComents").append(`<div class="comments"><div class="CMauthor">`+ element.AUTHOR_NAME + `
+           <span style="position: absolute;
+                                  right: 41%;
+                                  font-weight: normal;
+                                  font-size: smaller;" 
+          > `+ date.toLocaleDateString() +' ' +   date.toLocaleTimeString() + `
+              </span>
+              </div>
+              <div class="CMdescription">`+ element.POST_MESSAGE_HTML +`
+              </div>
+          </div>`)
+      });
+  });
+}
+
+function calculationGapDatesString(StartDateIn, EndDateIn) {
+  let StartDate = new Date(StartDateIn);
+  let EndDate;
+  if (EndDateIn =="0001-01-01T00:00:00Z") {
+      EndDate = new Date();
+  }else{
+      EndDate = new Date(EndDateIn);
+  }
+  let times = Math.ceil(Math.abs(EndDate.getTime() - StartDate.getTime()) / (1000 * 60));
+  if (Math.floor(times/(60*24)) > 0){
+      Result = Math.floor(times/(60*24)) + " д.";
+  }else if(Math.floor(times/(60)) > 0 ){
+      Result = Math.floor(times/(60)) + " ч.";
+  }else{
+      Result = Math.floor(times) + " м.";
+  }
+  return Result;
 }

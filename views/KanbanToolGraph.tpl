@@ -8,7 +8,7 @@
   {{template "bootstrap.html" .}}
   <script src="../static/js/kanbanGraph.js"></script>
   <link href="../static/css/kanbanGraph.css" rel="stylesheet">
-
+  <link href="../static/css/kanban.css" rel="stylesheet">
   <script src="https://www.amcharts.com/lib/4/core.js"></script>
   <script src="https://www.amcharts.com/lib/4/charts.js"></script>
   <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
@@ -47,12 +47,54 @@
 <!-- HTML -->
 <div class="graph" id="CFD">
 </div>      
+  <div class="graph">
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="showPercentils" onchange="checkedPercentils(this)">
+        <label class="form-check-label" for="exampleCheck1">Линии тренда</label>
+    </div>
 
-<div class="graph" id="SChart">
-</div> 
+    <div  id="SChart">
+    </div> 
+  </div>
 
-<div class="graph" id="ControlChart">
-</div> 
+  <div class="graph">
+
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="showTrend" onchange="checkedTrend(this)">
+        <label class="form-check-label" for="exampleCheck1">Линии тренда</label>
+    </div>
+
+    <div  id="ControlChart">
+    </div> 
+  <div>
+
+    <div id="KanbanMore">
+      <div class="">
+        <div class="taskKanbanTool">
+          <h3>История этапов</h3> 
+          <div class="StageMore">
+          </div>
+          <h3>  Блокировки
+              <button type="button" class="btn btn-second btn-xs" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button> 
+          </h3>
+          <div class="BlokersMore">
+          </div>
+        </div>
+
+        <div id="taskBitrix24">
+          <div>
+            <button type="button" class="btn btn-dark" id="сloseButton">Х</button>
+            <span class="TitleBitrix24"></span>
+          </div>
+          <div class="Descripion">
+
+          </div>
+          <div class="KanbanMoreComents">
+          </div>
+        </div>
+
+      </div>
+    </div>
 
 </body>
 </html>
