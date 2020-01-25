@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	Models "KanbanTaskTool/Models"
 	service "KanbanTaskTool/Services"
 	"encoding/json"
-	"fmt"
 
 	"strings"
 
@@ -16,36 +16,43 @@ type KanbanToolGraphAPI struct {
 
 func (this *KanbanToolGraphAPI) Get() {
 	session := this.StartSession()
-	userID := session.Get("User")
-	logout := this.GetString("logout")
-	if logout == "yes" {
 
-		if userID != nil {
-			session.Delete("User")
-		}
-		this.Redirect("/", 307)
+	User := session.Get("User")
+	if User == nil {
+		errorJson := make(map[string]string)
+		errorJson["error"] = "Ошибка авторизации + "
+		errorJson["errorId"] = "401"
+		this.Data["json"] = errorJson
+		this.ServeJSON()
 		return
 	}
 	defer session.SessionRelease(this.Ctx.ResponseWriter)
+
 }
 
 func (this *KanbanToolGraphAPI) Post() {
 
-	/*session := this.StartSession()
+	session := this.StartSession()
 	User := session.Get("User")
+	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	if User == nil {
-		this.Redirect("/login", 307)
+		errorJson := make(map[string]string)
+		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
+		errorJson["errorId"] = "401"
+		this.Data["json"] = errorJson
+		this.ServeJSON()
 		return
 	}
-	defer session.SessionRelease(this.Ctx.ResponseWriter)*/
-	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
+	defer session.SessionRelease(this.Ctx.ResponseWriter)
+
 	var serv = service.KanbanServiceGraph{}
+	beego.Info("U:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - R:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+
 	switch TypeAction {
 
 	case "cfd":
 		param := service.Params{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
-		fmt.Println(param)
 		data, err := serv.GetCFDData(param)
 
 		if err != nil {
@@ -58,7 +65,7 @@ func (this *KanbanToolGraphAPI) Post() {
 	case "controlchart":
 		param := service.Params{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
-		fmt.Println(param)
+
 		data, err := serv.ControlChart(param)
 
 		if err != nil {
@@ -71,7 +78,7 @@ func (this *KanbanToolGraphAPI) Post() {
 	case "schart":
 		param := service.Params{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
-		fmt.Println(param)
+
 		data, err := serv.GetSpectralChartData(param)
 
 		if err != nil {

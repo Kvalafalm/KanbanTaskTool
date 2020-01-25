@@ -24,7 +24,10 @@ func (this *KanbanToolAPI) Get() {
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 
 	if User == nil {
-		this.Data["json"] = "{ \"error\" : \"Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"401\" } }"
+		errorJson := make(map[string]string)
+		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
+		errorJson["errorId"] = "401"
+		this.Data["json"] = errorJson
 		this.ServeJSON()
 		return
 	}
@@ -35,7 +38,7 @@ func (this *KanbanToolAPI) Get() {
 
 	idInt, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
 
-	beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+	beego.Info("U:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - R:", TypeAction)
 
 	switch TypeAction {
 
@@ -76,7 +79,7 @@ func (this *KanbanToolAPI) Get() {
 		this.ServeJSON()
 
 	default:
-		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"402\" } }"
+		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"402\" }"
 		this.ServeJSON()
 	}
 
@@ -88,7 +91,10 @@ func (this *KanbanToolAPI) Post() {
 	User := session.Get("User")
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 	if User == nil {
-		this.Data["json"] = "{ \"error\" : \"Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"401\" } }"
+		errorJson := make(map[string]string)
+		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
+		errorJson["errorId"] = "401"
+		this.Data["json"] = errorJson
 		this.ServeJSON()
 		return
 	}
