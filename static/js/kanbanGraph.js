@@ -690,7 +690,7 @@ function getTask (id){
       window.location.replace("/login")
       return
   }
-      $(".taskKanbanTool").attr("id", element.Id);
+      //$(".taskKanbanTool").attr("id", element.Id);
       $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
       $(".Descripion").append(Kanbans.DescriptionHTML);
       let DefaultButton = `
