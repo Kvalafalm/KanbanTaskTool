@@ -31,6 +31,13 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 
 	deltaDays := (endDay.Unix() - startDay.Unix()) / 60 / 60 / 24
 	var day time.Duration
+
+	//TODO
+	// Запрос из параметров доски какой последний этап чтобы в первый день вычесть его
+	//
+	endStage := "8"
+	firstIteration := true
+	deltaEndStageValue := 0
 	for i := 0; i <= int(deltaDays); i++ {
 
 		currentYear, currentMonth, currentDay = startDay.Add(time.Minute * 24 * 60 * day).Date()
@@ -46,7 +53,16 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 
 		mm[`date`] = dateForSQL.Format(time.RFC3339)
 		for _, value := range dataStage {
-			mm[value["idstages"].(string)] = value["counttask"].(string)
+			if firstIteration && value["idstages"].(string) == endStage {
+				deltaEndStageValue, _ = strconv.Atoi(value["counttask"].(string))
+				firstIteration = false
+			} else if !firstIteration && value["idstages"].(string) == endStage {
+				newvalue, _ := strconv.Atoi(value["counttask"].(string))
+				newvalue = newvalue - deltaEndStageValue
+				mm[value["idstages"].(string)] = strconv.Itoa(newvalue)
+			} else {
+				mm[value["idstages"].(string)] = value["counttask"].(string)
+			}
 		}
 		CFDdataReturn = append(CFDdataReturn, mm)
 		day++
