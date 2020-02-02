@@ -47,7 +47,7 @@ func GetDataForCFDFromBD(param map[string]string) (raws []orm.Params, err error)
         ELSE Stages.counttask
     END AS counttask,
     Stages.date
-FROM
+	FROM
     kanbantool.deskstages
         LEFT JOIN
     (SELECT 
@@ -68,7 +68,7 @@ FROM
             AND deskstages.iddesk = ?
     GROUP BY stagehistory.idstage
     ORDER BY stage.order DESC) AS Stages ON Stages.idstage = deskstages.idstages
-WHERE
+	WHERE
     deskstages.iddesk = ?`, endTimeUTC, endTimeUTC, endTimeUTC, param[`desk`], param[`desk`]).Values(&mapRaw)
 	//.QueryRows(&raws)
 	if err != nil && num > 0 {
@@ -87,6 +87,11 @@ func GetCurrentTaskStage(TaskId int) (rowTaskHistory Stagehistory, err error) {
 		fmt.Println(err)
 		return rowTaskHistory, err
 	}
+	_, offset := rowTaskHistory.Start.Zone()
+	Duration := time.Duration(int64(int(time.Second) * offset))
+
+	rowTaskHistory.Start = rowTaskHistory.Start.UTC().Add(Duration)
+	rowTaskHistory.End = rowTaskHistory.End.UTC().Add(Duration)
 	return rowTaskHistory, nil
 }
 
