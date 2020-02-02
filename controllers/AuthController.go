@@ -63,7 +63,7 @@ func (this *AuthController) Post() {
 	}
 
 	User, err := m.ValidUser(UserAnswer.UserName, UserAnswer.Password)
-	if err == "" {
+	if err == nil {
 		session.Set("User", User)
 		this.Data["Website"] = beego.AppConfig.String("WebSite")
 		this.Redirect("/KanbanTool/", 302)

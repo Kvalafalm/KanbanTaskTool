@@ -96,8 +96,8 @@ func SetCurrentTaskStage(stageHistoryRow Stagehistory) (err error) {
 	Param := orm.Params{
 		"idstage":       stageHistoryRow.Idstage,
 		"idtask":        stageHistoryRow.Idtask,
-		"start":         stageHistoryRow.Start.UTC(),
-		"end":           stageHistoryRow.End.UTC(),
+		"start":         stageHistoryRow.Start,
+		"end":           stageHistoryRow.End,
 		"durationinmin": stageHistoryRow.Durationinmin,
 		"finised":       stageHistoryRow.Finised,
 	}

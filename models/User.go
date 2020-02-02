@@ -1,6 +1,9 @@
 package Models
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/astaxie/beego/orm"
 )
 
@@ -8,7 +11,7 @@ type User struct {
 	Id         int
 	Firstname  string
 	Secondname string
-	password   string
+	Password   string
 	Bitrix24id int
 }
 
@@ -36,24 +39,20 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 	return nil
 }
 
-func ValidUser(Username string, Password string) (user User, err string) {
+func ValidUser(Username string, Password string) (user User, err error) {
 
-	err = ""
-	if (Username == "1") && (Password == "") {
-		user = User{1, "Николай", "Кутняшенко", "1", 8}
-	} else if (Username == "2") && (Password == "") {
-		user = User{2, "Дима", "Шапкин", "2", 208}
-	} else if (Username == "3") && (Password == "") {
-		user = User{2, "Ксения", "Попова", "2", 208}
-	} else if (Username == "Tarabarov") && (Password == "") {
-		user = User{2, "Антон", "Тарабаров", "2", 361}
-	} else if (Username == "Kiselev") && (Password == "") {
-		user = User{2, "Антон", "Кисилев", "2", 407}
-	} else if (Username == "Maklyak") && (Password == "") {
-		user = User{2, "Сергей", "Макляк", "2", 409}
-	} else {
-		err = "Error Auth "
+	database := orm.NewOrm()
+	database.Using("default")
+	//.Filter("password", Password)
+	count, err := database.QueryTable("user").Filter("firstname", Username).Filter("password", Password).All(&user)
+	fmt.Println(count)
+	if count == 1 {
+		user.Password = ""
+		return user, nil
+	} else if count > 1 {
+		err = errors.New("Too much users")
+		return user, err
 	}
-
+	err = errors.New("user not found")
 	return user, err
 }
