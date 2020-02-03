@@ -12,6 +12,8 @@ type Desk struct {
 	Description string
 	Projectsb24 string
 	Innerhtml   template.HTML
+	Startstage  int
+	Endstage    int
 }
 
 type Deskstages struct {
@@ -30,6 +32,16 @@ func GetDeskFromDBById(id int) (desk Desk, err error) {
 
 	err = database.QueryTable("Desk").Filter("id", id).One(&desk)
 	return desk, err
+}
+
+func GetDeskByIdFromBitrix24Projects(Projectsb24 string) (desk Desk, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+	err = database.QueryTable("Desk").Filter("projectsb24__contains", Projectsb24).One(&desk)
+	if err != nil {
+		return desk, err
+	}
+	return desk, nil
 }
 
 func GetDeskListFromDB() (desks []Desk, err error) {

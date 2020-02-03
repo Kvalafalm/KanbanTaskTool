@@ -156,7 +156,9 @@ function SaveKanban(e){
     let task =
     {
      "name": e.value,
-     "stage": $(".NewKanban").closest(".KanbanColumn").attr('id').replace("Stage","")
+     "stage": $(".NewKanban").closest(".KanbanColumn").attr('id').replace("Stage",""),
+     "IdDesk": $("#DeskList option:selected").val()
+
     }
 
     $.ajax({

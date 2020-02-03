@@ -7,7 +7,6 @@ import (
 	"strconv"
 	s "strings"
 
-	"fmt"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -90,7 +89,9 @@ func (this *KanbanToolAPI) Post() {
 	session := this.StartSession()
 	User := session.Get("User")
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
-	if User == nil {
+
+	param := getParamBitrix24(string(this.Ctx.Input.RequestBody))
+	if User == nil && param["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncoming") {
 		errorJson := make(map[string]string)
 		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
 		errorJson["errorId"] = "401"
@@ -100,7 +101,9 @@ func (this *KanbanToolAPI) Post() {
 	}
 
 	defer session.SessionRelease(this.Ctx.ResponseWriter)
-	beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+	if User != nil {
+		beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+	}
 
 	var serv = service.KanbanService{}
 	switch TypeAction {
@@ -125,7 +128,7 @@ func (this *KanbanToolAPI) Post() {
 		this.ServeJSON()
 
 	case "task.create":
-		param := getParamBitrix24(this.Ctx.Input.Param(":Type"))
+		param := getParamBitrix24(string(this.Ctx.Input.RequestBody))
 		if param["auth[application_token]"] == beego.AppConfig.String("BitrixWebHookIncoming") {
 			serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
 		}
@@ -145,7 +148,6 @@ func (this *KanbanToolAPI) Post() {
 	case "bloker.update":
 		bloker := service.Bloker{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
-		fmt.Println(bloker)
 		err := serv.UpdateBloker(bloker)
 
 		if err != nil {
@@ -175,6 +177,5 @@ func getParamBitrix24(dataIn string) (data map[string]string) {
 		date := s.Split(value, "=")
 		mapData[date[0]] = date[1]
 	}
-
 	return mapData
 }

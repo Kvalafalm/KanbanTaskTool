@@ -4,10 +4,10 @@ import (
 	model "KanbanTaskTool/Models"
 	"html/template"
 	"strconv"
+	"strings"
 	"time"
 
 	"fmt"
-	str "strings"
 
 	"github.com/astaxie/beego"
 )
@@ -53,23 +53,23 @@ type User struct {
 }
 
 type Task struct {
-	ID              int           `json:"Id,string"`
-	IDBitrix24      int           `json:"IdBitrix24"`
-	Name            string        `json:"Name"`
-	Stage           int           `json:"Stage,string"`
-	DateSart        time.Time     `json:"DateSart"`
-	DateStartStage  time.Time     `json:"DateStartStage"`
-	DescriptionHTML template.HTML `json:"DescriptionHTML"`
-	Users           []User        `json:"Users"`
-
-	Blokers       []model.Bloker `json:"Blokers"`
-	Swimlane      int            `json:"Swimlane"`
-	Type          string         `json:"Type"`
-	IdProject     int            `json:"IdProject"`
-	ImageProject  string         `json:"ImageProject"`
-	NameProject   string         `json:"NameProject"`
-	StagesHistory []StageHistory `json:"StagesHistory"`
-	Comments      []Comments     `json:"Comments"`
+	ID              int            `json:"Id,string"`
+	IDBitrix24      int            `json:"IdBitrix24"`
+	Name            string         `json:"Name"`
+	Stage           int            `json:"Stage,string"`
+	DateSart        time.Time      `json:"DateSart"`
+	DateStartStage  time.Time      `json:"DateStartStage"`
+	DescriptionHTML template.HTML  `json:"DescriptionHTML"`
+	Users           []User         `json:"Users"`
+	IdDesk          string         `json:"IdDesk`
+	Blokers         []model.Bloker `json:"Blokers"`
+	Swimlane        int            `json:"Swimlane"`
+	Type            string         `json:"Type"`
+	IdProject       int            `json:"IdProject"`
+	ImageProject    string         `json:"ImageProject"`
+	NameProject     string         `json:"NameProject"`
+	StagesHistory   []StageHistory `json:"StagesHistory"`
+	Comments        []Comments     `json:"Comments"`
 }
 
 type StageHistory struct {
@@ -237,10 +237,14 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
+	iddesk, _ := strconv.Atoi(task.IdDesk)
+	desk, err := model.GetDeskFromDBById(iddesk)
+	commitmentPointId := desk.Startstage
+	ProjectList := strings.Split(desk.Projectsb24, ";")
 
 	taskMap := make(map[string]string)
 	taskMap["TITLE"] = task.Name + " [KT]"
-	taskMap["GROUP_ID"] = "109"
+	taskMap["GROUP_ID"] = ProjectList[0]
 	taskMap["RESPONSIBLE_ID"] = strconv.Itoa(user.Bitrix24id)
 
 	newtaskK := make(map[string]string)
@@ -250,7 +254,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	newtaskK["idBitrix"] = "9675"
 	newtaskK["CheckUnicColluumn"] = "idbitrix24"
 	// TO DO
-	if task.Stage != 8 {
+	if task.Stage != desk.Endstage {
 
 		taskB24, err := connectionBitrix24API.AddTask(taskMap)
 		//Записать задачу в нашу базу
@@ -269,8 +273,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	if err != nil {
 		return 0, err
 	}
-	// TODO
-	commitmentPointId := 1
+
 	if task.Stage != commitmentPointId {
 		newRowHistory := model.Stagehistory{
 			Idtask:  id,
@@ -484,15 +487,20 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
-	//idInt, _ := strconv.Atoi(Id)
 	taskBitrix24, _ := ConnectionBitrix24.GetTask(Id)
-	projects := `["131","64", "125", "117", "111", "109"]`
-
-	if str.Count(projects, taskBitrix24.Result.GROUPID) > 0 && taskBitrix24.Result.GROUPID != "0" {
+	if taskBitrix24.Result.GROUPID != "0" {
+		desk, _ := model.GetDeskByIdFromBitrix24Projects(taskBitrix24.Result.GROUPID)
 		task := make(map[string]string)
 		task["Id"] = taskBitrix24.Result.ID
-		task["Stage"] = "9"
-		model.SetTaskFromBitrix24(task)
+		task["Stage"] = strconv.Itoa(desk.Startstage)
+		task["idBitrix"] = taskBitrix24.Result.ID
+		task["Typetask"] = "0"
+		_, err := model.SetTaskFromBitrix24(task)
+		if err == nil {
+			beego.Info("Create work itemB24:" + taskBitrix24.Result.ID)
+		} else {
+			beego.Error(err)
+		}
 	}
 
 }
