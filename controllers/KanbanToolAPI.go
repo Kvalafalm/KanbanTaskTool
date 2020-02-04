@@ -4,6 +4,7 @@ import (
 	Models "KanbanTaskTool/Models"
 	service "KanbanTaskTool/Services"
 	"encoding/json"
+	"errors"
 	"strconv"
 	s "strings"
 
@@ -90,8 +91,9 @@ func (this *KanbanToolAPI) Post() {
 	User := session.Get("User")
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
 
-	param := getParamBitrix24(string(this.Ctx.Input.RequestBody))
-	if User == nil && param["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncoming") {
+	param, err := getParamBitrix24(string(this.Ctx.Input.RequestBody))
+
+	if User == nil && err == nil {
 		errorJson := make(map[string]string)
 		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
 		errorJson["errorId"] = "401"
@@ -104,7 +106,6 @@ func (this *KanbanToolAPI) Post() {
 	if User != nil {
 		beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
 	}
-
 	var serv = service.KanbanService{}
 	switch TypeAction {
 
@@ -128,10 +129,7 @@ func (this *KanbanToolAPI) Post() {
 		this.ServeJSON()
 
 	case "task.create":
-		param := getParamBitrix24(string(this.Ctx.Input.RequestBody))
-		if param["auth[application_token]"] == beego.AppConfig.String("BitrixWebHookIncoming") {
-			serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
-		}
+		serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
 		this.ServeJSON()
 
 	case "task.complete":
@@ -164,18 +162,29 @@ func (this *KanbanToolAPI) Post() {
 
 }
 
-func getParamBitrix24(dataIn string) (data map[string]string) {
+func getParamBitrix24(dataIn string) (data map[string]string, err error) {
 	mapData := make(map[string]string)
-	dataIn = s.Replace(dataIn, "%3A", ":", -1)
-	dataIn = s.Replace(dataIn, "%5B", "[", -1)
-	dataIn = s.Replace(dataIn, "%5D", "]", -1)
-	dataIn = s.Replace(dataIn, "%2F", "/", -1)
-	dataIn = s.Replace(dataIn, "%20", " ", -1)
+	if len(dataIn) > 0 {
+		dataIn = s.Replace(dataIn, "%3A", ":", -1)
+		dataIn = s.Replace(dataIn, "%5B", "[", -1)
+		dataIn = s.Replace(dataIn, "%5D", "]", -1)
+		dataIn = s.Replace(dataIn, "%2F", "/", -1)
+		dataIn = s.Replace(dataIn, "%20", " ", -1)
 
-	dateString := s.Split(dataIn, "&")
-	for _, value := range dateString {
-		date := s.Split(value, "=")
-		mapData[date[0]] = date[1]
+		dateString := s.Split(dataIn, "&")
+		if len(dateString) > 1 {
+			for _, value := range dateString {
+				date := s.Split(value, "=")
+				mapData[date[0]] = date[1]
+			}
+		}
+		if mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncoming") {
+			return mapData, nil
+		} else {
+			err = errors.New("bad bitrix24 request")
+		}
+
 	}
-	return mapData
+	err = errors.New("is not bitrix24 request")
+	return mapData, err
 }

@@ -303,7 +303,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 }
 
 func (Cb *KanbanService) CompleteTask(taskId int) (err error) {
-
+	fmt.Println("Complete")
 	taskDb, err := model.GetTaskFromDB(taskId)
 
 	connectionBitrix24API := ConnectionBitrix24{
@@ -495,6 +495,7 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 		task["Stage"] = strconv.Itoa(desk.Startstage)
 		task["idBitrix"] = taskBitrix24.Result.ID
 		task["Typetask"] = "0"
+		task["CheckUnicColluumn"] = "Idbitrix24"
 		_, err := model.SetTaskFromBitrix24(task)
 		if err == nil {
 			beego.Info("Create work itemB24:" + taskBitrix24.Result.ID)
