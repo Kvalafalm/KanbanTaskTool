@@ -1,7 +1,7 @@
 package Services
 
 import (
-	model "KanbanTaskTool/Models"
+	model "KanbanTaskTool/models"
 	"strconv"
 	"time"
 )

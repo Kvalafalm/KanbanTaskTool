@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	model "KanbanTaskTool/Models"
+	model "KanbanTaskTool/models"
 	"fmt"
 
 	"github.com/astaxie/beego/orm"

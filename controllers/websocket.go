@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	Models "KanbanTaskTool/Models"
+	Models "KanbanTaskTool/models"
 	"encoding/json"
 	"net/http"
 
@@ -49,7 +49,7 @@ func (this *KanbanToolWS) Join() {
 
 	// Join chat room.
 	FullUserName := User.(Models.User).Firstname + " " + User.(Models.User).Secondname
-	Join(FullUserName, ws)
+	Join(FullUserName, ws, session)
 	defer Leave(FullUserName)
 	this.TplName = "login.tpl"
 	// Message receive loop.

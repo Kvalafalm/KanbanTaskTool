@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	Models "KanbanTaskTool/Models"
-	service "KanbanTaskTool/Services"
+	Models "KanbanTaskTool/models"
+	service "KanbanTaskTool/services"
 	"encoding/json"
 	"errors"
 	"strconv"

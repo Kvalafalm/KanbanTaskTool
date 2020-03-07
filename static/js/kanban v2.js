@@ -71,8 +71,10 @@ function FillInKanbanDesk(DeskId) {
             return
         }
         $(".KanbanDeskCanvas").append(desk.Innerhtml)
-        $(".KanbanColumn").each(function () {
-            $(this).find(".NameColumn").addClass("onhover").append(`
+        $(".SwimlineName").each(function () {
+            $(this).find(".StageInfo").addClass("onhover").append(`
+            <span class="count"> (0 / 0)</span>
+
             <button type="button" class="btn btn-light btn-xs infoCollumn" style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px"  class=""><i class="fa fa-clone" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  class=""><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
@@ -82,8 +84,9 @@ function FillInKanbanDesk(DeskId) {
             alert($(this).closest(".KanbanColumn").attr('id') );
         });
         $(".addKanban").click(function(){
-            $(this).closest(".KanbanColumn").append(`
-            <div draggable="true" class="Kanban StandartClient NewKanban">
+            $("#NewKanban").remove();
+            $(this).closest(".Swimline").children(".SwimlineContent").children(".Stage" + $(this).closest(".StageInfo").attr("id").replace("StageInfo","")).children(".KanbanColumnContent").append(`
+            <div draggable="true" class="Kanban NewKanban">
                 <div class="KanbanDescription">
                     <div class="input-group">
                         <textarea class="form-control" id="NewKanban" aria-label="With textarea"></textarea>
@@ -102,11 +105,12 @@ function FillInKanbanDesk(DeskId) {
 
             $("#NewKanban").focus();
         });
+
         $(".infoCollumn").click(function(){
             
             $.ajax({
                 type: "GET",
-                url: "/KanbanToolAPI/stage/"+$(this).closest(".KanbanColumn").attr("id").replace("Stage",""),
+                url: "/KanbanToolAPI/stage/"+$(this).closest(".StageInfo").attr("id").replace("StageInfo",""),
                 crossDomain : true,
                 data: "",
                 async: false
@@ -134,11 +138,12 @@ function FillInKanbanDesk(DeskId) {
             return
         }
             Kanbans.forEach(function(element) {
-                OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
+                OutputKanban($("#SL"+element.Swimline+" .Stage"+element.Stage+" .KanbanColumnContent"), element);
             });
 
-            $(".KanbanColumn").each(function(){
-                $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+           $(".KanbanColumnContent").each(function(){
+                $(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ("
+                                + this.childElementCount + " / 0 ) ");
             });
 
             document.getElementById('preloaderbg').style.display = 'none';
@@ -149,16 +154,15 @@ function FillInKanbanDesk(DeskId) {
     });
 }
 
-
-
+//+
 function SaveKanban(e){
 
     let task =
     {
      "name": e.value,
-     "stage": $(".NewKanban").closest(".KanbanColumn").attr('id').replace("Stage",""),
-     "IdDesk": $("#DeskList option:selected").val()
-
+     "stage": $(".NewKanban")[0].parentElement.parentElement.className.replace("Stage",""),
+     "IdDesk": $("#DeskList option:selected").val(),
+     "Swimline": $(".NewKanban").closest(".Swimline").attr('id').replace("SL","")
     }
 
     $.ajax({
@@ -176,10 +180,11 @@ function SaveKanban(e){
             }
             $(".NewKanban").remove();
 
-            OutputKanban(document.getElementById("Stage"+element.Stage).getElementsByClassName("KanbanColumnContent")[0], element);
+            OutputKanban($("#SL"+ element.Swimline+ " .Stage"+element.Stage+" .KanbanColumnContent"), element);
 
-            $(".KanbanColumn").each(function(){
-                $(this).find(".count").text("( "+ $(this).find(".KanbanColumnContent")[0].childElementCount + "/0)")
+            $(".KanbanColumnContent").each(function(){
+                $(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ("
+                                + this.childElementCount + " / 0 ) ");
             });
 
    });
@@ -189,7 +194,7 @@ function SaveKanban(e){
 
 function OutputColumn(KanbanDiv,element){
 
-    var KanbanColumn = document.createElement('div');
+    /*var KanbanColumn = document.createElement('div');
     KanbanColumn.className = "KanbanColumn";
     KanbanColumn.id = "Stage"+element.Id;
     var NameColumn = document.createElement('div');
@@ -199,7 +204,7 @@ function OutputColumn(KanbanDiv,element){
     KanbanColumnContent.className = "KanbanColumnContent";
     KanbanColumn.append(NameColumn);
     KanbanColumn.append(KanbanColumnContent);
-    KanbanDiv.append(KanbanColumn);
+    KanbanDiv.append(KanbanColumn);*/
 
 }
 
@@ -212,11 +217,9 @@ function OutputKanban(Column,element){
     var NameKanban = document.createElement('div');
     
     className = "KanbanName";
-    //innerHTML = "№" + element.IdBitrix24 + " <img class='projetcicon' src='" + element.ImageProject + "'/>" ;
     innerHTML = `<div class="">`;
     if (element.ActiveBlokers != undefined) {
         if (element.ActiveBlokers.description != "") {
-            //innerHTML += `<div class="blockedinfo">`+element.ActiveBlokers.description + ` <span class="badge badge-error">` + calculationDateStatusString(element.ActiveBlokers.startdate) + "</span><div>";
             innerHTML += `<span class="badge badge-pill badge-danger">`+  calculationDateStatusString(element.ActiveBlokers.startdate) + `</span>`;
         }
     }
@@ -241,7 +244,6 @@ function OutputKanban(Column,element){
 
     var KanbanDurationStatus = document.createElement('div');
     KanbanDurationStatus.className = "KanbanDurationStatus"
-    /*KanbanDurationStatus.innerHTML = "В этом статусе: " + calculationDateStatusString(element.DateSart) ;*/
 
     var KanbanNameProject = document.createElement('div');
     KanbanNameProject.className = "KanbanNameProject"
@@ -321,9 +323,6 @@ function OutputKanban(Column,element){
                 if (element.Finished) {
                     decision = element.Diside;
                 }else{
-                    //decision= `<button type="button" class="btn btn-outline-danger" onclick="Alert("Тест")">Danger</button>`
-                    
-                    //decision= ` <button type="button" class="close" aria-label="Close" id="`+element.Id+`" data-toggle="modal" data-target="#exampleModal" "><span aria-hidden="true">&times;</span></button>`;
                 }
                
                 const StringSS = '<span id="'+element.Id +'" class="onhover"> <b>'+ element.Description +'</b> c ' + startDate + ' по ' 
@@ -389,28 +388,35 @@ function setFunctionDADOnCollumn()
       $(".Kanban").on("dragstart",function(e){
         e.originalEvent.dataTransfer.setData("Text",e.target.id);
         FantomKanbanHeight = $(e.target).closest(".Kanban").height();
-        
       });
 
-      $(".KanbanColumn").on("drop",function(e){
+      $(".KanbanColumnContent").on("drop",function(e){
         e.preventDefault();
         let data=e.originalEvent.dataTransfer.getData("Text");
-        let from = $("#"+data).closest(".KanbanColumn");
+        let fromId = $("#"+data).closest(".KanbanColumnContent")[0].parentElement.className.replace("Stage","");
 
-        if (from[0].id != e.currentTarget.id) {
-            updateKanban(data,e.currentTarget.id);
-            from.find(".count").text("( "+ from.find(".KanbanColumnContent")[0].childElementCount + "/0)");
+        if (
+            fromId != e.currentTarget.parentElement.className.replace("Stage","") 
+            ||  $("#"+data).closest(".Swimline")[0].id.replace("SL","") != e.currentTarget.parentElement.parentElement.parentElement.id.replace("SL","")
+            ) {
+            
+            updateKanban(
+                data,
+                e.currentTarget.parentElement.className.replace("Stage",""),
+                e.currentTarget.parentElement.parentElement.parentElement.id.replace("SL","")
+                );
         }
         if (CurrentKanbanDrop != ""){
             $(CurrentKanbanDrop).after($(document.getElementById(data)))
         }else{
-            $(e.currentTarget).find(".KanbanColumnContent").append(document.getElementById(data))
+            $(e.currentTarget).closest(".KanbanColumnContent").append(document.getElementById(data))
         }
-        $(e.currentTarget).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
-        this.classList.remove('over'); 
+        //$(e.currentTarget).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
+        //this.classList.remove('over'); 
       });
+
       
-      $(".KanbanColumn").on("dragenter",function dragenterKanban(e){
+      $(".KanbanColumnContent").on("dragenter",function dragenterKanban(e){
         if(e.currentTarget != CurrentStageDrop){
             $(CurrentStageDrop).removeClass('over');
             CurrentStageDrop = e.currentTarget
@@ -443,7 +449,7 @@ function setFunctionDADOnCollumn()
       });
 
 
-      $(".KanbanColumn").on("dragover",function(e){
+      $(".KanbanColumnContent").on("dragover",function(e){
        if (e.preventDefault) {
             e.preventDefault();
           }
@@ -451,13 +457,12 @@ function setFunctionDADOnCollumn()
           if(e.currentTarget != CurrentStageDrop){
             $("#FantomKanban").remove();
             }
-          //$("#FantomKanban").detach();
-          //this.classList.('over');
+
           e.originalEvent.dropEffect = "move";
           return false;
       });
 
-      $(".KanbanColumn").children().on("dragover",function(e){
+      $(".KanbanColumnContent").children().on("dragover",function(e){
         if (e.preventDefault) {
              e.preventDefault();
            }
@@ -465,17 +470,18 @@ function setFunctionDADOnCollumn()
            e.originalEvent.dropEffect = "move";
            return false;
        });
-      $(".KanbanColumn").on("dragend",function(e){
+      $(".KanbanColumnContent").on("dragend",function(e){
           $(".over").removeClass('over');
           $("#FantomKanban").remove();
       });
 
 }
-function updateKanban (id,stage){
+function updateKanban (id,stage,Swimline){
     let task =
     {
-     "id": id,
-     "stage": stage.replace("Stage","")
+     "Id": id,
+     "Stage": stage,
+     "Swimline":Swimline
     }
 
     $.ajax({
@@ -553,7 +559,21 @@ function calculationGapDatesString(StartDateIn, EndDateIn) {
     }
     let times = Math.ceil(Math.abs(EndDate.getTime() - StartDate.getTime()) / (1000 * 60));
     if (Math.floor(times/(60*24)) > 0){
-        Result = Math.floor(times/(60*24)) + " д.";
+
+        let numWorkDays = 0;
+        let checkDate =StartDate ;      
+        while (checkDate <= EndDate) {
+            // Skips Sunday and Saturday
+            if (checkDate.getDay() !== 0 && checkDate.getDay() !== 6) {
+                numWorkDays++;
+            }
+
+            
+            checkDate = checkDate.addDays(1);
+        }
+
+        Result = numWorkDays + " д.";
+
     }else if(Math.floor(times/(60)) > 0 ){
         Result = Math.floor(times/(60)) + " ч.";
     }else{

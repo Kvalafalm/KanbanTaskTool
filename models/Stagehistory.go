@@ -173,3 +173,53 @@ func GetDataForSpectralChart(param map[string]string) (raws []orm.Params, err er
 
 	return mapRaw, nil
 }
+
+func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	var mapRaw []orm.Params
+
+	num, err := database.Raw(`SELECT 
+			stagehistory.*
+		FROM 
+			(SELECT 
+				MIN(stagehistory.start) as start ,
+				stagehistory.idtask,
+				stagehistory.idstage,
+				tasks.finished,
+				tasks.stageid,
+				deskstages.iddesk
+			FROM 
+				kanbantool.stagehistory
+				LEFT JOIN
+					kanbantool.tasks
+				ON 
+				tasks.idtasks = stagehistory.idtask
+			LEFT join
+				kanbantool.deskstages as deskstages
+			On 
+				stagehistory.idstage = deskstages.idstages      
+		WHERE NOT tasks.finished
+
+		Group by
+				stagehistory.idtask,
+				stagehistory.idstage,
+				tasks.finished,
+				tasks.stageid,
+				deskstages.iddesk
+		) as stagehistory 
+			INNER JOIN 
+			kanbantool.desk
+			ON desk.startstage = stagehistory.idstage
+			AND desk.endstage <> stagehistory.stageid
+		WHERE 
+			stagehistory.iddesk = ?
+		;
+		`, iddesk).Values(&mapRaw)
+	if err != nil && num > 0 {
+		return mapRaw, err
+	}
+
+	return mapRaw, nil
+}

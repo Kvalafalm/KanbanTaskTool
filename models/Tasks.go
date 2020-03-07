@@ -12,6 +12,7 @@ type Tasks struct {
 	Title      string
 	Desk       int
 	Idbitrix24 int
+	Swimline   int
 	Stageid    int
 	Finished   bool
 	Typetask   int
@@ -54,7 +55,8 @@ func UpdateTaskInDB(task Tasks) (err error) {
 	database.Using("default")
 
 	_, err = database.QueryTable(new(Tasks)).Filter("idtasks", task.Idtasks).Update(orm.Params{
-		"stageid": task.Stageid,
+		"stageid":  task.Stageid,
+		"swimline": task.Swimline,
 	})
 
 	if err == nil {
@@ -87,6 +89,7 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	task.Stageid, _ = strconv.Atoi(NewTask["Stage"])
 	task.Title = NewTask["Title"]
 	task.Typetask, _ = strconv.Atoi(NewTask["Typetask"])
+	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
 	var idint int
 	if NewTask["CheckUnicColluumn"] != "" {
 		if created, id, err := database.ReadOrCreate(&task, NewTask["CheckUnicColluumn"]); err == nil {

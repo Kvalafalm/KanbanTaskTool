@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	Models "KanbanTaskTool/Models"
-	m "KanbanTaskTool/Models"
-	services "KanbanTaskTool/Services"
+	Models "KanbanTaskTool/models"
+	m "KanbanTaskTool/models"
+	services "KanbanTaskTool/services"
 
 	"github.com/astaxie/beego"
 )

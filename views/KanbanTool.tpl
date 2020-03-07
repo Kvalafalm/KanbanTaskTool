@@ -7,9 +7,9 @@
   var Bitrix24id = {{.User.Bitrix24id}}
   </script>
   {{template "bootstrap.html" .}}
-  <script src="../static/js/kanban.js"></script>
+  <script src="../static/js/kanban v2.js"></script>
   <script src="../static/js/websocket.js"></script>
-  <link href="../static/css/kanban.css" rel="stylesheet">
+  <link href="../static/css/kanban v2.css" rel="stylesheet">
 </head>
 
 <body>

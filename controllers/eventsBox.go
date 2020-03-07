@@ -5,13 +5,15 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/session"
 	"github.com/beego/samples/WebIM/models"
 	"github.com/gorilla/websocket"
 )
 
 type Subscriber struct {
-	Name string
-	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Name    string
+	Conn    *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Session *session.Store
 }
 
 func init() {
@@ -70,7 +72,7 @@ func EventsBox() {
 	}
 }
 
-func Join(user string, ws *websocket.Conn) {
+func Join(user string, ws *websocket.Conn, ss session.Store) {
 	subscribe <- Subscriber{Name: user, Conn: ws}
 }
 
@@ -81,3 +83,7 @@ func Leave(user string) {
 func newEvent(ep models.EventType, user, msg string) models.Event {
 	return models.Event{ep, user, int(time.Now().Unix()), msg}
 }
+
+/*func GetUserFromWebSocet(User){
+	return
+}*/

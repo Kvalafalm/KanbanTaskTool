@@ -1,7 +1,7 @@
 package Services
 
 import (
-	model "KanbanTaskTool/Models"
+	model "KanbanTaskTool/models"
 	"html/template"
 	"strconv"
 	"strings"
@@ -29,7 +29,7 @@ type Tasks struct {
 	IDBitrix24     int       `json:"IdBitrix24"`
 	Name           string    `json:"Name"`
 	Stage          int       `json:"Stage,string"`
-	DateSart       time.Time `json:"DateSart"`
+	DateStart      time.Time `json:"DateStart"`
 	DateStartStage time.Time `json:"DateStartStage"`
 	Users          []User    `json:"Users"`
 	ActiveBlokers  struct {
@@ -37,7 +37,7 @@ type Tasks struct {
 		Description string    `json:"description"`
 		Startdate   time.Time `json:"startdate"`
 	} `json:"ActiveBlokers"`
-	Swimlane      int    `json:"Swimlane"`
+	Swimline      int    `json:"Swimline,string"`
 	TypeTask      int    `json:"typeTask"`
 	IdProject     int    `json:"IdProject"`
 	ImageProject  string `json:"ImageProject"`
@@ -61,9 +61,9 @@ type Task struct {
 	DateStartStage  time.Time      `json:"DateStartStage"`
 	DescriptionHTML template.HTML  `json:"DescriptionHTML"`
 	Users           []User         `json:"Users"`
-	IdDesk          string         `json:"IdDesk`
+	Iddesk          string         `json:"Iddesk`
 	Blokers         []model.Bloker `json:"Blokers"`
-	Swimlane        int            `json:"Swimlane"`
+	Swimline        int            `json:"Swimline,string"`
 	Type            string         `json:"Type"`
 	IdProject       int            `json:"IdProject"`
 	ImageProject    string         `json:"ImageProject"`
@@ -114,6 +114,11 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		return nil, errB24
 	}
 
+	comitmentPoints, err := model.GetDateCommitmentPointList(id)
+	if err != nil {
+		//beego.ERROR(err);
+		return tasks, err
+	}
 	// Получаем данные из Битрикс24 по проектам
 	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131","64", "125", "117", "111", "109"]`)
 	if errB24Pr != nil {
@@ -126,6 +131,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].ID = TaskFromDB.Idtasks
 		tasks[i].IDBitrix24 = TaskFromDB.Idbitrix24
 		tasks[i].Stage = TaskFromDB.Stageid
+		tasks[i].Swimline = TaskFromDB.Swimline
 		tasks[i].TypeTask = TaskFromDB.Typetask
 		tasks[i].Name = TaskFromDB.Title
 		for _, valuesB24 := range values.Result.Tasks {
@@ -158,6 +164,12 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 				tasks[i].СommentsCount = valuesB24.CommentsCount
 			}
 
+		}
+
+		for _, values := range comitmentPoints {
+			if strconv.Itoa(tasks[i].ID) == values["idtask"] {
+				tasks[i].DateStart, _ = time.Parse("2006-01-02 15:04:05", values["start"].(string))
+			}
 		}
 
 		for _, valuesB24projects := range projects.Result {
@@ -200,7 +212,7 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 
 	task.Idtasks = tasks.ID
 	task.Stageid = tasks.Stage
-
+	task.Swimline = tasks.Swimline
 	err = model.UpdateTaskInDB(task)
 	if err != nil {
 		return err
@@ -237,7 +249,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
-	iddesk, _ := strconv.Atoi(task.IdDesk)
+	iddesk, _ := strconv.Atoi(task.Iddesk)
 	desk, err := model.GetDeskFromDBById(iddesk)
 	commitmentPointId := desk.Startstage
 	ProjectList := strings.Split(desk.Projectsb24, ";")
@@ -250,6 +262,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	newtaskK := make(map[string]string)
 
 	newtaskK["Stage"] = strconv.Itoa(task.Stage)
+	newtaskK["Swimline"] = strconv.Itoa(task.Swimline)
 	newtaskK["Typetask"] = "0"
 	newtaskK["idBitrix"] = "9675"
 	newtaskK["CheckUnicColluumn"] = "idbitrix24"
@@ -367,6 +380,7 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 	task.IDBitrix24 = TaskFromDB.Idbitrix24
 	task.Stage = TaskFromDB.Stageid
 	task.Name = TaskFromDB.Title
+	task.Swimline = TaskFromDB.Swimline
 	for _, valuesB24 := range values.Result.Tasks {
 		if valuesB24.ID == task.IDBitrix24 {
 			Users := make([]User, 0)
