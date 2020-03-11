@@ -384,63 +384,64 @@ function drag(eventKanban) {
 
 function setFunctionDADOnCollumn()
 {
-
+    // Начало перетаскивания
       $(".Kanban").on("dragstart",function(e){
         e.originalEvent.dataTransfer.setData("Text",e.target.id);
         FantomKanbanHeight = $(e.target).closest(".Kanban").height();
       });
 
-      $(".KanbanColumnContent").on("drop",function(e){
+      //ОтпустилиКарточку
+      $("td").on("drop",function(e){
         e.preventDefault();
         let data=e.originalEvent.dataTransfer.getData("Text");
-        let fromId = $("#"+data).closest(".KanbanColumnContent")[0].parentElement.className.replace("Stage","");
-
+        let fromId = $("#"+data).closest(".KanbanColumnContent")[0].parentElement.id.replace("Stage","");
+        
         if (
-            fromId != e.currentTarget.parentElement.className.replace("Stage","") 
-            ||  $("#"+data).closest(".Swimline")[0].id.replace("SL","") != e.currentTarget.parentElement.parentElement.parentElement.id.replace("SL","")
+            fromId != CurrentStageDrop.id.replace("Stage","") 
+            ||  $("#"+data).closest(".Swimline")[0].id.replace("SL","") != CurrentStageDrop.parentElement.parentElement.id.replace("SL","")
             ) {
             
             updateKanban(
                 data,
-                e.currentTarget.parentElement.className.replace("Stage",""),
-                e.currentTarget.parentElement.parentElement.parentElement.id.replace("SL","")
+                CurrentStageDrop.id.replace("Stage","") ,
+                CurrentStageDrop.parentElement.parentElement.id.replace("SL","")
                 );
         }
         if (CurrentKanbanDrop != ""){
             $(CurrentKanbanDrop).after($(document.getElementById(data)))
         }else{
-            $(e.currentTarget).closest(".KanbanColumnContent").append(document.getElementById(data))
+            $(CurrentStageDrop).children(".KanbanColumnContent").append(document.getElementById(data))
         }
-        //$(e.currentTarget).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
-        //this.classList.remove('over'); 
+        //$(CurrentStageDrop).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
+        
       });
 
-      
-      $(".KanbanColumnContent").on("dragenter",function dragenterKanban(e){
+      // Если навели на Столбец Stage
+      $("td").on("dragenter",function dragenterKanban(e){
         if(e.currentTarget != CurrentStageDrop){
             $(CurrentStageDrop).removeClass('over');
-            CurrentStageDrop = e.currentTarget
+            CurrentStageDrop = e.currentTarget;
             $("#FantomKanban").remove();
             $(CurrentStageDrop).addClass('over');
-            $(CurrentStageDrop).append(FantomCard(FantomKanbanHeight));
+            $(CurrentStageDrop).children(".KanbanColumnContent").append(FantomCard(FantomKanbanHeight));
             CurrentKanbanDrop="";
         }
      });
-
+     // Если навели на карточку "Kanban"
      $(".Kanban").on("dragenter",function dragenterKanban(e){
          
          if(e.currentTarget.closest(".Kanban") != CurrentKanbanDrop){
             $(CurrentStageDrop).removeClass('over');
-            CurrentKanbanDrop = e.currentTarget.closest(".Kanban")
+            CurrentKanbanDrop = e.currentTarget.closest(".Kanban");
             $("#FantomKanban").remove();
             $(CurrentStageDrop).addClass('over');
             $(CurrentKanbanDrop).after(FantomCard(FantomKanbanHeight));
             
-        }
-
+          }
+        
          if ($(e.currentTarget).hasClass("Kanban") && e.currentTarget != CurrentKanbanDrop ){
             $(CurrentStageDrop).removeClass('over');
-            CurrentKanbanDrop = e.currentTarget
+            CurrentKanbanDrop = e.currentTarget;
             $("#FantomKanban").remove();
             $(CurrentStageDrop).addClass('over');
             $(CurrentKanbanDrop).after(FantomCard(FantomKanbanHeight));
@@ -448,8 +449,8 @@ function setFunctionDADOnCollumn()
          }
       });
 
-
-      $(".KanbanColumnContent").on("dragover",function(e){
+      // Удаление фантомной карточки если ушли из активной зоны 
+      $("td").on("dragover",function(e){
        if (e.preventDefault) {
             e.preventDefault();
           }
@@ -462,7 +463,8 @@ function setFunctionDADOnCollumn()
           return false;
       });
 
-      $(".KanbanColumnContent").children().on("dragover",function(e){
+      //  отмена обработки обработчика у дочерних элементов
+      $("td").children().on("dragover",function(e){
         if (e.preventDefault) {
              e.preventDefault();
            }
@@ -470,12 +472,15 @@ function setFunctionDADOnCollumn()
            e.originalEvent.dropEffect = "move";
            return false;
        });
-      $(".KanbanColumnContent").on("dragend",function(e){
-          $(".over").removeClass('over');
-          $("#FantomKanban").remove();
+
+      // Конец перетаскивания Убиварем класс Over и Удаляем Фантомную карточку со всей доски
+      $("td").on("dragend",function(e){
+        $(".over").removeClass('over');
+        $("#FantomKanban").remove();
       });
 
 }
+
 function updateKanban (id,stage,Swimline){
     let task =
     {
@@ -683,10 +688,6 @@ function DeleteRow(th){
 }
 
 function FantomCard(height){
-    //var foo = jQuery('#FantomKanban');
-    //foo.detach(); //удаляем элемент
-    //много-много кода
-    //foo.appendTo('body'); 
     const FantomCard = `
     <div class="Kanban StandartClient" id="FantomKanban" style="height:`+height + `px">
         <div class="KanbanName">

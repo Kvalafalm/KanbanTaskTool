@@ -1,7 +1,8 @@
 <html>
 <head>
   <title>КанбанТул РЭР</title>
-  <link rel="shortcut icon" href="../static/img/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="../static/Themes/{{.User.Theme}}/img/favicon.ico" type="image/x-icon">
+  <link href="../static/Themes/{{.User.Theme}}/css/kanban v2.css" rel="stylesheet">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <script>
   var Bitrix24id = {{.User.Bitrix24id}}
@@ -9,7 +10,8 @@
   {{template "bootstrap.html" .}}
   <script src="../static/js/kanban v2.js"></script>
   <script src="../static/js/websocket.js"></script>
-  <link href="../static/css/kanban v2.css" rel="stylesheet">
+
+
 </head>
 
 <body>

@@ -27,9 +27,10 @@ body {
 }
 .StageInfo{
     font-size: x-small;
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-    border-right: 1px dashed black;
+    color: white;
+    border-top: 2px solid #88898c;
+    border-bottom: 2px solid #88898c;
+    border-right: 2px dashed #88898c;
     text-align: center;
     height: 34px;
     vertical-align: middle;
@@ -37,7 +38,7 @@ body {
     padding: 5px;
     font-family: "New Century Schoolbook", Georgia, Serif;
     font-weight: bold;
-    border-left: 1px dashed black;
+    border-left: 2px dashed #88898c;
 }
 
 .KanbanColumnContent{
@@ -47,14 +48,6 @@ body {
     min-width: 10vh;
     /*min-height: 20vh;*/
     width: fit-content;
-}
-
-.KanbanNav{
- background: blue;
-}
-
-.navbar-light .navbar-nav .nav-link {
-    color: rgba(255,255,255,.5) !important;
 }
 
 .UserIcon {
@@ -199,15 +192,17 @@ body {
 #KanbanMore{
     padding: 10px;
     margin: 10px;
-    background-color: #F5F5F5;
-    display: none; 
+    background-color: #565555;
+    color: white;
+    display: none;
     border-radius: 20px;
+    border: 2px solid black;
     z-index: 1000;
     position: fixed;
     overflow: auto;
     top: 4%;
-    height:90%;
-    width:98%;
+    height: 90%;
+    width: 98%;
 }
 .KanbanMoreComents{
     display: block;
@@ -261,7 +256,7 @@ body {
   left: 0px;
   z-index: 1000;
   opacity: 0.4;
-  background:  #ffffff;
+  background:  #5c6ad6;
 }
 
 
@@ -306,14 +301,15 @@ body {
 }
 .Swimline{
     vertical-align: top;
-    border: 1px solid black;
+    border: 2px solid #88898c;
 }
 td {
-    border-right: 1px dashed black;
+    border-right: 2px dashed #88898c;
     text-align: center;
     margin: 2px;
     padding: 5px;
-    border-left: 1px dashed black;
+    border-left: 2px dashed #88898c;
+    border-bottom: 2px solid #88898c;
 }
 .SwimlineName{
 

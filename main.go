@@ -20,8 +20,9 @@ func init() {
 
 	sessionconf := &session.ManagerConfig{
 		CookieName:     beego.AppConfig.String("COOKIE_NAME"),
-		CookieLifeTime: 60,
-		Gclifetime:     60,
+		CookieLifeTime: 86400 * 30,
+		Gclifetime:     3600,
+		Maxlifetime:    86400 * 30,
 	}
 	beego.GlobalSessions, _ = session.NewManager("file", sessionconf)
 	go beego.GlobalSessions.GC()

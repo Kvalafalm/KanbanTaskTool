@@ -1,14 +1,14 @@
 <html>
 <head>
   <title>КанбанТул РЭР</title>
-  <link rel="shortcut icon" href="../static/img/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="../static/Themes/{{.User.Theme}}/img/favicon.ico" type="image/x-icon">
+  <link href="../static/Themes/{{.User.Theme}}/css/kanban v2.css" rel="stylesheet">
+  <link href="../static/Themes/{{.User.Theme}}/css/kanbanGraph.css" rel="stylesheet">
   <script>
   var Bitrix24id = {{.User.Bitrix24id}}
   </script>
   {{template "bootstrap.html" .}}
   <script src="../static/js/kanbanGraph.js"></script>
-  <link href="../static/css/kanbanGraph.css" rel="stylesheet">
-  <link href="../static/css/kanban.css" rel="stylesheet">
   <script src="https://www.amcharts.com/lib/4/core.js"></script>
   <script src="https://www.amcharts.com/lib/4/charts.js"></script>
   <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>

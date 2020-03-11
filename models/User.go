@@ -12,6 +12,7 @@ type User struct {
 	Firstname  string
 	Secondname string
 	Password   string
+	Theme      string
 	Bitrix24id int
 }
 
@@ -29,6 +30,7 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 		this.Id = UserFromDB.Id
 		this.Firstname = UserFromDB.Firstname
 		this.Secondname = UserFromDB.Secondname
+		this.Theme = UserFromDB.Theme
 	} else {
 		UserFromDB.Firstname = this.Firstname
 		UserFromDB.Secondname = this.Secondname
