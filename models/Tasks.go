@@ -1,4 +1,4 @@
-package Models
+package models
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ type Tasks struct {
 	Swimline   int
 	Stageid    int
 	Finished   bool
-	Typetask   int
+	Typetask   *TypeWorkItem `orm:"rel(fk)"`
 }
 
 func init() {
@@ -35,8 +35,8 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 		cond2 = cond2.Or("stageid", Stage.Idstages)
 	}
 	cond = cond.AndCond(cond2)
-	fmt.Println(database.QueryTable("Tasks").SetCond(cond).Count())
-	database.QueryTable("Tasks").SetCond(cond).All(&taskListFromDB)
+	fmt.Println(database.QueryTable(new(Tasks)).SetCond(cond).Count())
+	database.QueryTable(new(Tasks)).SetCond(cond).RelatedSel().All(&taskListFromDB)
 
 	return taskListFromDB, err
 }
@@ -45,7 +45,7 @@ func GetTaskFromDB(id int) (taskListFromDB Tasks, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Tasks").Filter("Idtasks", id).All(&taskListFromDB)
+	_, err = database.QueryTable(new(Tasks)).Filter("Idtasks", id).RelatedSel().All(&taskListFromDB)
 
 	return taskListFromDB, err
 }
@@ -57,6 +57,7 @@ func UpdateTaskInDB(task Tasks) (err error) {
 	_, err = database.QueryTable(new(Tasks)).Filter("idtasks", task.Idtasks).Update(orm.Params{
 		"stageid":  task.Stageid,
 		"swimline": task.Swimline,
+		"typetask": task.Typetask.Id,
 	})
 
 	if err == nil {
@@ -88,8 +89,10 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	task.Idbitrix24, _ = strconv.Atoi(NewTask["idBitrix"])
 	task.Stageid, _ = strconv.Atoi(NewTask["Stage"])
 	task.Title = NewTask["Title"]
-	task.Typetask, _ = strconv.Atoi(NewTask["Typetask"])
+	idType, _ := strconv.Atoi(NewTask["Typetask"])
+	task.Typetask, _ = getTypeTask(idType)
 	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
+
 	var idint int
 	if NewTask["CheckUnicColluumn"] != "" {
 		if created, id, err := database.ReadOrCreate(&task, NewTask["CheckUnicColluumn"]); err == nil {

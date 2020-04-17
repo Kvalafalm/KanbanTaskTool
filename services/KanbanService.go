@@ -14,6 +14,7 @@ import (
 
 type KanbanService struct {
 }
+
 type Bloker struct {
 	Id          int       `json:"Id,string"`
 	Idtask      int       `json:"Idtask,string"`
@@ -37,12 +38,12 @@ type Tasks struct {
 		Description string    `json:"description"`
 		Startdate   time.Time `json:"startdate"`
 	} `json:"ActiveBlokers"`
-	Swimline      int    `json:"Swimline,string"`
-	TypeTask      int    `json:"typeTask"`
-	IdProject     int    `json:"IdProject"`
-	ImageProject  string `json:"ImageProject"`
-	NameProject   string `json:"NameProject"`
-	СommentsCount string `json:"СommentsCount"`
+	Swimline      int                `json:"Swimline,string"`
+	TypeTask      model.TypeWorkItem `json:"TypeTask"`
+	IdProject     int                `json:"IdProject"`
+	ImageProject  string             `json:"ImageProject"`
+	NameProject   string             `json:"NameProject"`
+	СommentsCount string             `json:"СommentsCount"`
 }
 
 type User struct {
@@ -53,23 +54,23 @@ type User struct {
 }
 
 type Task struct {
-	ID              int            `json:"Id,string"`
-	IDBitrix24      int            `json:"IdBitrix24"`
-	Name            string         `json:"Name"`
-	Stage           int            `json:"Stage,string"`
-	DateSart        time.Time      `json:"DateSart"`
-	DateStartStage  time.Time      `json:"DateStartStage"`
-	DescriptionHTML template.HTML  `json:"DescriptionHTML"`
-	Users           []User         `json:"Users"`
-	Iddesk          string         `json:"Iddesk`
-	Blokers         []model.Bloker `json:"Blokers"`
-	Swimline        int            `json:"Swimline,string"`
-	Type            string         `json:"Type"`
-	IdProject       int            `json:"IdProject"`
-	ImageProject    string         `json:"ImageProject"`
-	NameProject     string         `json:"NameProject"`
-	StagesHistory   []StageHistory `json:"StagesHistory"`
-	Comments        []Comments     `json:"Comments"`
+	ID              int                `json:"Id,string"`
+	IDBitrix24      int                `json:"IdBitrix24"`
+	Name            string             `json:"Name"`
+	Stage           int                `json:"Stage,string"`
+	DateSart        time.Time          `json:"DateSart"`
+	DateStartStage  time.Time          `json:"DateStartStage"`
+	DescriptionHTML template.HTML      `json:"DescriptionHTML"`
+	Users           []User             `json:"Users"`
+	Iddesk          string             `json:"Idesk`
+	Blokers         []model.Bloker     `json:"Blokers"`
+	Swimline        int                `json:"Swimline,string"`
+	TypeTask        model.TypeWorkItem `json:"TypeTask"`
+	IdProject       int                `json:"IdProject"`
+	ImageProject    string             `json:"ImageProject"`
+	NameProject     string             `json:"NameProject"`
+	StagesHistory   []StageHistory     `json:"StagesHistory"`
+	Comments        []Comments         `json:"Comments"`
 }
 
 type StageHistory struct {
@@ -132,7 +133,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].IDBitrix24 = TaskFromDB.Idbitrix24
 		tasks[i].Stage = TaskFromDB.Stageid
 		tasks[i].Swimline = TaskFromDB.Swimline
-		tasks[i].TypeTask = TaskFromDB.Typetask
+		tasks[i].TypeTask = *TaskFromDB.Typetask
 		tasks[i].Name = TaskFromDB.Title
 		for _, valuesB24 := range values.Result.Tasks {
 
@@ -213,6 +214,8 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 	task.Idtasks = tasks.ID
 	task.Stageid = tasks.Stage
 	task.Swimline = tasks.Swimline
+	task.Typetask = &tasks.TypeTask
+
 	err = model.UpdateTaskInDB(task)
 	if err != nil {
 		return err
@@ -456,7 +459,7 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 	//task.DateStartStage		= ;
 	task.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
 	stages, _ := model.GetStages()
-
+	task.TypeTask = *taskBD.Typetask
 	StagesHistory, _ := model.GetTaskHistoryStages(id)
 
 	if err != nil {

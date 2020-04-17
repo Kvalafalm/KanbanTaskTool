@@ -131,11 +131,11 @@ body {
 .Kanban{
     background-color: rgba(236, 234, 234, 0.9);
     border-radius: 5px;
-    border-left: 3px solid #bc0005;
     float: right;
     padding: 5px;
     margin: 5px;
     width: 185px;
+    height: 130px;
     min-height: 50px;
 
 }
@@ -164,24 +164,7 @@ body {
     border-style: dotted;
 }
 
-.typeTask1{
-    border-left: 7px solid rgb(76, 175, 80, 1);
-}
-.typeTask2{
-   border-left: 7px solid rgba(255, 136, 0, 1);
-}
-.typeTask0{
-    border-left: 7px solid rgb(160, 158, 158);
-}
-.typeTask3{
-    border-left: 7px solid rgba(233, 87, 87, 1);
-}
-.typeTask4{
-    border-left: 7px solid rgba(246, 143, 255, 1);
-}
-.typeTask5{
-    border-left: 7px solid rgb(224, 214, 86);
-}
+
 
 .Warning{
     font-size: medium;

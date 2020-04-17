@@ -1,4 +1,4 @@
-package Models
+package models
 
 import (
 	"fmt"
@@ -19,7 +19,6 @@ type Bloker struct {
 
 func init() {
 	orm.RegisterModel(new(Bloker))
-
 }
 
 func GetActiveBlokersFromDB(idtask int) (ActiveBloker Bloker, count int, err error) {

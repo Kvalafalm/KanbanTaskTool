@@ -1,6 +1,6 @@
 var Columns = [];
 var Kanbans;
-
+let deskTypesWorkItem;
 let CurrentStageDrop,CurrentKanbanDrop,FantomKanbanHeight;
 
 window.onload = function() {
@@ -20,6 +20,13 @@ window.onload = function() {
         document.getElementById('preloaderbg').style.display = 'none';
     });
 
+    $("#saveTask").click(function(){
+        const id          = $(".taskKanbanTool").data("id");
+        const stage       = $(".taskKanbanTool").data("stage");
+        const Swimline    = $(".taskKanbanTool").data("Swimline");
+        const TypeTask    = $(".taskKanbanTool #Type option:selected").val();
+        updateKanban (id,stage,Swimline,TypeTask);
+    });
 }
 function refreshDeskList(){
     
@@ -70,6 +77,7 @@ function FillInKanbanDesk(DeskId) {
             window.location.replace("/login")
             return
         }
+        deskTypesWorkItem = desk.TypeWorkItems;
         $(".KanbanDeskCanvas").append(desk.Innerhtml)
         $(".SwimlineName").each(function () {
             $(this).find(".StageInfo").addClass("onhover").append(`
@@ -210,6 +218,9 @@ function OutputColumn(KanbanDiv,element){
 
 function OutputKanban(Column,element){
     var Kanban = document.createElement('div');
+    $(Kanban).css({
+        "border-left": "7px solid " + element.TypeTask.Color
+      });
     Kanban.draggable = "true";
     Kanban.className = "Kanban";
     Kanban.id = element.Id;
@@ -232,8 +243,8 @@ function OutputKanban(Column,element){
         innerHTML += `<img class="UserIcon" src=` + item.icon + `>` ;
     });
         
-    if (element.typeTask != undefined ){
-        Kanban.className = Kanban.className + " typeTask" + element.typeTask;
+    if (element.TypeTask != undefined ){
+        Kanban.className = Kanban.className + " typeTask" + element.TypeTask.Id;
     }
 
     NameKanban.innerHTML = innerHTML
@@ -279,6 +290,10 @@ function OutputKanban(Column,element){
             return
         }
             $(".taskKanbanTool").attr("id", element.Id);
+            $(".taskKanbanTool").data("id", element.Id);
+            $(".taskKanbanTool").data("stage", element.Stage);
+            $(".taskKanbanTool").data("Swimline",element.Swimline);
+
             $(".TitleBitrix24").append(`<h3><a target="_blank" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+Kanbans.IdBitrix24+`/">№` + Kanbans.IdBitrix24 + " - " + Kanbans.Name + "</a></h3>");
             $(".Descripion").append(Kanbans.DescriptionHTML);
             let DefaultButton = `
@@ -292,6 +307,32 @@ function OutputKanban(Column,element){
             <button type="button" class="btn btn-link btn-xs" style="padding:1px">
                 <i class="fa fa-trash" aria-hidden="true"></i>
             </button> `
+
+
+            $("#Parametrs #Type").empty();
+            let selected="";
+            deskTypesWorkItem.sort(function (a, b) {
+                if (a.Order > b.Order) {
+                  return 1;
+                }
+                if (a.Order < b.Order) {
+                  return -1;
+                }
+                return 0;
+            });
+
+            deskTypesWorkItem.forEach(function(element) {
+
+                    if (element.Id == Kanbans.TypeTask.Id){
+                        selected = 'selected="selected"';
+                    }else {
+                        selected = "";
+                    }
+                    $("#Parametrs #Type").append('<option style="background-color:'+element.Color + ' "' + selected + ' value="' + element.Id+ '">'+ element.Name + '</h3>');
+    
+            });
+
+
             Kanbans.StagesHistory.forEach(function(element) {
 
                 const startDate = (new Date(element.Start)).toLocaleDateString();
@@ -333,6 +374,12 @@ function OutputKanban(Column,element){
             });
             Kanbans.Comments.forEach(function(element) {
                 const date = new Date(element.POST_DATE)
+                let Message
+                if (element.POST_MESSAGE_HTML==""){
+                    Message = element.POST_MESSAGE
+                }else {
+                    Message = element.POST_MESSAGE_HTML 
+                }
                 $(".KanbanMoreComents").append(`<div class="comments"><div class="CMauthor">`+ element.AUTHOR_NAME + `
                  <span style="position: absolute;
                                         right: 41%;
@@ -341,7 +388,7 @@ function OutputKanban(Column,element){
                 > `+ date.toLocaleDateString() +' ' +   date.toLocaleTimeString() + `
                     </span>
                     </div>
-                    <div class="CMdescription">`+ element.POST_MESSAGE_HTML +`
+                    <div class="CMdescription">`+ Message +`
                     </div>
                 </div>`)
             });
@@ -481,12 +528,18 @@ function setFunctionDADOnCollumn()
 
 }
 
-function updateKanban (id,stage,Swimline){
+function updateKanban (id,stage,Swimline,TypeTask=undefined){
     let task =
     {
-     "Id": id,
-     "Stage": stage,
-     "Swimline":Swimline
+     Id: id,
+     Stage: stage,
+     Swimline :Swimline
+    }
+
+    if (TypeTask != undefined) {
+        task.TypeTask =     {       
+            Id: TypeTask
+           };
     }
 
     $.ajax({

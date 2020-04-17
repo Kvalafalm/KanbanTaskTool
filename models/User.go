@@ -1,4 +1,4 @@
-package Models
+package models
 
 import (
 	"errors"
@@ -35,6 +35,7 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 		UserFromDB.Firstname = this.Firstname
 		UserFromDB.Secondname = this.Secondname
 		UserFromDB.Bitrix24id = this.Bitrix24id
+		UserFromDB.Theme = "light"
 		database.Insert(&UserFromDB)
 	}
 

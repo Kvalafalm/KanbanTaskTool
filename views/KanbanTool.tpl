@@ -87,7 +87,7 @@
       </div>
   </div>  
   </div>      
-    <div id="KanbanMore">
+    <div id="KanbanMore" >
       <div id="preloaderbg2" class="preloaderbg">
       <div class="centerbg2">
         <div id="preloader"></div>
@@ -95,6 +95,18 @@
       </div>
       <div class="">
         <div class="taskKanbanTool">
+          <h3>Настройки</h3> 
+          <div id="Parametrs" style="
+              width: 90%;
+              padding: 5px;
+              margin: 5px;
+          ">
+            <p> Тип рабочего элемента
+              <select class="form-control" id="Type">
+              </select>
+            </p>
+          </div>
+
           <h3>История этапов</h3> 
           <div class="StageMore">
           </div>
@@ -107,7 +119,8 @@
 
         <div id="taskBitrix24">
           <div>
-            <button type="button" class="btn btn-dark" id="сloseButton">Х</button>
+            <button type="button" class="btn btn-dark" id="сloseButton">Х11</button>
+            <button type="button" class="btn btn-dark" id="saveTask">Save</button>
             <span class="TitleBitrix24"></span>
           </div>
           <div class="Descripion">
