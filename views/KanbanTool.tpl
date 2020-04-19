@@ -119,7 +119,7 @@
 
         <div id="taskBitrix24">
           <div>
-            <button type="button" class="btn btn-dark" id="сloseButton">Х11</button>
+            <button type="button" class="btn btn-dark" id="сloseButton">Х</button>
             <button type="button" class="btn btn-dark" id="saveTask">Save</button>
             <span class="TitleBitrix24"></span>
           </div>

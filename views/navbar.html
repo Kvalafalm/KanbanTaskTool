@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+<nav class="navbar navbar-expand-lg navbar-light bg-light" style="background: linear-gradient(180deg, rgba(166,166,166,1) 21%, rgba(255,255,255,1) 100%) !important">
   <a class="navbar-brand" href="#">KanbanTool</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -11,8 +11,12 @@
       <li class="nav-item"><a class="nav-link" href="/static/roles.html">Описание ролей</a></li>
       <!-- <li class="nav-item"><a class="nav-link" href="/Bitrix24/tasklist/0">UpdateTaskList</a></li>--> 
     </ul>
-    <ul class="navbar-text">
-        <div class="navbar-nav">
+
+    <span style="margin: 2px;"><button type="button" class="btn btn-outline-secondary btn-sm" id="ZoomPlus"><i class="fa fa-plus-circle" aria-hidden="true"></i></button></span>
+    <span style="margin: 2px;"><button type="button" class="btn btn-outline-secondary btn-sm" id="ZoomMinus"><i class="fa fa-minus-circle" aria-hidden="true"></i></button></span>
+    <span style="margin: 2px;"><button type="button" class="btn btn-outline-secondary btn-sm" id="refreshDesk"><i class="fa fa-refresh" aria-hidden="true"></i></button></span>
+    <ul style="margin: auto 0;">
+        <div class="navbar-nav" style="margin: auto 0;">
             <label for="DeskList" style="padding: .375rem .75rem;"> Доска </label>
             <select class="form-control" id="DeskList">
             </select>
@@ -58,7 +62,7 @@
       </script>
       {{if .User }} 
  
-      <span class="navbar-text">
+      <span style=" margin-right: 3em;">
 
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
@@ -66,8 +70,8 @@
               {{.User.Firstname}}
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
+              <span style="margin: 5px;display: block;"><button type="button" class="btn btn-outline-secondary btn-sm" id="ZoomPlus"><i class="fa fa-plus-circle" aria-hidden="true"></i></button> увеличить</span>
+              <span style="margin: 5px;display: block;"><button type="button" class="btn btn-outline-secondary btn-sm" id="ZoomMinus"><i class="fa fa-minus-circle" aria-hidden="true"></i></button> уменьшить</span>
               <div class="dropdown-divider"></div>
                 <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
                   <input type="hidden" name="logout" id="logout" value="yes"/>

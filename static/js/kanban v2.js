@@ -19,6 +19,23 @@ window.onload = function() {
         
         document.getElementById('preloaderbg').style.display = 'none';
     });
+    $("#refreshDesk").click(function(){
+        FillInKanbanDesk($("#DeskList option:selected").val());
+    });
+    
+    $("#ZoomPlus").click(function(){
+        let fontSize = parseInt($(".KanbanDesk").css("font-size").replace("px","")) +4 ;
+        $(".KanbanDesk").css({
+            "font-size": fontSize
+        });
+    });
+  
+    $("#ZoomMinus").click(function(){
+        let fontSize = parseInt($(".KanbanDesk").css("font-size").replace("px","")) -4 ;
+        $(".KanbanDesk").css({
+            "font-size": fontSize
+        });
+    });
 
     $("#saveTask").click(function(){
         const id          = $(".taskKanbanTool").data("id");
@@ -265,7 +282,7 @@ function OutputKanban(Column,element){
     }
     let duration = "";
     if (element.DateStart != "0001-01-01T00:00:00Z") {
-        duration = `<span class="badge badge-success" style="font-size: small;">`+  calculationDateStatusString(element.DateStart) + `</span>`;
+        duration = `<span class="badge badge-success" style="font-size: 100%;">`+  calculationDateStatusString(element.DateStart) + `</span>`;
     }
     KanbanNameProject.innerHTML = `<div style="    text-align: right;" class="onhover">`+finishButton + Comments + duration +`<span class="projectName">` + element.NameProject + `</span> </div>`;
 
@@ -384,7 +401,7 @@ function OutputKanban(Column,element){
                  <span style="position: absolute;
                                         right: 41%;
                                         font-weight: normal;
-                                        font-size: smaller;" 
+                                        font-size: 100%;" 
                 > `+ date.toLocaleDateString() +' ' +   date.toLocaleTimeString() + `
                     </span>
                     </div>

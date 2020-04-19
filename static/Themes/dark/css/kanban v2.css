@@ -8,7 +8,7 @@ body {
 
 .KanbanDesk {
     width: 100%;
-    
+    font-size: 16px;
 }
 .Parametrs{
     display:inline-block;
@@ -16,7 +16,7 @@ body {
 .KanbanColumn{
     /*min-width: 246px;*/
     /*min-height: 200px;*/
-    /*font-size: x-small;*/
+    /*font-size: 60%;*/
     overflow: auto;
     border-radius: 10px;
     border: 1px solid black;
@@ -26,7 +26,7 @@ body {
     vertical-align: sub;      
 }
 .StageInfo{
-    font-size: x-small;
+    font-size: min(60%, 16px);
     color: white;
     border-top: 2px solid #88898c;
     border-bottom: 2px solid #88898c;
@@ -43,7 +43,7 @@ body {
 
 .KanbanColumnContent{
     overflow: auto;
-    font-size: x-small;
+    font-size: 60%;
     max-height: 85vh;
     min-width: 10vh;
     /*min-height: 20vh;*/

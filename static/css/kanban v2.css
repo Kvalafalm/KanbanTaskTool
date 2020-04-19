@@ -8,8 +8,9 @@ body {
 
 .KanbanDesk {
     width: 100%;
-    
+    font-size: 16px;
 }
+
 .Parametrs{
     display:inline-block;
 }
@@ -26,7 +27,7 @@ body {
     vertical-align: sub;      
 }
 .StageInfo{
-    font-size: x-small;
+    font-size: min(60%, 16px);
     border-top: 1px solid black;
     border-bottom: 1px solid black;
     border-right: 1px dashed black;
@@ -42,7 +43,7 @@ body {
 
 .KanbanColumnContent{
     overflow: auto;
-    font-size: x-small;
+    font-size: 60%;
     max-height: 85vh;
     min-width: 10vh;
     /*min-height: 20vh;*/
@@ -51,10 +52,6 @@ body {
 
 .KanbanNav{
  background: blue;
-}
-
-.navbar-light .navbar-nav .nav-link {
-    color: rgba(255,255,255,.5) !important;
 }
 
 .UserIcon {
@@ -137,12 +134,19 @@ body {
     width: 185px;
     height: 130px;
     min-height: 50px;
-
+    position: relative;
 }
 .KanbanDescription{
     padding: 1px;
     text-align: justify;
     margin: 1px;
+    
+}
+
+.KanbanDurationStatus{
+    position: absolute;
+    bottom: 10;
+    right: 10;
 }
 
 .KanbanName{
