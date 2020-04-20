@@ -8,8 +8,8 @@ import (
 )
 
 type Bloker struct {
-	Id          int `orm:"auto"`
-	Idtask      int
+	Id          int    `orm:"auto"`
+	Idtask      *Tasks `orm:"rel(fk);column(idtask)"`
 	Description string
 	Startdate   time.Time
 	Enddate     time.Time
@@ -57,7 +57,7 @@ func UpdateBlokerInDB(bloker Bloker) (err error) {
 	}
 	Param := orm.Params{
 
-		"idtask":      bloker.Idtask,
+		"idtask":      bloker.Idtask.Idtasks,
 		"description": bloker.Description,
 		"startdate":   bloker.Startdate.UTC(),
 		"enddate":     bloker.Enddate.UTC(),
@@ -75,24 +75,4 @@ func UpdateBlokerInDB(bloker Bloker) (err error) {
 	}
 
 	return nil
-}
-
-func SetBlokerFromBitrix24(Id string) (err error) {
-
-	//database := orm.NewOrm()
-	//database.Using("default")
-	//task := Tasks{}
-	//task.Idbitrix24, _ = strconv.Atoi(Id)
-	//if created, id, err := database.ReadOrCreate(&task, "idbitrix24"); err == nil {
-	//	if created {
-	//		fmt.Println("New Insert an object. Id:", id)
-	//	} else {
-	//		fmt.Println("Get an object. Id:", id)
-	//	}
-	//} else {
-	//	return err
-	//}
-
-	return nil
-
 }

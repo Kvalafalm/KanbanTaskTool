@@ -15,7 +15,8 @@ type Tasks struct {
 	Swimline   int
 	Stageid    int
 	Finished   bool
-	Typetask   *TypeWorkItem `orm:"rel(fk)"`
+	Typetask   *TypeWorkItem `orm:"rel(fk);column(typetask)"`
+	Blokers    []*Bloker     `orm:"reverse(many)"`
 }
 
 func init() {
@@ -37,7 +38,10 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	cond = cond.AndCond(cond2)
 	fmt.Println(database.QueryTable(new(Tasks)).SetCond(cond).Count())
 	database.QueryTable(new(Tasks)).SetCond(cond).RelatedSel().All(&taskListFromDB)
-
+	for i, task := range taskListFromDB {
+		database.LoadRelated(&task, "Blokers")
+		taskListFromDB[i].Blokers = task.Blokers
+	}
 	return taskListFromDB, err
 }
 
@@ -46,7 +50,7 @@ func GetTaskFromDB(id int) (taskListFromDB Tasks, err error) {
 	database.Using("default")
 
 	_, err = database.QueryTable(new(Tasks)).Filter("Idtasks", id).RelatedSel().All(&taskListFromDB)
-
+	database.LoadRelated(&taskListFromDB, "Blokers")
 	return taskListFromDB, err
 }
 
@@ -90,7 +94,9 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	task.Stageid, _ = strconv.Atoi(NewTask["Stage"])
 	task.Title = NewTask["Title"]
 	idType, _ := strconv.Atoi(NewTask["Typetask"])
-	task.Typetask, _ = getTypeTask(idType)
+	typeWorkItem := TypeWorkItem{Id: idType}
+	task.Typetask = &typeWorkItem
+	//getTypeTask(idType)
 	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
 
 	var idint int

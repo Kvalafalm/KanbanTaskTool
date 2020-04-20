@@ -10,7 +10,7 @@ type TypeWorkItem struct {
 	Description string
 	Color       string
 	Order       int
-	SLA         int
+	SLA         int `orm:"column(SLA)"`
 	//Desk        []*Desk `orm:"reverse(many)"`
 }
 
@@ -26,7 +26,7 @@ func getTypeTask(id int) (typeWorkItem *TypeWorkItem, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	err = database.QueryTable(new(TypeWorkItem)).Filter("id", id).RelatedSel().One(typeWorkItem)
+	err = database.QueryTable(new(TypeWorkItem)).Filter("id", id).One(&typeWorkItem)
 
 	return typeWorkItem, err
 }

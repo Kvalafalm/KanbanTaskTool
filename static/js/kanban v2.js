@@ -282,7 +282,34 @@ function OutputKanban(Column,element){
     }
     let duration = "";
     if (element.DateStart != "0001-01-01T00:00:00Z") {
-        duration = `<span class="badge badge-success" style="font-size: 100%;">`+  calculationDateStatusString(element.DateStart) + `</span>`;
+
+        let WorkDays;
+        let DateSetStatus = new Date(element.DateStart);
+        let CurrentDate = new Date();
+            
+        let times = Math.ceil(Math.abs(CurrentDate.getTime() - DateSetStatus.getTime()) / (1000 * 60));
+        if (Math.floor(times/(60*24)) > 0){
+               let numWorkDays = 0;
+               let checkDate =DateSetStatus ;      
+               while (checkDate <= CurrentDate) {
+                   if (checkDate.getDay() !== 0 && checkDate.getDay() !== 6) {
+                       numWorkDays++;
+                   }
+                   checkDate = checkDate.addDays(1);
+            }
+            WorkDays = numWorkDays;
+        }else{
+            WorkDays = 0;
+        }
+
+        if (element.TypeTask.SLA < WorkDays && (Math.round(element.TypeTask.SLA*0.8)) < WorkDays){
+            tapeInfo = "badge-danger";  
+        }else if ( (element.TypeTask.SLA*0.7) < WorkDays ){
+            tapeInfo = "badge-warning";  
+        }else{
+            tapeInfo = "badge-success";
+        }
+        duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  WorkDays + ` д. </span>`;
     }
     KanbanNameProject.innerHTML = `<div style="    text-align: right;" class="onhover">`+finishButton + Comments + duration +`<span class="projectName">` + element.NameProject + `</span> </div>`;
 
@@ -468,7 +495,8 @@ function setFunctionDADOnCollumn()
             updateKanban(
                 data,
                 CurrentStageDrop.id.replace("Stage","") ,
-                CurrentStageDrop.parentElement.parentElement.id.replace("SL","")
+                CurrentStageDrop.parentElement.parentElement.id.replace("SL",""),
+                $("#"+data)[0].classList[1].replace("typeTask","")              
                 );
         }
         if (CurrentKanbanDrop != ""){
@@ -683,7 +711,7 @@ function StartModalWindow(th){
        }).done(function (element) {
             form = `
             <input type="hidden"  id="BlokerId" value="`+element.Id+`" aria-hidden="true">
-            <input type="hidden"  id="BlokerIdtask" value="`+ element.Idtask +`" aria-hidden="true">
+            <input type="hidden"  id="BlokerIdtask" value="`+ element.Idtask.Idtasks +`" aria-hidden="true">
             <input type="hidden" id="type" value="bloker" aria-hidden="true">`
             form += AddInputRow("Причина","BlokerReason","text",element.Description,);
             form += AddInputRow("Решение","BlokerDecision","text",element.Diside,"");

@@ -181,7 +181,14 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		}
 
 		//Блокеры
-		Bloker, count, err := model.GetActiveBlokersFromDB(TaskFromDB.Idtasks)
+		for _, blokerRow := range TaskFromDB.Blokers {
+			if !blokerRow.Finished {
+				tasks[i].ActiveBlokers.Id = blokerRow.Id
+				tasks[i].ActiveBlokers.Description = blokerRow.Description
+				tasks[i].ActiveBlokers.Startdate = blokerRow.Startdate
+			}
+		}
+		/*Bloker, count, err := model.GetActiveBlokersFromDB(TaskFromDB.Idtasks)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +196,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 			tasks[i].ActiveBlokers.Id = Bloker.Id
 			tasks[i].ActiveBlokers.Description = Bloker.Description
 			tasks[i].ActiveBlokers.Startdate = Bloker.Startdate
-		}
+		}*/
 
 	}
 
@@ -359,7 +366,7 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 		return task, err
 
 	}
-	task = Tasks{}
+	//task = Tasks{}
 
 	// Получаем данные из Битрикс24 по задачам
 
@@ -420,17 +427,13 @@ func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
 		}
 	}
 
-	//Блокеры
-	Bloker, count, err := model.GetActiveBlokersFromDB(id)
-	if err != nil {
-		return task, err
+	for _, blokerRow := range TaskFromDB.Blokers {
+		if !blokerRow.Finished {
+			task.ActiveBlokers.Id = blokerRow.Id
+			task.ActiveBlokers.Description = blokerRow.Description
+			task.ActiveBlokers.Startdate = blokerRow.Startdate
+		}
 	}
-	if count > 0 {
-		task.ActiveBlokers.Id = Bloker.Id
-		task.ActiveBlokers.Description = Bloker.Description
-		task.ActiveBlokers.Startdate = Bloker.Startdate
-	}
-
 	return task, nil
 }
 
@@ -534,17 +537,17 @@ func (Cb *KanbanService) GetBloker(id int) (bloker model.Bloker, err error) {
 }
 
 func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
+	task := model.Tasks{}
+	task.Idtasks = bloker.Idtask
 	blokerDb := model.Bloker{}
 	blokerDb.Id = bloker.Id
-	blokerDb.Idtask = bloker.Idtask
+
+	blokerDb.Idtask = &task
 	blokerDb.Startdate = bloker.Startdate
 	blokerDb.Enddate = bloker.Enddate
 	blokerDb.Description = bloker.Description
 	blokerDb.Diside = bloker.Diside
-	emptyDate := time.Time{}
-	fmt.Println(emptyDate)
-	fmt.Println(blokerDb.Enddate)
-	if blokerDb.Enddate != emptyDate {
+	if blokerDb.Enddate != (time.Time{}) {
 		blokerDb.Finished = true
 	} else {
 		blokerDb.Finished = false
