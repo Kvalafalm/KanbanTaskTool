@@ -8,7 +8,7 @@
   var Bitrix24id = {{.User.Bitrix24id}}
   </script>
   {{template "bootstrap.html" .}}
-  <script src="../static/js/kanban v2.js"></script>
+  <script src="../static/js/kanban v3.js"></script>
   <script src="../static/js/websocket.js"></script>
 
 
@@ -110,8 +110,8 @@
           <h3>История этапов</h3> 
           <div class="StageMore">
           </div>
-          <h3>  Блокировки
-              <button type="button" class="btn btn-second btn-xs" onclick="StartModalWindow(this)" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button> 
+          <h3>  События
+              <button type="button" class="btn btn-second btn-xs " id="ModalWindow__addEvent" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button> 
           </h3>
           <div class="BlokersMore">
           </div>
@@ -143,13 +143,8 @@
           </div>
 
             <div class="modal-body">
-            
-
-
-
-              
-            
             </div>
+            
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal" >Закрыть</button>
               <button type="button" class="btn btn-primary" onclick="SaveModalWindow(this)" data-dismiss="modal" >Сохранить</button>

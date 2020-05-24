@@ -27,8 +27,9 @@ func (this *AuthController) Get() {
 	if logout == "yes" {
 
 		if User != nil {
-			Leave(User.(Models.User).Firstname)
+			Leave(User.(Models.User).Id)
 			session.Delete("User")
+			this.DestroySession()
 		}
 
 		this.Redirect("/", 307)

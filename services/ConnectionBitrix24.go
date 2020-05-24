@@ -1,4 +1,4 @@
-package Services
+package services
 
 import (
 	model "KanbanTaskTool/models"
@@ -128,6 +128,7 @@ type TaskB24 struct {
 		STARTDATEPLAN       string        `json:"START_DATE_PLAN"`
 		ENDDATEPLAN         string        `json:"END_DATE_PLAN"`
 		PRIORITY            string        `json:"PRIORITY"`
+		ACCOMPLICES         []string      `json:"ACCOMPLICES"`
 		AUDITORS            []string      `json:"AUDITORS"`
 		ALLOWCHANGEDEADLINE string        `json:"ALLOW_CHANGE_DEADLINE"`
 		TASKCONTROL         string        `json:"TASK_CONTROL"`
@@ -418,7 +419,6 @@ func (Cb *ConnectionBitrix24) GetTask(id string) (app TaskB24, err error) {
 	if err != nil {
 		return app, err
 	}
-
 	err = json.Unmarshal(str, &app)
 	if err != nil {
 		return app, err

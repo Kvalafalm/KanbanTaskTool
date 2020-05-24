@@ -1,4 +1,4 @@
-package Services
+package services
 
 import (
 	model "KanbanTaskTool/models"
@@ -13,8 +13,8 @@ type Params struct {
 	Startdate time.Time `json:"Startdate"`
 	Enddate   time.Time `json:"Enddate"`
 	Desk      string    `json:"Desk"`
-	StartId   string    `json:"startId"`
-	EndId     string    `json:"endId"`
+	StartID   string    `json:"startId"`
+	EndID     string    `json:"endId"`
 }
 
 func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[string]string, err error) {
@@ -79,8 +79,8 @@ func (Cb *KanbanServiceGraph) ControlChart(params Params) (dataControlChart []ma
 
 	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
 	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
-	paramMap[`endId`] = params.EndId
-	paramMap[`startId`] = params.StartId
+	paramMap[`endId`] = params.EndID
+	paramMap[`startId`] = params.StartID
 	data, _ := model.GetDataForSpectralChart(paramMap)
 	for i, raw := range data {
 		newRaw := make(map[string]string)
@@ -103,8 +103,8 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 
 	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
 	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
-	paramMap[`endId`] = params.EndId
-	paramMap[`startId`] = params.StartId
+	paramMap[`endId`] = params.EndID
+	paramMap[`startId`] = params.StartID
 	data, _ := model.GetDataForSpectralChart(paramMap)
 	maxDay := 0
 	for _, raw := range data {
@@ -156,26 +156,47 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 	return dataSpectralChart, nil
 }
 
-func DifferenceInDays(start string, end string) (day int) {
+func DifferenceInDays(start interface{}, end interface{}) (day int) {
 	days := 0
+	var f1 time.Time
+	var t1 time.Time
+	switch end := end.(type) {
+	case string:
+		f1, _ = time.Parse("2006-01-02 15:04:05", end)
+	case time.Time:
+		if end == (time.Time{}) {
+			f1 = time.Now()
+		} else {
+			f1 = end
+		}
 
-	if start > end {
+	default:
+		return 0
+	}
+	switch start := start.(type) {
+	case string:
+		t1, _ = time.Parse("2006-01-02 15:04:05", start)
+	case time.Time:
+		t1 = start
+
+	default:
+		return 0
+	}
+	endTime := time.Date(f1.Year(), f1.Month(), f1.Day(), 0, 0, 0, 0, time.UTC)
+	startTime := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, time.UTC)
+
+	if endTime.After(startTime) {
 		return 0
 	}
 
-	f1, _ := time.Parse("2006-01-02 15:04:05", end)
-	f := time.Date(f1.Year(), f1.Month(), f1.Day(), 0, 0, 0, 0, time.UTC)
-
-	t1, _ := time.Parse("2006-01-02 15:04:05", start)
-	t := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, time.UTC)
 	for {
-		if t.Equal(f) {
+		if startTime.Equal(endTime) {
 			return days
 		}
-		if t.Weekday() != 6 && t.Weekday() != 7 {
+		if startTime.Weekday() != 6 && startTime.Weekday() != 7 {
 			days++
 		}
-		t = t.Add(time.Hour * 24)
+		startTime = startTime.Add(time.Hour * 24)
 	}
 
 }

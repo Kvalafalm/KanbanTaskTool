@@ -1,46 +1,48 @@
 package controllers
 
 import (
+	"KanbanTaskTool/models"
 	Models "KanbanTaskTool/models"
 	"encoding/json"
 	"net/http"
 
 	"github.com/astaxie/beego"
-	"github.com/beego/samples/WebIM/models"
 	"github.com/gorilla/websocket"
 )
 
+//KanbanToolWS webSocetController
 type KanbanToolWS struct {
 	beego.Controller
 }
 
-func (this *KanbanToolWS) Get() {
+//Get method
+func (Cont *KanbanToolWS) Get() {
 
-	uname := this.GetString("uname")
+	uname := Cont.GetString("uname")
 	if len(uname) == 0 {
-		this.Redirect("/", 302)
+		Cont.Redirect("/", 302)
 		return
 	}
 
-	this.TplName = "websocket.html"
-	this.Data["IsWebSocket"] = true
-	this.Data["UserName"] = uname
+	Cont.TplName = "websocket.html"
+	Cont.Data["IsWebSocket"] = true
+	Cont.Data["UserName"] = uname
 }
 
-// Join method handles WebSocket requests for WebSocketController.
-func (this *KanbanToolWS) Join() {
+//Join method handles WebSocket requests for WebSocketController.
+func (Cont *KanbanToolWS) Join() {
 
-	session := this.StartSession()
+	session := Cont.StartSession()
 	User := session.Get("User")
 	if User == nil {
-		this.Redirect("/login", 307)
+		Cont.Redirect("/login", 307)
 		return
 	}
 
 	// Upgrade from http request to WebSocket.
-	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
+	ws, err := websocket.Upgrade(Cont.Ctx.ResponseWriter, Cont.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
+		http.Error(Cont.Ctx.ResponseWriter, "Not a websocket handshake", 400)
 		return
 	} else if err != nil {
 		beego.Error("Cannot setup WebSocket connection:", err)
@@ -49,16 +51,16 @@ func (this *KanbanToolWS) Join() {
 
 	// Join chat room.
 	FullUserName := User.(Models.User).Firstname + " " + User.(Models.User).Secondname
-	Join(FullUserName, ws, session)
-	defer Leave(FullUserName)
-	this.TplName = "login.tpl"
+	Join(User.(Models.User).Id, FullUserName, ws, session)
+	defer Leave(User.(Models.User).Id)
+	Cont.TplName = "login.tpl"
 	// Message receive loop.
 	for {
 		_, p, err := ws.ReadMessage()
 		if err != nil {
 			return
 		}
-		publish <- newEvent(models.EVENT_MESSAGE, FullUserName, string(p))
+		publish <- newEvent(models.EVENT_MESSAGE, User.(Models.User).Id, FullUserName, string(p), nil)
 	}
 }
 
@@ -72,11 +74,13 @@ func broadcastWebSocket(event models.Event) {
 
 	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
 		// Immediately send event to WebSocket users.
-		ws := sub.Value.(Subscriber).Conn
-		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, data) != nil {
-				// User disconnected.
-				unsubscribe <- sub.Value.(Subscriber).Name
+		if sub.Value.(Subscriber).UserID != event.UserID {
+			ws := sub.Value.(Subscriber).Conn
+			if ws != nil {
+				if ws.WriteMessage(websocket.TextMessage, data) != nil {
+					// User disconnected.
+					unsubscribe <- sub.Value.(Subscriber).UserID
+				}
 			}
 		}
 	}

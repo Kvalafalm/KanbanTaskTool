@@ -2,39 +2,41 @@ package models
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/astaxie/beego/orm"
 )
 
+// User model of user
 type User struct {
-	Id         int
-	Firstname  string
-	Secondname string
-	Password   string
-	Theme      string
-	Bitrix24id int
+	Id             int
+	Firstname      string
+	Secondname     string
+	Password       string
+	Theme          string
+	Bitrix24id     int
+	Defaulttaskb24 int
 }
 
 func init() {
 	orm.RegisterModel(new(User))
 }
 
-func (this *User) ValidCurentUserOrAdd() (err error) {
+//ValidCurentUserOrAdd method
+func (user *User) ValidCurentUserOrAdd() (err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 	UserFromDB := User{}
-	err = database.QueryTable("User").Filter("Bitrix24id", this.Bitrix24id).One(&UserFromDB)
+	err = database.QueryTable("User").Filter("Bitrix24id", user.Bitrix24id).One(&UserFromDB)
 
 	if err != orm.ErrNoRows {
-		this.Id = UserFromDB.Id
-		this.Firstname = UserFromDB.Firstname
-		this.Secondname = UserFromDB.Secondname
-		this.Theme = UserFromDB.Theme
+		user.Id = UserFromDB.Id
+		user.Firstname = UserFromDB.Firstname
+		user.Secondname = UserFromDB.Secondname
+		user.Theme = UserFromDB.Theme
 	} else {
-		UserFromDB.Firstname = this.Firstname
-		UserFromDB.Secondname = this.Secondname
-		UserFromDB.Bitrix24id = this.Bitrix24id
+		UserFromDB.Firstname = user.Firstname
+		UserFromDB.Secondname = user.Secondname
+		UserFromDB.Bitrix24id = user.Bitrix24id
 		UserFromDB.Theme = "light"
 		database.Insert(&UserFromDB)
 	}
@@ -42,13 +44,13 @@ func (this *User) ValidCurentUserOrAdd() (err error) {
 	return nil
 }
 
+//ValidUser method
 func ValidUser(Username string, Password string) (user User, err error) {
 
 	database := orm.NewOrm()
 	database.Using("default")
-	//.Filter("password", Password)
 	count, err := database.QueryTable("user").Filter("firstname", Username).Filter("password", Password).All(&user)
-	fmt.Println(count)
+
 	if count == 1 {
 		user.Password = ""
 		return user, nil

@@ -1,4 +1,4 @@
-package Services
+package services
 
 import (
 	model "KanbanTaskTool/models"
@@ -12,40 +12,23 @@ import (
 	"github.com/astaxie/beego"
 )
 
+//KanbanService method
 type KanbanService struct {
 }
 
+//Bloker need for WorkItems
 type Bloker struct {
-	Id          int       `json:"Id,string"`
-	Idtask      int       `json:"Idtask,string"`
-	Description string    `json:"Description"`
-	Startdate   time.Time `json:"Startdate"`
-	Enddate     time.Time `json:"Enddate"`
-	Diside      string    `json:"Diside"`
-	Finished    bool      `json:"Finished,string"`
+	Id          int              `json:"Id"`
+	Idtask      int              `json:"Idtask"`
+	Description string           `json:"Description"`
+	Startdate   time.Time        `json:"StartDate"`
+	Enddate     time.Time        `json:"EndDate"`
+	Diside      string           `json:"Diside"`
+	Finished    bool             `json:"Finished"`
+	TypeEvent   model.TypesEvent `json:"TypeEvent"`
 }
 
-type Tasks struct {
-	ID             int       `json:"Id,string"`
-	IDBitrix24     int       `json:"IdBitrix24"`
-	Name           string    `json:"Name"`
-	Stage          int       `json:"Stage,string"`
-	DateStart      time.Time `json:"DateStart"`
-	DateStartStage time.Time `json:"DateStartStage"`
-	Users          []User    `json:"Users"`
-	ActiveBlokers  struct {
-		Id          int       `json:"id"`
-		Description string    `json:"description"`
-		Startdate   time.Time `json:"startdate"`
-	} `json:"ActiveBlokers"`
-	Swimline      int                `json:"Swimline,string"`
-	TypeTask      model.TypeWorkItem `json:"TypeTask"`
-	IdProject     int                `json:"IdProject"`
-	ImageProject  string             `json:"ImageProject"`
-	NameProject   string             `json:"NameProject"`
-	СommentsCount string             `json:"СommentsCount"`
-}
-
+//User need for WorkItems
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -53,34 +36,63 @@ type User struct {
 	Icon string `json:"icon"`
 }
 
-type Task struct {
+// WorkItem type need for send to frontEnd workItem
+type WorkItem struct {
 	ID              int                `json:"Id,string"`
 	IDBitrix24      int                `json:"IdBitrix24"`
 	Name            string             `json:"Name"`
 	Stage           int                `json:"Stage,string"`
-	DateSart        time.Time          `json:"DateSart"`
+	DateStart       time.Time          `json:"DateStart"`
 	DateStartStage  time.Time          `json:"DateStartStage"`
-	DescriptionHTML template.HTML      `json:"DescriptionHTML"`
 	Users           []User             `json:"Users"`
-	Iddesk          string             `json:"Idesk`
-	Blokers         []model.Bloker     `json:"Blokers"`
-	Swimline        int                `json:"Swimline,string"`
+	LeadTime        int                `json:"LeadTime"`
+	CyrcleTime      int                `json:"CyrcleTime"`
+	FlowEffectives  int                `json:"FlowEffectives"`
+	Blokers         []Bloker           `json:"Blokers"`
 	TypeTask        model.TypeWorkItem `json:"TypeTask"`
-	IdProject       int                `json:"IdProject"`
+	IDProject       int                `json:"IdProject"`
 	ImageProject    string             `json:"ImageProject"`
 	NameProject     string             `json:"NameProject"`
+	Swimline        int                `json:"Swimline,string"`
+	СommentsCount   string             `json:"СommentsCount"`
+	IDDesk          string             `json:"IDDesk"`
+	DescriptionHTML template.HTML      `json:"DescriptionHTML"`
 	StagesHistory   []StageHistory     `json:"StagesHistory"`
 	Comments        []Comments         `json:"Comments"`
 }
 
-type StageHistory struct {
-	Id      int
-	Idtask  int
-	Idstage int
-	Start   time.Time
-	End     time.Time
-	Name    string
+//Tasks need for show on desk OLD
+type Tasks struct {
+	ID             int                `json:"Id,string"`
+	IDBitrix24     int                `json:"IdBitrix24"`
+	Name           string             `json:"Name"`
+	Stage          int                `json:"Stage,string"`
+	DateStart      time.Time          `json:"DateStart"`
+	DateStartStage time.Time          `json:"DateStartStage"`
+	Users          []User             `json:"Users"`
+	Blokers        []Bloker           `json:"Blokers"`
+	Swimline       int                `json:"Swimline,string"`
+	TypeTask       model.TypeWorkItem `json:"TypeTask"`
+	IdProject      int                `json:"IdProject"`
+	ImageProject   string             `json:"ImageProject"`
+	NameProject    string             `json:"NameProject"`
+	СommentsCount  string             `json:"СommentsCount"`
+	LeadTime       int                `json:"LeadTime"`
+	CyrcleTime     int                `json:"CyrcleTime"`
+	FlowEffectives int                `json:"FlowEffectives"`
 }
+
+//StageHistory need for WorkItems
+type StageHistory struct {
+	Id       int
+	Idtask   int
+	Idstage  int
+	Start    time.Time
+	End      time.Time
+	Duration int
+	Name     string
+}
+
 type Stages struct {
 	ID          int    `json:"Id"`
 	Name        string `json:"Name"`
@@ -120,7 +132,9 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		//beego.ERROR(err);
 		return tasks, err
 	}
+
 	// Получаем данные из Битрикс24 по проектам
+	// TODO
 	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131","64", "125", "117", "111", "109"]`)
 	if errB24Pr != nil {
 		fmt.Println(errB24Pr)
@@ -170,6 +184,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		for _, values := range comitmentPoints {
 			if strconv.Itoa(tasks[i].ID) == values["idtask"] {
 				tasks[i].DateStart, _ = time.Parse("2006-01-02 15:04:05", values["start"].(string))
+				tasks[i].LeadTime = DifferenceInDays(values["start"].(string), time.Now().Format("2006-01-02 15:04:05"))
 			}
 		}
 
@@ -181,22 +196,19 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		}
 
 		//Блокеры
-		for _, blokerRow := range TaskFromDB.Blokers {
-			if !blokerRow.Finished {
-				tasks[i].ActiveBlokers.Id = blokerRow.Id
-				tasks[i].ActiveBlokers.Description = blokerRow.Description
-				tasks[i].ActiveBlokers.Startdate = blokerRow.Startdate
+		for _, row := range TaskFromDB.Blokers {
+			blokerRow := Bloker{
+				row.Id,
+				row.Idtask.Idtasks,
+				row.Description,
+				row.Startdate.UTC(),
+				row.Enddate.UTC(),
+				row.Diside,
+				row.Finished,
+				row.TypeEvent,
 			}
+			tasks[i].Blokers = append(tasks[i].Blokers, blokerRow)
 		}
-		/*Bloker, count, err := model.GetActiveBlokersFromDB(TaskFromDB.Idtasks)
-		if err != nil {
-			return nil, err
-		}
-		if count > 0 {
-			tasks[i].ActiveBlokers.Id = Bloker.Id
-			tasks[i].ActiveBlokers.Description = Bloker.Description
-			tasks[i].ActiveBlokers.Startdate = Bloker.Startdate
-		}*/
 
 	}
 
@@ -249,35 +261,54 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 		fmt.Println(err)
 		return err
 	}
+	//Если перенесли Рабочий элемент на дргой этап значит все блокировки закончились закрываем их
+	//Получить все события изменить их и записать
+	events, count, err := model.GetActiveBlokersFromDB(tasks.ID)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
+	if count > 0 {
+		for _, event := range events {
+			event.Enddate = timeNow
+			event.Finished = true
+			err = model.UpdateBlokerInDB(event)
+
+			if err != nil {
+				return err
+			}
+
+		}
+	}
 	return nil
 }
 
-func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error) {
+func (Cb *KanbanService) NewTask(workItem WorkItem, user model.User) (id int, err error) {
 
 	connectionBitrix24API := ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
 		beego.AppConfig.String("BitrixUser"),
 		beego.AppConfig.String("BitrixWebHook")}
-	iddesk, _ := strconv.Atoi(task.Iddesk)
+	iddesk, _ := strconv.Atoi(workItem.IDDesk)
 	desk, err := model.GetDeskFromDBById(iddesk)
 	commitmentPointId := desk.Startstage
 	ProjectList := strings.Split(desk.Projectsb24, ";")
 
 	taskMap := make(map[string]string)
-	taskMap["TITLE"] = task.Name + " [KT]"
+	taskMap["TITLE"] = workItem.Name
 	taskMap["GROUP_ID"] = ProjectList[0]
 	taskMap["RESPONSIBLE_ID"] = strconv.Itoa(user.Bitrix24id)
 
 	newtaskK := make(map[string]string)
 
-	newtaskK["Stage"] = strconv.Itoa(task.Stage)
-	newtaskK["Swimline"] = strconv.Itoa(task.Swimline)
+	newtaskK["Stage"] = strconv.Itoa(workItem.Stage)
+	newtaskK["Swimline"] = strconv.Itoa(workItem.Swimline)
 	newtaskK["Typetask"] = "0"
-	newtaskK["idBitrix"] = "9675"
+	newtaskK["idBitrix"] = strconv.Itoa(user.Defaulttaskb24)
 	newtaskK["CheckUnicColluumn"] = "idbitrix24"
 	// TO DO
-	if task.Stage != desk.Endstage {
+	if workItem.Stage != desk.Endstage {
 
 		taskB24, err := connectionBitrix24API.AddTask(taskMap)
 		//Записать задачу в нашу базу
@@ -286,7 +317,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 		}
 		newtaskK["idBitrix"] = taskB24.ID
 	} else {
-		newtaskK["Title"] = task.Name + ""
+		newtaskK["Title"] = workItem.Name + ""
 		newtaskK["CheckUnicColluumn"] = ""
 		newtaskK["Typetask"] = "2"
 	}
@@ -297,7 +328,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 		return 0, err
 	}
 
-	if task.Stage != commitmentPointId {
+	if workItem.Stage != commitmentPointId {
 		newRowHistory := model.Stagehistory{
 			Idtask:  id,
 			Idstage: commitmentPointId,
@@ -313,7 +344,7 @@ func (Cb *KanbanService) NewTask(task Task, user model.User) (id int, err error)
 	}
 	newRowHistory := model.Stagehistory{
 		Idtask:  id,
-		Idstage: task.Stage,
+		Idstage: workItem.Stage,
 		Start:   time.Now(),
 	}
 	err = model.SetCurrentTaskStage(newRowHistory)
@@ -355,89 +386,7 @@ func (Cb *KanbanService) CompleteTask(taskId int) (err error) {
 	return nil
 }
 
-func (Cb *KanbanService) GetTaskForDesk(id int) (task Tasks, err error) {
-	connectionBitrix24API := ConnectionBitrix24{
-		beego.AppConfig.String("BitrixDomen"),
-		beego.AppConfig.String("BitrixUser"),
-		beego.AppConfig.String("BitrixWebHook")}
-
-	TaskFromDB, err := model.GetTaskFromDB(id)
-	if err != nil {
-		return task, err
-
-	}
-	//task = Tasks{}
-
-	// Получаем данные из Битрикс24 по задачам
-
-	StringTask := make([]int, 1)
-	StringTask[0] = TaskFromDB.Idbitrix24
-
-	values, errB24 := connectionBitrix24API.GetTaskListById(StringTask)
-	if errB24 != nil {
-		fmt.Println(errB24)
-		return task, errB24
-	}
-
-	// Получаем данные из Битрикс24 по проектам
-	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`["131","64", "125", "117", "111", "109"]`)
-	if errB24Pr != nil {
-		fmt.Println(errB24Pr)
-		return task, errB24Pr
-	}
-
-	task.ID = TaskFromDB.Idtasks
-	task.IDBitrix24 = TaskFromDB.Idbitrix24
-	task.Stage = TaskFromDB.Stageid
-	task.Name = TaskFromDB.Title
-	task.Swimline = TaskFromDB.Swimline
-	for _, valuesB24 := range values.Result.Tasks {
-		if valuesB24.ID == task.IDBitrix24 {
-			Users := make([]User, 0)
-			user := User{
-				ID:   valuesB24.Responsible.ID,
-				Name: valuesB24.Responsible.Name,
-				Link: valuesB24.Responsible.Link,
-				Icon: valuesB24.Responsible.Icon}
-			Users = append(Users, user)
-
-			for _, addUser := range valuesB24.Accomplices {
-				UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(addUser)
-				user := User{
-					ID:   UserAccomplices.Result.ID,
-					Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
-					Link: "",
-					Icon: UserAccomplices.Result.Avatar}
-				Users = append(Users, user)
-
-			}
-			task.Users = make([]User, len(Users))
-			copy(task.Users, Users)
-			if task.Name == "" {
-				task.Name = valuesB24.Title
-			}
-			task.IdProject = valuesB24.GroupID
-		}
-	}
-
-	for _, valuesB24projects := range projects.Result {
-		if valuesB24projects.ID == task.IdProject {
-			task.ImageProject = valuesB24projects.IMAGE
-			task.NameProject = valuesB24projects.NAME
-		}
-	}
-
-	for _, blokerRow := range TaskFromDB.Blokers {
-		if !blokerRow.Finished {
-			task.ActiveBlokers.Id = blokerRow.Id
-			task.ActiveBlokers.Description = blokerRow.Description
-			task.ActiveBlokers.Startdate = blokerRow.Startdate
-		}
-	}
-	return task, nil
-}
-
-func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
+func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 	//var task = model.Task{}
 
 	connectionBitrix24API := ConnectionBitrix24{
@@ -448,27 +397,33 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 	// Получаем данные из Битрикс24 по задачам
 
 	taskBD, _ := model.GetTaskFromDB(id)
-	task.ID = taskBD.Idtasks
-	task.IDBitrix24 = taskBD.Idbitrix24
-	task.Stage = taskBD.Stageid
+	workItem.ID = taskBD.Idtasks
+	workItem.IDBitrix24 = taskBD.Idbitrix24
+	workItem.Stage = taskBD.Stageid
+	workItem.Swimline = taskBD.Swimline
 
 	taskB24, errB24 := connectionBitrix24API.GetTask(strconv.Itoa(taskBD.Idbitrix24))
 	if errB24 != nil {
 		fmt.Println(errB24)
-		return task, errB24
+		return workItem, errB24
 	}
-	task.Name = taskB24.Result.TITLE
-	//task.DateSart = taskB24.Result.DATESTART
+
+	if taskBD.Title == "" {
+		workItem.Name = taskB24.Result.TITLE
+	} else {
+		workItem.Name = taskBD.Title
+	}
+	//task.DateStart = taskB24.Result.DATESTART
 	//task.DateStartStage		= ;
-	task.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
+	workItem.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
 	stages, _ := model.GetStages()
-	task.TypeTask = *taskBD.Typetask
+	workItem.TypeTask = *taskBD.Typetask
 	StagesHistory, _ := model.GetTaskHistoryStages(id)
 
 	if err != nil {
-		return task, err
+		return workItem, err
 	}
-	task.StagesHistory = make([]StageHistory, 0)
+	workItem.StagesHistory = make([]StageHistory, 0)
 	for _, row := range StagesHistory {
 		newRow := StageHistory{
 			row.Id,
@@ -476,6 +431,7 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 			row.Idstage,
 			row.Start,
 			row.End,
+			DifferenceInDays(row.Start, row.End),
 			"",
 		}
 		for _, rowStage := range stages {
@@ -483,22 +439,80 @@ func (Cb *KanbanService) GetTask(id int) (task Task, err error) {
 				newRow.Name = rowStage.Name
 			}
 		}
-		task.StagesHistory = append(task.StagesHistory, newRow)
+		workItem.StagesHistory = append(workItem.StagesHistory, newRow)
 	}
 
-	task.Blokers, _ = model.GetAllBlokersFromDB(id)
+	//TODO
+	workItem.IDProject, _ = strconv.Atoi(taskB24.Result.GROUPID)
+	projects, errB24Pr := connectionBitrix24API.GetProjectListById(`[` + taskB24.Result.GROUPID + `]`)
+	if errB24Pr != nil {
+		return workItem, errB24Pr
+	}
+
+	for _, valuesB24projects := range projects.Result {
+		if valuesB24projects.ID == workItem.IDProject {
+			workItem.ImageProject = valuesB24projects.IMAGE
+			workItem.NameProject = valuesB24projects.NAME
+		}
+	}
+
+	BlokersDB, _ := model.GetAllBlokersFromDB(id)
+	for _, row := range BlokersDB {
+		blokerRow := Bloker{
+			row.Id,
+			row.Idtask.Idtasks,
+			row.Description,
+			row.Startdate.UTC(),
+			row.Enddate.UTC(),
+			row.Diside,
+			row.Finished,
+			row.TypeEvent,
+		}
+		workItem.Blokers = append(workItem.Blokers, blokerRow)
+	}
+
+	Users := make([]User, 0)
+	UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(taskB24.Result.RESPONSIBLEID)
+	user := User{
+		ID:   UserAccomplices.Result.ID,
+		Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
+		Link: "",
+		Icon: UserAccomplices.Result.Avatar}
+	Users = append(Users, user)
+
+	for _, addUser := range taskB24.Result.ACCOMPLICES {
+		UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(addUser)
+
+		user := User{
+			ID:   UserAccomplices.Result.ID,
+			Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
+			Link: "",
+			Icon: UserAccomplices.Result.Avatar}
+		Users = append(Users, user)
+	}
+
+	workItem.Users = make([]User, len(Users))
+	copy(workItem.Users, Users)
 	CommentsB24, err := connectionBitrix24API.GetCommentsById(taskB24.Result.ID)
 
 	if err != nil {
 		fmt.Println(err)
-		return task, err
+		return workItem, err
 	}
-	task.Comments = make([]Comments, 0)
+	workItem.Comments = make([]Comments, 0)
 	for _, row := range CommentsB24.Result {
-		task.Comments = append(task.Comments, row)
+		workItem.Comments = append(workItem.Comments, row)
 	}
 
-	return task, nil
+	return workItem, nil
+}
+func (Cb *KanbanService) GetIdtaskByBitrix24(IdB24 string) (Id int, err error) {
+	IdB24int, _ := strconv.Atoi(IdB24)
+	task, err := model.GetTaskFromDBbyB24(IdB24int)
+	if err != nil {
+		return Id, err
+	}
+	return task.Idtasks, nil
 }
 
 func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
@@ -547,6 +561,7 @@ func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
 	blokerDb.Enddate = bloker.Enddate
 	blokerDb.Description = bloker.Description
 	blokerDb.Diside = bloker.Diside
+	blokerDb.TypeEvent = bloker.TypeEvent
 	if blokerDb.Enddate != (time.Time{}) {
 		blokerDb.Finished = true
 	} else {

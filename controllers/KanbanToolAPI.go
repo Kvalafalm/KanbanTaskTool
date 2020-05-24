@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"KanbanTaskTool/models"
 	Models "KanbanTaskTool/models"
 	service "KanbanTaskTool/services"
 	"encoding/json"
@@ -93,11 +94,11 @@ func (this *KanbanToolAPI) Post() {
 
 	param, err := getParamBitrix24(string(this.Ctx.Input.RequestBody))
 
-	if User == nil && err == nil {
-		errorJson := make(map[string]string)
-		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
-		errorJson["errorId"] = "401"
-		this.Data["json"] = errorJson
+	if User == nil && err != nil {
+		errorJSON := make(map[string]string)
+		errorJSON["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
+		errorJSON["errorId"] = "401"
+		this.Data["json"] = errorJSON
 		this.ServeJSON()
 		return
 	}
@@ -113,6 +114,14 @@ func (this *KanbanToolAPI) Post() {
 		task := service.Tasks{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &task)
 		err := serv.SetTask(task)
+		taskPublish, _ := serv.GetTask(task.ID)
+
+		publish <- newEvent(
+			models.EVENT_UPDATECARD,
+			User.(Models.User).Id,
+			User.(Models.User).Firstname,
+			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" обновил(а) задаче №"+strconv.Itoa(taskPublish.IDBitrix24),
+			&taskPublish)
 		if err != nil {
 			this.Data["json"] = "{ \"successful\" : \"false\" }"
 		} else {
@@ -121,20 +130,53 @@ func (this *KanbanToolAPI) Post() {
 		this.ServeJSON()
 
 	case "task.new":
-		task := service.Task{}
+		task := service.WorkItem{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &task)
 		id, _ := serv.NewTask(task, User.(Models.User))
-		newTask, _ := serv.GetTaskForDesk(id)
-		this.Data["json"] = &newTask
+		taskPublish, _ := serv.GetTask(id)
+
+		publish <- newEvent(
+			models.EVENT_NEWCARD,
+			User.(Models.User).Id,
+			User.(Models.User).Firstname,
+			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" создал(а) новую задачу №"+strconv.Itoa(taskPublish.IDBitrix24),
+			&taskPublish)
+
+		this.Data["json"] = &taskPublish
 		this.ServeJSON()
 
 	case "task.create":
 		serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
 		this.ServeJSON()
 
+	case "task.updateb24":
+		ID, err := serv.GetIdtaskByBitrix24(param["data[FIELDS_AFTER][ID]"])
+		if err != nil {
+			beego.Error(err)
+		} else {
+			task, err := serv.GetTask(ID)
+			if err != nil {
+				beego.Error(err)
+				return
+			}
+			publish <- newEvent(
+				models.EVENT_UPDATECARD,
+				0,
+				"",
+				"Рабочий элемент №"+strconv.Itoa(task.IDBitrix24)+" в битрикс24 обновлен",
+				&task)
+			this.ServeJSON()
+		}
+
 	case "task.complete":
 		id, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
 		err := serv.CompleteTask(id)
+		publish <- newEvent(
+			models.EVENT_REMOVECARD,
+			User.(Models.User).Id,
+			User.(Models.User).Firstname,
+			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" завершил(а) задачу ",
+			id)
 		if err != nil {
 			this.Data["json"] = "false"
 		} else {
@@ -148,6 +190,13 @@ func (this *KanbanToolAPI) Post() {
 		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
 		err := serv.UpdateBloker(bloker)
 
+		taskPublish, _ := serv.GetTask(bloker.Idtask)
+		publish <- newEvent(
+			models.EVENT_UPDATECARD,
+			User.(Models.User).Id,
+			User.(Models.User).Firstname,
+			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" измененил(а)/добавил(а) событие по задаче №"+strconv.Itoa(taskPublish.IDBitrix24),
+			&taskPublish)
 		if err != nil {
 			this.Data["json"] = "{ \"successful\" : \"false\" }"
 		} else {
@@ -178,7 +227,8 @@ func getParamBitrix24(dataIn string) (data map[string]string, err error) {
 				mapData[date[0]] = date[1]
 			}
 		}
-		if mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncoming") {
+		if mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncomingNewTask") ||
+			mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncomingUpdateTask") {
 			return mapData, nil
 		} else {
 			err = errors.New("bad bitrix24 request")

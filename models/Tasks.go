@@ -54,6 +54,14 @@ func GetTaskFromDB(id int) (taskListFromDB Tasks, err error) {
 	return taskListFromDB, err
 }
 
+func GetTaskFromDBbyB24(id int) (task Tasks, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	err = database.QueryTable(new(Tasks)).Filter("idbitrix24", id).One(&task, "Idtasks")
+	return task, err
+}
+
 func UpdateTaskInDB(task Tasks) (err error) {
 	database := orm.NewOrm()
 	database.Using("default")

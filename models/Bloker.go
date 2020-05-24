@@ -7,6 +7,16 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+//TypesEvent typeOfBlokers/Events
+type TypesEvent int
+
+//TypesEvent
+const (
+	EventBloker = iota
+	EventPause
+	EventFlaw
+)
+
 type Bloker struct {
 	Id          int    `orm:"auto"`
 	Idtask      *Tasks `orm:"rel(fk);column(idtask)"`
@@ -15,19 +25,20 @@ type Bloker struct {
 	Enddate     time.Time
 	Diside      string
 	Finished    bool
+	TypeEvent   TypesEvent
 }
 
 func init() {
 	orm.RegisterModel(new(Bloker))
 }
 
-func GetActiveBlokersFromDB(idtask int) (ActiveBloker Bloker, count int, err error) {
+func GetActiveBlokersFromDB(idtask int) (ActiveBlokers []Bloker, count int, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 	var count64 int64
-	count64, err = database.QueryTable("bloker").Filter("idtask", idtask).Filter("finished", false).All(&ActiveBloker)
+	count64, err = database.QueryTable("bloker").Filter("idtask", idtask).Filter("finished", false).All(&ActiveBlokers)
 
-	return ActiveBloker, int(count64), err
+	return ActiveBlokers, int(count64), err
 }
 
 func GetBlokerFromDBbyId(id int) (bloker Bloker, err error) {
@@ -63,8 +74,8 @@ func UpdateBlokerInDB(bloker Bloker) (err error) {
 		"enddate":     bloker.Enddate.UTC(),
 		"diside":      bloker.Diside,
 		"finished":    bloker.Finished,
+		"TypeEvent":   bloker.TypeEvent,
 	}
-
 	if bloker.Id == 0 {
 		_, err = database.Insert(&bloker)
 	} else {

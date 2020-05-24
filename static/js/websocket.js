@@ -1,9 +1,8 @@
-var socket;
+//import { wo } from "Kanban v3";
+const socket = new WebSocket('ws://' + window.location.host + '/ws/join');;
 
 $(document).ready(function () {
-    // Create a socket
-    socket = new WebSocket('ws://' + window.location.host + '/ws/join');
-    // Message received on the socket
+
     socket.onmessage = function (event) {
         var data = JSON.parse(event.data);
 
@@ -24,10 +23,38 @@ $(document).ready(function () {
             content.innerText = data.Content;
 
             break;
-        
+
         case 3: // EVENT_REMOVECARD
-            //$(".Kanban #"++)
+            window.WorkItems.forEach(element => {
+                if (element.Id == data.Object){
+                    element.hide();
+                    Notify.generate(`Завершили карточку №${element.IdBitrix24}`, '', 1);
+                }
+            });
+            break;       
+
+        case 4: // EVENT_UPDATEWORKITEM
+            window.WorkItems.forEach(element => {
+                if (element.Id == data.Object.Id){
+                    element.updateData(data.Object);
+                    element.refreshCard();
+                    element.blink();
+                    Notify.generate(data.Content, '', 1);
+                }
+            });
+            
             break;
+        case 6: // EVENT_NEWCARD
+            if ($("#SL"+data.Object.Swimline+" .Stage"+data.Object.Stage+" .KanbanColumnContent").length == 1) {
+                let newWorkItems = new WorkItem();
+                newWorkItems.updateData(data.Object);
+                newWorkItems.show();
+                newWorkItems.blink();
+                WorkItems.push(newWorkItems);
+                Notify.generate(`Новая карточка №${data.Object.IdBitrix24}`, '', 1);
+            }
+            break;
+            
         }
     };
     socket.onclose = function (event){

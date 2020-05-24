@@ -1,19 +1,21 @@
 package controllers
 
 import (
+	"KanbanTaskTool/models"
 	"container/list"
 	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/session"
-	"github.com/beego/samples/WebIM/models"
+
 	"github.com/gorilla/websocket"
 )
 
+// Subscriber users who subscube to websocetevent
 type Subscriber struct {
-	Name    string
-	Conn    *websocket.Conn // Only for WebSocket users; otherwise nil.
-	Session *session.Store
+	UserID int
+	Name   string
+	Conn   *websocket.Conn // Only for WebSocket users; otherwise nil.
 }
 
 func init() {
@@ -24,7 +26,7 @@ var (
 	// Channel for new join users.
 	subscribe = make(chan Subscriber, 100)
 	// Channel for exit users.
-	unsubscribe = make(chan string, 10)
+	unsubscribe = make(chan int, 10)
 	// Send events here to publish them.
 	publish = make(chan models.Event, 100)
 	// Long polling waiting list.
@@ -32,13 +34,14 @@ var (
 	subscribers = list.New()
 )
 
+// EventsBox storage to webSocetEvents
 func EventsBox() {
 	for {
 		select {
 
 		case sub := <-subscribe:
 			subscribers.PushBack(sub) // Add user to the end of list.
-			publish <- newEvent(models.EVENT_JOIN, sub.Name, "")
+			publish <- newEvent(models.EVENT_JOIN, sub.UserID, sub.Name, "", nil)
 			beego.Info("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 
 		case event := <-publish:
@@ -56,7 +59,7 @@ func EventsBox() {
 			}
 		case unsub := <-unsubscribe:
 			for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-				if sub.Value.(Subscriber).Name == unsub {
+				if sub.Value.(Subscriber).UserID == unsub {
 					subscribers.Remove(sub)
 					// Clone connection.
 					ws := sub.Value.(Subscriber).Conn
@@ -64,7 +67,7 @@ func EventsBox() {
 						ws.Close()
 						beego.Error("WebSocket closed:", unsub)
 					}
-					publish <- newEvent(models.EVENT_LEAVE, unsub, "") // Publish a LEAVE event.
+					publish <- newEvent(models.EVENT_LEAVE, unsub, sub.Value.(Subscriber).Name, "", nil) // Publish a LEAVE event.
 					break
 				}
 			}
@@ -72,18 +75,17 @@ func EventsBox() {
 	}
 }
 
-func Join(user string, ws *websocket.Conn, ss session.Store) {
-	subscribe <- Subscriber{Name: user, Conn: ws}
+//Join this method subcsribe to websocet events
+func Join(UserID int, user string, ws *websocket.Conn, ss session.Store) {
+	subscribe <- Subscriber{UserID: UserID, Name: user, Conn: ws}
 }
 
-func Leave(user string) {
+//Leave this method unsubcsribe to websocet events
+func Leave(user int) {
 	unsubscribe <- user
 }
 
-func newEvent(ep models.EventType, user, msg string) models.Event {
-	return models.Event{ep, user, int(time.Now().Unix()), msg}
+//newEvent this method generate new event
+func newEvent(ep models.EventType, userID int, user string, msg string, Object interface{}) models.Event {
+	return models.Event{ep, userID, user, int(time.Now().Unix()), msg, Object}
 }
-
-/*func GetUserFromWebSocet(User){
-	return
-}*/
