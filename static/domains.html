@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///C:/Users/rerknv/go/src/KanbanTaskTool/views/Roles.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>КанбанТул РЭР</title>
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+  <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<body style="background-color: #e7e7e785;">
+<!-- Styles -->
+<style>
+/* CSS */
+
+.list-counter-circle {
+  list-style: none;
+  counter-reset: list;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.list-counter-circle>li {
+  position: relative;
+  display: block;
+  height: 2rem;
+  line-height: 2rem;
+  margin-left: 1.75rem;
+  margin-bottom: .25rem;
+  padding-left: 1rem;
+  padding-right: .5rem;
+  color: #e7e7e7;
+  background: #27ac49;
+  white-space: nowrap;
+  border-radius: .25rem;
+  white-space: pre-wrap;
+    height: auto;
+}
+.list-counter-circle>li:last-child {
+  margin-bottom: 0;
+}
+.list-counter-circle>li::before {
+  content: counter(list);
+  counter-increment: list;
+  position: absolute;
+  left: -2rem;
+  top: -.25rem;
+  bottom: -.25rem;
+  width: 2.5rem;
+  line-height: 2rem;
+  border-radius: 1.25rem;
+  border: .25rem solid #e7e7e7;
+  text-align: center;
+  color: #e7e7e7;
+  background: #1e8827;
+}
+    .domain__name {
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+    .domain__name h3 {
+      display: inline-block;
+      position: relative;
+      background: #0097a7;
+      color: #e7e7e7;
+      margin-bottom: 0;
+      padding: .5rem 3rem;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+    }
+    .domain__name h3::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+    .domain__name h3::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+
+.domain{
+  font-family: SegoePrintRegular;
+  margin: 0 auto;
+  width: 70%;
+  display: block;
+}
+.domain__name{
+
+}
+.domain__discription{
+  
+  
+}
+.domain__members{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/1s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__delegat{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/1s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__driver{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/2s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__key-function{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/3s.png')  no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__сonstraints{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/4s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__resourses{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/5s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__experience{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/6s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__KPI{
+  list-style:none;
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/7s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__date-review{
+  list-style:none;
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/8s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__contentName{
+  font-weight: bold;
+  
+}
+
+.onhover {
+  cursor: pointer;
+}
+
+.onhover button {
+  display: none;
+}
+
+.onhover:hover button {
+  display: inline-block;
+  padding: 0px;
+  font-size: 0.8rem;
+}
+
+
+.domain__content{
+  /*font-family: 'Times New Roman', Times, serif;*/
+}
+.domain__list-in-element{
+}
+.domain__row-list{
+ padding-top: 6px;
+ padding-bottom: 6px;
+}
+@font-face {
+			font-family: "SegoePrintRegular";
+			src: url("../static/fonts/SegoePrintRegular.eot");
+			src: url("../static/fonts/SegoePrintRegular.eot?#iefix")format("embedded-opentype"),
+			url("../static/fonts/SegoePrintRegular.woff") format("woff"),
+			url("../static/fonts/SegoePrintRegular.ttf") format("truetype");
+			font-style: normal;
+			font-weight: normal;
+	}
+</style>
+    <script>
+
+      const JSONdata = [{
+              "ID":1,
+              "Name": "\"Собрание по пополнению\"",
+              "Driver": "При расстановке приоритетности задач ОИО не может корректно учесть важность задач.\nЗадачи берутся по принципу \"кто громче кричит\".\nДругие команды не видят потребности друг друга.\nЭто приводит к тому что работа команды ОИО не прозрачна,снижается уровень доверия в компании.Создается впечатления, что у команды ОИО, есть любимчики для которых выполняются задачи.\nВыполняемые задачи не приносят максимальную пользу для компании.\nНеобходимо, сделать работу команды ОИО прозрачной и наладить связь между командами таким образом чтобы они видели потребности друг друга и на основании этих данных могли принимать решения о выборе задач приносящих максимальную пользу для компании.\n \n        ",
+              "Delegat": "ОИО",
+              "KeyFunction": [
+                " Расставление приоритета задач",
+                " Выбор наиболее актуальных зада для выполнения",
+                " Работа в командах по информированию работы домена "
+              ],
+              "Constraints": [
+                " Возможности отдела ОИО"
+              ],
+              "Experience": [
+                "123123",
+                "3123123123",
+                "asdfasdfasdf",
+                "asdfasdfasd"
+              ],
+              "KPI": [
+                "Процент неработающих задач( т.е. задачу выполнили и ей не пользуются)"
+              ],
+              "Resourses": [],
+              "DateReview": "??.??.??",
+ "Members":[]
+              },{
+   "ID":2,
+   "Name":"ТРАНСФОРМАЦИЯ",
+   "Driver":"Текущая ситуация: Существующая система организации компании не имеет вшитой системы развития и напрямую зависит от ЛПР\n\nВлияние на компанию: Компания теряет устойчивость, не гибкая и не ориентируется на потребности клиентов\n\nПотребность: Необходимо внедрить изменения и построить систему развития компании.\n\nЭффект: Сохранение компании и обеспечение безопасности людей",
+   "Delegat":"Синергия",
+   "KeyFunction":[
+      "Изучать новые технологии",
+      "Выбирать и реализовывать стратегию развития",
+      "Обучать сотрудников, быть примером",
+      "Находить инструменты для внедрения",
+      "Разработать систему оценки"
+   ],
+   "Constraints":[
+      "Законы РФ",
+      "Деньги",
+      "Сложности перевода между контурами",
+      "Учредитель",
+      "Время"
+   ],
+   "Experience":[
+      "Эмоции (эмоциональный интеллект)",
+      "Готовность к изменениям",
+      "Работа в команде",
+      "Принятие решений",
+      "Слушать, слышать",
+      "Системное мышление",
+      "Критическое мышление",
+      "Открытое мышление",
+      "Креативность",
+      "Обучаемость"
+   ],
+   "KPI":[
+      "Дорожная карта проекта",
+      "Кол-во и качество петель обратной связи",
+      "Описаны все драйвера команд"
+   ],
+   "Resourses":[
+      "Бюджет",
+      "Технологии и инструменты",
+      "Библиотека, банк знаний",
+      "Наличие внешних экспертов"
+   ],
+   "Members":[
+
+   ],
+   "DateReview":"Ежемесячно, еженедельно"
+},{
+   "ID":3,
+   "Name":"ОПЕРАЦИОННАЯ ДЕЯТЕЛЬНОСТЬ",
+   "Driver":"Текущая ситуация: Сквозной процесс не может работать без частичного подключения руководителей в местах возникновения напряжений. Часть процессов не делегировано.\n\nВлияние на компанию:  Мы быстро принимаем решения, но мы в текучке\n\nПотребность: Операционными процессами полностью занимаются команды\n\nЭффект: Антихрупкая развивающаяся компания. Есть круг стратегов, который работает на 100%.",
+   "Delegat":"ОИО",
+   "KeyFunction":[
+      "Принимать операционные решения",
+      "Организовывать людей и процессы",
+      "\"Тушение пожаров\"",
+      "Синхронизация между отделами",
+      " Диагностика и устранение проблем",
+      "Поддержание \"климата\" в компании",
+      "Анализ метрик (в подразделениях)"
+   ],
+   "Constraints":[
+      "Время",
+      " Технологические ограничения",
+      "Зона комфорта сотрудников"
+   ],
+   "Experience":[
+      "Коммуникабельность",
+      "Многозадачность",
+      " Скорость принятия решений",
+      "Организаторские способности",
+      "Открытое мышление"
+   ],
+   "KPI":[
+      "Процент занятости по обязанностям участников сквозного процесса (Ильин, Качанова, Кирюхин, Корчагин, Полев)"
+   ],
+   "Resourses":[
+      "Деньги",
+      "Время",
+      "Команда",
+      "Партнеры"
+   ],
+   "Members":[
+      "Ильин",
+      "Качанова",
+      "Кирюхин",
+      "Корчагин",
+      "Полев"
+   ],
+   "DateReview":"Еженедельно на планерке"
+},
+{
+   "ID":4,
+   "Name":"СТРАТЕГИЯ",
+   "Driver":"Текущая ситуация: Нет системной работы по внешней стратегии. Влияние на компанию: Компания подвержена высоким рискам влияния внешней среды. Потребность: Разработана внешняя стратегия над которой постоянно ведется работа. Эффект: Антихрупкость.",
+   "Delegat":"СИНЕРГИЯ",
+   "KeyFunction":[
+      "Сбор и анализ внешней информации",
+      "Разработка и внедрение внешней стратегии",
+      "Своевременная корректировка стратегии",
+      "Поиск новых технологий"
+   ],
+   "Constraints":[
+      "Емкость рынка",
+      "Экономическая ситуация",
+      "Законодательство",
+      "Финансовые возможности",
+      " Учредители",
+      "Время"
+   ],
+   "Experience":[
+      "Стратегическое мышление",
+      "Системное мышление",
+      "Высокий уровень коммуникаций, умение вести переговоры",
+      "Умение взять на себя риски"
+   ],
+   "KPI":[
+      "Процент реализации стратегических проектов",
+      "% эффективных стратегических проектов"
+   ],
+   "Resourses":[
+      "Информационные ресурсы (интернет, СБИС и т.д.)",
+      "Налаженные контакты",
+      "Финансы",
+      "Время"
+   ],
+   "Members":[
+
+   ],
+   "DateReview":"Ежеквартально"
+},{
+ "ID": 0,
+ "Name": "Новый Домен",
+ "Driver": "",
+ "Delegat": "",
+ "KeyFunction": [ ],
+ "Constraints": [],
+ "Experience": [],
+ "KPI": [],
+ "Resourses": [],
+ "DateReview": "",
+ "Members":[]
+}
+];
+
+      window.Domains = [];
+      window.onload = ()=>{
+        //startData = JSON.parse(JSONdata);
+        const navTab = document.getElementById("nav-tab");
+        const navTabContent = document.getElementById("nav-tabContent");
+        let ID = 1;
+        JSONdata.forEach((element)=>{
+
+          navTab.insertAdjacentHTML("beforeend",
+          `<a class="nav-item nav-link" id="panel${element.ID}-tab" data-toggle="tab" href="#panel${element.ID}" role="tab" aria-controls="panel${element.ID}" aria-selected="false">${element.Name}</a>`
+          );
+          navTabContent.insertAdjacentHTML("beforeend",
+          `<div class="tab-pane fade" id="panel${element.ID}" role="tabpanel" aria-labelledby="panel${element.ID}-tab"></div>`
+          );
+          const domain = new Domain(element,ID,document.getElementById(`panel${element.ID}`));
+          ID += 1;
+          domain.show();
+          window.Domains.push(domain);
+        });
+
+
+
+          
+      }
+
+      class Domain{
+        constructor(dataJSON,ID,div){
+            this.ID= ID;
+            this.div= div;
+          if (dataJSON !=undefined){
+            this.Name = dataJSON.Name,
+            this.Driver = dataJSON.Driver;
+            this.Delegat = dataJSON.Delegat
+            this.KeyFunction = dataJSON.KeyFunction;
+            this.Constraints = dataJSON.Constraints;
+            this.Experience = dataJSON.Experience;
+            this.KPI =  dataJSON.KPI;
+            this.Resourses  = dataJSON.Resourses;
+            this.DateReview = dataJSON.DateReview;
+            this.Members = dataJSON.Members;
+          }else{
+            this.Name = "",
+            this.Driver = "";
+            this.Delegat = "";
+            this.KeyFunction = [];
+            this.Constraints = [];
+            this.Experience = [];
+            this.KPI =  [];
+            this.Resourses  = [];
+            this.DateReview = "";
+            this.Members = [];
+          }
+
+        }
+
+        update(){
+
+        }
+        getHTMLli(inputArray){
+          let HTMLCode = "";
+          inputArray.forEach(element => {
+            HTMLCode = HTMLCode + `
+            <li class="domain__row-list onhover"> ${element}
+            <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContentList(this.parentElement)">
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </li>`;
+          });
+          return HTMLCode
+        }
+        show(){
+          this.div.insertAdjacentHTML("beforeend",`
+          <div class="domain" id=${this.ID}>
+      <h3 class="domain__name onhover">${this.Name}
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="getJSONStruct(this)">
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="save(this)">
+          <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="delete(this)">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+        
+      </h3>
+      <ul class="domain__discription">
+        <li class="domain__delegat">
+          <span class="domain__contentName onhover">Делегирующий:
+            <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </span>
+          <div class="domain__content">${this.Delegat}</div>
+        </li>
+      <li class="domain__driver">
+        <span class="domain__contentName onhover">Исходный драйвер:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </button>
+        </span>
+        <div class="domain__content">${this.Driver}</div>
+      </li>
+      <li class="domain__key-function ">
+        <span class="domain__contentName onhover">Ключевые обязанности:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.KeyFunction)}
+        </ul>
+      </li>
+      <li class="domain__сonstraints">
+        <span class="domain__contentName onhover">Ограничения:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Constraints)}
+        </ul>
+      </li>
+      <li class="domain__resourses">
+        <span class="domain__contentName onhover">Ресурсы:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Resourses)}
+        </ul>
+      </li>
+      <li class="domain__experience">
+        <span class="domain__contentName onhover">Предпочтительные качества, навыки, опыт:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Experience)}
+        </ul>
+      </li>
+      <li class="domain__KPI">
+        <span class="domain__contentName onhover">Критерии оценки:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.KPI)}
+        </ul>
+      </li>
+      <li class="domain__members">
+        <span class="domain__contentName onhover">Участники:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Members)}
+        </ul>
+      </li>
+      <li class="domain__date-review">
+        <span class="domain__contentName onhover" >Дата оценки:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </button>
+        </span>
+        <div class="domain__content">${this.DateReview}</div>
+      </li>
+      </ul>
+    </div>`);
+        }
+      }
+
+
+
+      function getGataFromUL(domain,className){
+        const Array = domain.getElementsByClassName(className)[0].getElementsByClassName("domain__list-in-element")[0].getElementsByClassName("domain__row-list");
+        let data = [];
+        for (let element of Array) {
+          data.push(element.textContent);
+        }
+
+        return data
+      }
+      function getJSONStruct(element){
+      const domain = element.parentElement.parentElement;
+      
+      const JSONStruct = {
+        ID : 0,
+        Name: domain.getElementsByClassName("domain__name")[0].textContent,
+        Driver: domain.getElementsByClassName("domain__driver")[0].getElementsByClassName("domain__content")[0].textContent,
+        Delegat: domain.getElementsByClassName("domain__delegat")[0].getElementsByClassName("domain__content")[0].textContent,
+        KeyFunction: getGataFromUL(domain,"domain__key-function"),
+        Constraints: getGataFromUL(domain,"domain__сonstraints"),
+        Experience: getGataFromUL(domain,"domain__experience"),
+        KPI: getGataFromUL(domain,"domain__KPI"),
+        Resourses: getGataFromUL(domain,"domain__resourses"),
+        Members: getGataFromUL(domain,"domain__members"),
+        DateReview: domain.getElementsByClassName("domain__date-review")[0].getElementsByClassName("domain__content")[0].textContent
+      }
+
+      const data = JSON.stringify(JSONStruct, null, ' ');
+      navigator.clipboard.writeText(data)
+      .then(() => {
+        alert("Данные в буфере обмена");
+      })
+      .catch(err => {
+        alert(err.message);
+
+      });
+
+
+      }
+      function addDomainContentList(e){
+        let ul = e.parentElement.parentElement.getElementsByClassName("domain__list-in-element")[0];
+        const li = document.createElement("li");
+        li.classList.add("domain__row-list");
+        ul.append(li);
+        editDomainContentList(li);
+
+      }
+      function editDomainContentList(li){
+        const value = li.innerText;
+        li.innerHTML = "";
+        li.classList.remove("onhover");
+
+        let divGroup = document.createElement("div");
+        divGroup.className = "input-group-append";
+        const input = document.createElement("input");
+        input.value = value;
+        input.className="form-control";
+        divGroup.append(input);
+        const btnOk = document.createElement("button");
+        btnOk.className = "btn btn-outline-secondary";
+        btnOk.type = "button"
+        btnOk.insertAdjacentHTML("beforeend",`<i class="fa fa-floppy-o" aria-hidden="true"></i>`);
+        const Save = ()=>{
+          if (input.value ==""){
+            li.parentElement.removeChild(li);
+          }else{
+            li.innerText = input.value
+            li.classList.add("onhover");
+            li.insertAdjacentHTML("beforeend",`<button class="btn" type="button" onclick="editDomainContentList(this.parentElement)"><i class="fa fa-pencil" aria-hidden="true"></i></button>`);
+          }
+        }
+        btnOk.removeEventListener("click",Save);
+        btnOk.addEventListener("click",Save);
+        divGroup.append(btnOk);
+
+        const btnCancel = document.createElement("button");
+        btnCancel.className = "btn btn-outline-secondary";
+        btnCancel.type = "button";
+        btnCancel.insertAdjacentHTML("beforeend",`<i class="fa fa-times" aria-hidden="true"></i>`);
+
+        const Close = ()=>{
+            li.innerHTML="";
+            li.classList.add("onhover");
+            if (value===""){
+              li.parentNode.removeChild(li)
+            }else{
+              li.innerText = value;
+            }
+
+
+            li.insertAdjacentHTML("beforeend",`<button class="btn" type="button" onclick="editDomainContentList(this.parentElement)"><i class="fa fa-pencil" aria-hidden="true"></i></button>`);
+
+        }
+        btnCancel.removeEventListener("click",Close);
+        btnCancel.addEventListener("click",Close);
+        divGroup.append(btnCancel);
+        li.append(divGroup);
+
+      }
+      function editDomainContent(e){
+        let div = e.parentElement.parentElement.getElementsByClassName("domain__content")[0];
+        const value = div.textContent;
+        div.textContent="";
+        div.classList.add("input-group");
+        div.classList.add("mb-3");
+        
+        const input = document.createElement("textarea");
+        input.rows=1;
+        input.value = value;
+        input.className="form-control";
+        input.rows = value.split(/\n/).length+2;
+        div.append(input);
+
+        
+        const divGroup = document.createElement("div");
+        divGroup.className = "input-group-append";
+        const btnOk = document.createElement("button");
+        btnOk.className = "btn btn-outline-secondary";
+        btnOk.type = "button";
+        btnOk.insertAdjacentHTML("beforeend",`<i class="fa fa-floppy-o" aria-hidden="true"></i>`);
+        const Save = ()=>{
+          const newValue = input.value;
+          div.classList.remove("input-group");
+          div.classList.remove("mb-3");
+          div.innerHTML = "";
+          div.textContent = newValue;
+        }
+        btnOk.removeEventListener("click",Save);
+        btnOk.addEventListener("click",Save);
+        divGroup.append(btnOk);
+        const btnCancel = document.createElement("button");
+        btnCancel.className = "btn btn-outline-secondary";
+        btnCancel.type = "button";
+        btnCancel.insertAdjacentHTML("beforeend",`<i class="fa fa-times" aria-hidden="true"></i>`);
+        const Close = ()=>{
+          div.classList.remove("input-group");
+          div.classList.remove("mb-3");
+          div.innerHTML = "";
+          div.textContent = value;
+
+        }
+        btnCancel.removeEventListener("click",Close);
+        btnCancel.addEventListener("click",Close);
+        divGroup.append(btnCancel);
+        div.append(divGroup);
+      }
+    </script>
+    <!-- Resources -->
+    <!-- BEGIN Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+      <a class="navbar-brand" href="#">KanbanTool</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="/KanbanTool/">Доски</a></li>
+          <li class="nav-item"><a class="nav-link" href="/KanbanToolGraph/">Анализ графиков</a></li>
+          <li class="nav-item"><a class="nav-link" href="/static/roles.html">Описание ролей(Старое)</a></li>
+          <li class="nav-item"><a class="nav-link" href="/static/domains.html">Домены</a></li>
+        </ul>
+
+        <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
+          <button class="btn btn-default" id="addBookButton">Login</button>        
+        </form>
+
+      </div>
+    </nav>
+
+    <nav>
+      <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      </div>
+    </nav>
+
+    <div class="tab-content" id="nav-tabContent">
+    </div>
+
+  </body>
+</html>
