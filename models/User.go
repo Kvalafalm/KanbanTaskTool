@@ -33,11 +33,13 @@ func (user *User) ValidCurentUserOrAdd() (err error) {
 		user.Firstname = UserFromDB.Firstname
 		user.Secondname = UserFromDB.Secondname
 		user.Theme = UserFromDB.Theme
+		user.Defaulttaskb24 = UserFromDB.Defaulttaskb24
 	} else {
 		UserFromDB.Firstname = user.Firstname
 		UserFromDB.Secondname = user.Secondname
 		UserFromDB.Bitrix24id = user.Bitrix24id
 		UserFromDB.Theme = "light"
+		UserFromDB.Defaulttaskb24 = 9675
 		database.Insert(&UserFromDB)
 	}
 
