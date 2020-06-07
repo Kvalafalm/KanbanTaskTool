@@ -8,9 +8,8 @@ let TypeEventColor = [
 	"rgba(33, 103, 207, 0.8)", //Дефект
 ]
 window.WorkItems = new Array;
-
 window.onload = function() {
-
+	window.WorkItems = new Array;
 	$.event.addProp('dataTransfer');
 	refreshDeskList();
 	FillInKanbanDesk($("#DeskList option:selected").val());
@@ -92,12 +91,23 @@ function FillInKanbanDesk(DeskId) {
 			<span class="count"> (0 / 0)</span>
 
 			<button type="button" class="btn btn-light btn-xs infoCollumn" style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
-			<button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px"  class=""><i class="fa fa-clone" aria-hidden="true"></i></button>
-			<button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  class=""><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px" ><i class="fa fa-clone" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  ><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs showhideSL" style="padding:2px"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
 			`);
 		});
 		$(".openOnFullWindow").click(function(){
+			
 			alert($(this).closest(".KanbanColumn").attr('id') );
+		});
+
+		$(".showhideSL").click(function(){
+			element = $(this).closest(".Swimline").find(".SwimlineContent");
+			if (element.is(":visible")){
+				element.hide();
+			}else{
+				element.show();
+			}
 		});
 
 		$(".addKanban").click(function(){
@@ -125,6 +135,9 @@ function FillInKanbanDesk(DeskId) {
 						newWorkItems.IDDesk = $("#DeskList option:selected").val();
 						newWorkItems.Swimline = $(".NewKanban").closest(".Swimline").attr('id').replace("SL","");
 						newWorkItems.div = $(".NewKanban")[0];
+						newWorkItems.div.addEventListener("dblclick" , ()=>{
+							newWorkItems.StartModalWindow();
+						});
 						newWorkItems.Parent = $("#SL"+newWorkItems.Swimline+" .Stage"+newWorkItems.Stage+" .KanbanColumnContent");
 						newWorkItems.newTask = true;
 						newWorkItems.save();
@@ -176,7 +189,7 @@ function FillInKanbanDesk(DeskId) {
 			});
 
 		   $(".KanbanColumnContent").each(function(){
-				$(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ("
+				$(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ( "
 								+ this.childElementCount + " / 0 ) ");
 			});
 
@@ -405,10 +418,11 @@ class WorkItem {
 		this.IDDesk = "";
 		this.Name = "";
 		this.Stage = "";
-		this.DateSart = "";      
-		this.DateStartStage = "";
-		this.Users = "";         
 		this.Swimline = "";     
+		//this.DateStart = "";      
+		//this.DateStartStage = "";
+		this.Users = "";         
+		
 		this.TypeTask  = "";    
 		this.IdProject = "";    
 		this.ImageProject= "";  
@@ -520,9 +534,9 @@ class WorkItem {
 					 <div class="KanbanDurationStatus">
 					 <div class="KanbanNameProject"><div style="text-align: right;" class="onhover">`;
 	   
-	   innerHTML += `<button type="button" class="btn btn-light btn-xs" style="padding:0px" id="finishTask${this.Id}" >
-					   <i class="fa fa-flag" aria-hidden="true"></i>
-					 </button>`
+
+
+		 
 	   if (this.СommentsCount> 0) {
 		   innerHTML += `<i class="fa fa-comments-o fa-lg" aria-hidden="true">`+this.СommentsCount+`</i>`;
 	   }
@@ -537,17 +551,31 @@ class WorkItem {
 			   tapeInfo = "badge-warning";  
 		   }
 		   duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  this.LeadTime + ` д. </span>`;
+		   //duration += `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge badge-warning" style="font-size: 100%;">Ct:`+  this.LeadTime + ` д. </span>`;
 	   }
    
 	   	innerHTML += `` + duration +`<span class="projectName">` + this.NameProject + `</span> </div>`;
 	   	//innerHTML += `</div>`; 
    
 	    this.div.innerHTML = innerHTML;
+		let btn = document.getElementById(`btnFinishWorkItem${this.Id}`);
+		if (btn !=null) {
+			btn.parentNode.removeChild(btn)
+		}
 
-
-		document.getElementById(`finishTask${this.Id}`).addEventListener("click" , ()=>{
+		let btnFinish = document.createElement("button");
+		btnFinish.type = "button";
+		btnFinish.id = `btnFinishWorkItem${this.Id}`;
+		btnFinish.className = "btn btn-light btn-xs";
+		btnFinish.insertAdjacentHTML("beforeend",`<i class="fa fa-flag" aria-hidden="true"></i>`);
+		btnFinish.style.padding = "1px";
+		btnFinish.addEventListener("click" , ()=>{
 			this.finishTask();
 		});
+		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnFinish);
+		/*document.getElementById(`finishTask${this.Id}`).addEventListener("click" , ()=>{
+			
+		});*/
 
 
 		
@@ -562,7 +590,7 @@ class WorkItem {
 	//Открытие информации по Рабочему элементу 
 	StartModalWindow(){
 		let thisElement = this;
-		document.getElementById("saveTask").addEventListener("click",()=>{
+		let SaveFunction = ()=>{
 
 			deskTypesWorkItem.forEach((element)=>{
 				if (element.Id === $(".taskKanbanTool #Type option:selected").val()){
@@ -572,19 +600,24 @@ class WorkItem {
 			});
 			
 			this.save();
-		});
-
-
-		$("#сloseButton").click(function(){
+		};
+		
+		
+		document.getElementById("saveTask").addEventListener("click",SaveFunction);
+		let closeFunction = ()=>{
+			document.getElementById("saveTask").removeEventListener("click",SaveFunction);
 			$("#KanbanMore").hide("slow");
 			$(".TitleBitrix24").empty();
 			$(".Descripion").empty();
 			$(".StageMore").empty();
 			$(".BlokersMore").empty();
 			$(".KanbanMoreComents").empty();
-			
 			document.getElementById('preloaderbg').style.display = 'none';
-		});
+			document.getElementById("сloseButton").removeEventListener("click",closeFunction);
+		}
+		
+		document.getElementById("сloseButton").addEventListener("click",closeFunction);
+
 
 
 		$("#KanbanMore").show("slow");
@@ -664,14 +697,17 @@ class WorkItem {
 						"Idtask": parseInt(thisElement.Id),
 						"StartDate"	:new Date().toISOString()
 					},thisElement);
-					thisElement.Blokers.push(newEvent);
-					newEvent.showPreview();
+					
+					//newEvent.showPreview();
 					newEvent.edit();
 				};
 		
 				let addEvent = document.getElementById('ModalWindow__addEvent');
-				addEvent.removeEventListener('click', clickAddBtn, false);
-				addEvent.addEventListener('click', clickAddBtn, false);
+				document.getElementById("сloseButton").addEventListener("click",()=>{
+					document.getElementById('ModalWindow__addEvent').removeEventListener('click', clickAddBtn);
+				});
+				
+				addEvent.addEventListener('click', clickAddBtn);
 
 				//TODO 
 				if (Array.isArray(Kanbans.Blokers)){
@@ -755,13 +791,19 @@ class WorkItem {
 				contentType: "application/json; charset=utf-8",
 				crossDomain : true,
 				processData: false,
-				data: JSON.stringify(this),
+				data: JSON.stringify(this,(key, value)=> {
+					if (key === 'Blokers' || key === 'Parent'|| key === 'div') {
+					  return undefined; 
+					}
+					return value;
+				  }),
 				async: true
 		   }).done((element) => {
 					if( element.errorId != undefined && element.errorId == "401" ){
 						window.location.replace("/login")
 						return false
 					}
+					this.newTask=false;
 					this.updateData(element);
 					this.refreshCard();
 
@@ -774,7 +816,7 @@ class WorkItem {
 				crossDomain : true,
 				processData: false,
 				data: JSON.stringify(this,(key, value)=> {
-					if (key === 'Blokers') {
+					if (key === 'Blokers' || key === 'Parent') {
 					  return undefined; 
 					}
 					return value;
@@ -865,12 +907,19 @@ class EventOfWorkItem {
 			form += this.addInputRow("Время окончания","BlokerEnd","text","","");
 		}
 
+		body.append(form);
+
+		let btn = document.getElementById("btnSaveEvent");
+		if (btn !=null) {
+			btn.parentNode.removeChild(btn)
+		}
 		let btnSave = document.createElement("button");
 		btnSave.className = "btn btn-primary";
 		btnSave.dataset.dismiss = "modal";
 		btnSave.innerText="Сохранить";
-		btnSave.addEventListener("click" , ()=>{
-			this.Description = $("#BlokerReason")[0].value;
+		btnSave.id ="btnSaveEvent";
+		const SaveTask = ()=>{
+			this.Description = document.getElementById("BlokerReason").value;
 			this.Diside = $("#BlokerDecision")[0].value;
 			this.StartDate = new Date($("#BlokerStart")[0].value);
 			if($("#BlokerEnd")[0].value!=""){
@@ -881,14 +930,36 @@ class EventOfWorkItem {
 				this.Finished = false;
 			}
 			this.TypeEvent = parseInt($("#BlokerType")[0].value);
+			if(this.newEvent){
+				this.Task.Blokers.push(this);
+			}
 			this.save();
 			this.showPreview();
-		});
+		};
+		btnSave.removeEventListener("click" ,SaveTask ,false);
+		btnSave.addEventListener("click" ,SaveTask ,false);
+
+		let btnClose = document.createElement("button");
+		btnClose.className = "btn btn-primary";
+		btnClose.dataset.dismiss = "modal";
+		btnClose.innerText="Отменить";
+		btnClose.id ="сloseButton";
+		const closeEvent = ()=>{
+			let span = document.getElementById(`eventId${this.Id}`);
 		
-		footer.append(`<button type="button" class="btn btn-secondary" data-dismiss="modal" >Закрыть</button>`);
+			if(span === null){
+				span = document.createElement("span")
+			}else{
+				span.parentNode.removeChild(span);
+			}
+		};
+		btnClose.removeEventListener("click" ,closeEvent ,false);
+		btnClose.addEventListener("click" ,closeEvent ,false);
+
+		footer.append(btnClose);
 		footer.append(btnSave);
 
-		body.append(form)
+		
 		$("#exampleModalLabel").append("Событие");
 
 	}
@@ -902,11 +973,15 @@ class EventOfWorkItem {
 			span.innerHTML="";
 		}
 
-
+		let btn = document.getElementById("btnEditEvent");
+		if (btn !=null) {
+			btn.parentNode.removeChild(btn)
+		}
 		let btnEdit = document.createElement("button");
 		btnEdit.type = "button"
 		btnEdit.className = "btn btn-link btn-xs";
 		btnEdit.dataset.toggle = "modal";
+		btnEdit.id = "btnEditEvent";
 		btnEdit.dataset.target = "#exampleModal";
 		btnEdit.insertAdjacentHTML("beforeend",`<i class="fa fa-pencil" aria-hidden="true"></i>`);
 		btnEdit.style.padding = "1px";
