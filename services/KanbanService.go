@@ -242,24 +242,28 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 
 	rowHistory, err := model.GetCurrentTaskStage(tasks.ID)
 	timeNow := time.Now().UTC()
-	if rowHistory.Id > 0 {
-		rowHistory.Finised = true
-		rowHistory.End = timeNow
-		err = model.SetCurrentTaskStage(rowHistory)
+	if rowHistory.Idstage != task.Stageid {
+
+		if rowHistory.Id > 0 {
+			rowHistory.Finised = true
+			rowHistory.End = timeNow
+			err = model.SetCurrentTaskStage(rowHistory)
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+		}
+		newRowHistory := model.Stagehistory{
+			Idtask:  tasks.ID,
+			Idstage: tasks.Stage,
+			Start:   timeNow,
+		}
+
+		err = model.SetCurrentTaskStage(newRowHistory)
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
-	}
-	newRowHistory := model.Stagehistory{
-		Idtask:  tasks.ID,
-		Idstage: tasks.Stage,
-		Start:   timeNow,
-	}
-	err = model.SetCurrentTaskStage(newRowHistory)
-	if err != nil {
-		fmt.Println(err)
-		return err
 	}
 	//Если перенесли Рабочий элемент на дргой этап значит все блокировки закончились закрываем их
 	//Получить все события изменить их и записать

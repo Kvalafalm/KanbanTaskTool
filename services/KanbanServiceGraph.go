@@ -184,8 +184,7 @@ func DifferenceInDays(start interface{}, end interface{}) (day int) {
 	}
 	endTime := time.Date(f1.Year(), f1.Month(), f1.Day(), 0, 0, 0, 0, time.UTC)
 	startTime := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, time.UTC)
-
-	if endTime.After(startTime) {
+	if endTime.Before(startTime) {
 		return 0
 	}
 
