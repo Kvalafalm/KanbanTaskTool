@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -41,14 +42,14 @@ func GetDataForCFDFromBD(param map[string]string) (raws []orm.Params, err error)
 		fmt.Println(err)
 	}
 	num, err := database.Raw(`SELECT 
-    deskstages.idstages,
+    desk_stages.stage_id,
     CASE
         WHEN Stages.counttask IS NULL THEN 0
         ELSE Stages.counttask
     END AS counttask,
     Stages.date
 	FROM
-    kanbantool.deskstages
+    kanbantool.desk_stages
         LEFT JOIN
     (SELECT 
         stagehistory.idstage,
@@ -59,17 +60,17 @@ func GetDataForCFDFromBD(param map[string]string) (raws []orm.Params, err error)
             END) AS date
     FROM
         kanbantool.stagehistory
-    INNER JOIN kanbantool.deskstages ON stagehistory.idstage = deskstages.idstages
-    INNER JOIN kanbantool.stage ON stagehistory.idstage = stage.idstage
+    INNER JOIN kanbantool.desk_stages ON stagehistory.idstage = desk_stages.stage_id
+    INNER JOIN kanbantool.stage ON stagehistory.idstage = stage.id
     WHERE
         stagehistory.start <= ?
             AND (stagehistory.end >= ?
             OR stagehistory.end IS NULL)
-            AND deskstages.iddesk = ?
+            AND desk_stages.desk_id = ?
     GROUP BY stagehistory.idstage
-    ORDER BY stage.order DESC) AS Stages ON Stages.idstage = deskstages.idstages
+    ORDER BY stage.order DESC) AS Stages ON Stages.idstage = desk_stages.stage_id
 	WHERE
-    deskstages.iddesk = ?`, endTimeUTC, endTimeUTC, endTimeUTC, param[`desk`], param[`desk`]).Values(&mapRaw)
+    desk_stages.desk_id = ?`, endTimeUTC, endTimeUTC, endTimeUTC, param[`desk`], param[`desk`]).Values(&mapRaw)
 	//.QueryRows(&raws)
 	if err != nil && num > 0 {
 		return mapRaw, err // slene
@@ -173,7 +174,63 @@ func GetDataForSpectralChart(param map[string]string) (raws []orm.Params, err er
 
 	return mapRaw, nil
 }
+func GetDataForSpectralChartV2(param map[string]string) (raws []orm.Params, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
 
+	var mapRaw []orm.Params
+
+	stages := strings.Split(param[`stages`], ",")
+	var WhereText string
+	firstRow := true
+	for _, value := range stages {
+		if firstRow {
+			WhereText += `Where stagehistory.idstage = ` + value
+			firstRow = false
+		} else {
+			WhereText += ` OR stagehistory.idstage = ` + value
+		}
+	}
+	var text = `SELECT
+    TableTasks.idtask,
+    MIN(TableTasks.start) as start,
+    MAX(TableTasks.end) as end,
+    TableTasks.type
+FROM 
+(SELECT 
+    stagehistory.idtask,
+    stagehistory.start,
+    stagehistory.idstage,
+    stagehistory.end,
+    tableTask.typetask as type
+FROM
+     (SELECT 
+        stagehistory.idtask,
+        tasks.typetask
+    FROM
+        kanbantool.stagehistory
+    LEFT JOIN kanbantool.tasks ON stagehistory.idtask = tasks.idtasks
+    WHERE
+	tasks.finished
+	AND stagehistory.idstage = ?
+	AND stagehistory.start <= ?
+	AND stagehistory.start >= ?
+    GROUP BY stagehistory.idtask,tasks.typetask) AS tableTask 
+		LEFT JOIN
+         kanbantool.stagehistory
+    ON stagehistory.idtask = tableTask.idtask
+	` + WhereText + `) as TableTasks
+GROUP BY 
+	TableTasks.idtask,
+	TableTasks.type`
+
+	num, err := database.Raw(text, param[`endId`], param[`endDate`], param[`startDate`]).Values(&mapRaw)
+	if err != nil && num > 0 {
+		return mapRaw, err
+	}
+
+	return mapRaw, nil
+}
 func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
@@ -189,7 +246,7 @@ func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
 				stagehistory.idstage,
 				tasks.finished,
 				tasks.stageid,
-				deskstages.iddesk
+				desk_stages.desk_id
 			FROM 
 				kanbantool.stagehistory
 				LEFT JOIN
@@ -197,9 +254,9 @@ func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
 				ON 
 				tasks.idtasks = stagehistory.idtask
 			LEFT join
-				kanbantool.deskstages as deskstages
+				kanbantool.desk_stages as desk_stages
 			On 
-				stagehistory.idstage = deskstages.idstages      
+				stagehistory.idstage = desk_stages.stage_id      
 		WHERE NOT tasks.finished
 
 		Group by
@@ -207,14 +264,14 @@ func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
 				stagehistory.idstage,
 				tasks.finished,
 				tasks.stageid,
-				deskstages.iddesk
+				desk_stages.desk_id
 		) as stagehistory 
 			INNER JOIN 
 			kanbantool.desk
 			ON desk.startstage = stagehistory.idstage
 			AND desk.endstage <> stagehistory.stageid
 		WHERE 
-			stagehistory.iddesk = ?
+			stagehistory.desk_id = ?
 		;
 		`, iddesk).Values(&mapRaw)
 	if err != nil && num > 0 {

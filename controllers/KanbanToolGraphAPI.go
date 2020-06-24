@@ -56,7 +56,12 @@ func (this *KanbanToolGraphAPI) Post() {
 		data, err := serv.GetCFDData(param)
 
 		if err != nil {
-
+			errorJson := make(map[string]string)
+			errorJson["error"] = "Внутренняя ошибка сервера"
+			errorJson["errorId"] = "500"
+			this.Data["json"] = errorJson
+			this.ServeJSON()
+			return
 		}
 
 		this.Data["json"] = data
@@ -69,7 +74,12 @@ func (this *KanbanToolGraphAPI) Post() {
 		data, err := serv.ControlChart(param)
 
 		if err != nil {
-
+			errorJson := make(map[string]string)
+			errorJson["error"] = "Внутренняя ошибка сервера"
+			errorJson["errorId"] = "500"
+			this.Data["json"] = errorJson
+			this.ServeJSON()
+			return
 		}
 
 		this.Data["json"] = data
@@ -82,7 +92,30 @@ func (this *KanbanToolGraphAPI) Post() {
 		data, err := serv.GetSpectralChartData(param)
 
 		if err != nil {
+			errorJson := make(map[string]string)
+			errorJson["error"] = "Внутренняя ошибка сервера"
+			errorJson["errorId"] = "500"
+			this.Data["json"] = errorJson
+			this.ServeJSON()
+			return
+		}
 
+		this.Data["json"] = data
+		this.ServeJSON()
+
+	case "tpchart":
+		param := service.Params{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &param)
+
+		data, err := serv.GetThroughPutChartData(param)
+
+		if err != nil {
+			errorJson := make(map[string]string)
+			errorJson["error"] = "Внутренняя ошибка сервера"
+			errorJson["errorId"] = "500"
+			this.Data["json"] = errorJson
+			this.ServeJSON()
+			return
 		}
 
 		this.Data["json"] = data

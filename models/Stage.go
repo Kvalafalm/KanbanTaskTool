@@ -3,7 +3,7 @@ package models
 import "github.com/astaxie/beego/orm"
 
 type Stage struct {
-	Idstage     int `orm:"auto"`
+	Id          int `orm:"pk" json:"Id,string"`
 	Name        string
 	Description string
 	Order       int

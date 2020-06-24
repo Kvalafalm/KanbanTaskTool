@@ -188,7 +188,7 @@ func (this *KanbanToolAPI) Post() {
 	case "bloker.update":
 		bloker := service.Bloker{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
-		err := serv.UpdateBloker(bloker)
+		err := serv.UpdateBloker(&bloker)
 
 		taskPublish, _ := serv.GetTask(bloker.Idtask)
 		publish <- newEvent(
@@ -200,7 +200,7 @@ func (this *KanbanToolAPI) Post() {
 		if err != nil {
 			this.Data["json"] = "{ \"successful\" : \"false\" }"
 		} else {
-			this.Data["json"] = "{ \"successful\" : \"true\" }"
+			this.Data["json"] = bloker
 		}
 		this.ServeJSON()
 

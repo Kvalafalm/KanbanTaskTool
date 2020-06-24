@@ -59,7 +59,7 @@ func GetAllBlokersFromDB(idtask int) (ActiveBloker []Bloker, err error) {
 	return ActiveBloker, err
 }
 
-func UpdateBlokerInDB(bloker Bloker) (err error) {
+func UpdateBlokerInDB(bloker *Bloker) (err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 	emptydate := time.Time{}
@@ -77,7 +77,9 @@ func UpdateBlokerInDB(bloker Bloker) (err error) {
 		"TypeEvent":   bloker.TypeEvent,
 	}
 	if bloker.Id == 0 {
-		_, err = database.Insert(&bloker)
+		var id int64
+		id, err = database.Insert(bloker)
+		bloker.Id = int(id)
 	} else {
 		_, err = database.QueryTable(new(Bloker)).Filter("id", bloker.Id).Update(Param)
 	}

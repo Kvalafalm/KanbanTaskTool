@@ -15,8 +15,9 @@ type Tasks struct {
 	Swimline   int
 	Stageid    int
 	Finished   bool
-	Typetask   *TypeWorkItem `orm:"rel(fk);column(typetask)"`
-	Blokers    []*Bloker     `orm:"reverse(many)"`
+	Class      *ClassOfService `orm:"rel(fk)"`
+	Typetask   *TypeWorkItem   `orm:"rel(fk);column(typetask)"`
+	Blokers    []*Bloker       `orm:"reverse(many)"`
 }
 
 func init() {
@@ -31,27 +32,35 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	cond = cond.And("finished", false)
 
 	cond2 := orm.NewCondition()
-	deskStages, _ := GetDeskStagesFromDB(id)
-	for _, Stage := range deskStages {
-		cond2 = cond2.Or("stageid", Stage.Idstages)
+	desk, _ := GetDeskFromDBById(id)
+	for _, Stage := range desk.Stages {
+		cond2 = cond2.Or("stageid", Stage.Id)
 	}
 	cond = cond.AndCond(cond2)
+
+	database.QueryTable(new(Tasks)).SetCond(cond).All(&taskListFromDB)
 	fmt.Println(database.QueryTable(new(Tasks)).SetCond(cond).Count())
-	database.QueryTable(new(Tasks)).SetCond(cond).RelatedSel().All(&taskListFromDB)
 	for i, task := range taskListFromDB {
 		database.LoadRelated(&task, "Blokers")
 		taskListFromDB[i].Blokers = task.Blokers
+		database.LoadRelated(&task, "Class")
+		taskListFromDB[i].Class = task.Class
+		database.LoadRelated(&task, "Typetask")
+		taskListFromDB[i].Typetask = task.Typetask
+		//database.LoadRelated(&task, "Class")
 	}
 	return taskListFromDB, err
 }
 
-func GetTaskFromDB(id int) (taskListFromDB Tasks, err error) {
+func GetTaskFromDB(id int) (taskFromDB Tasks, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable(new(Tasks)).Filter("Idtasks", id).RelatedSel().All(&taskListFromDB)
-	database.LoadRelated(&taskListFromDB, "Blokers")
-	return taskListFromDB, err
+	_, err = database.QueryTable(new(Tasks)).Filter("Idtasks", id).All(&taskFromDB)
+	database.LoadRelated(&taskFromDB, "Blokers")
+	database.LoadRelated(&taskFromDB, "Class")
+	database.LoadRelated(&taskFromDB, "Typetask")
+	return taskFromDB, err
 }
 
 func GetTaskFromDBbyB24(id int) (task Tasks, err error) {
@@ -70,6 +79,7 @@ func UpdateTaskInDB(task Tasks) (err error) {
 		"stageid":  task.Stageid,
 		"swimline": task.Swimline,
 		"typetask": task.Typetask.Id,
+		"Class":    task.Class.Id,
 	})
 
 	if err == nil {
@@ -104,6 +114,7 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	idType, _ := strconv.Atoi(NewTask["Typetask"])
 	typeWorkItem := TypeWorkItem{Id: idType}
 	task.Typetask = &typeWorkItem
+	task.Class = &ClassOfService{Id: 0}
 	//getTypeTask(idType)
 	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
 

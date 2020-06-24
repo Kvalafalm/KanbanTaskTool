@@ -13,8 +13,9 @@ type Params struct {
 	Startdate time.Time `json:"Startdate"`
 	Enddate   time.Time `json:"Enddate"`
 	Desk      string    `json:"Desk"`
-	StartID   string    `json:"startId"`
-	EndID     string    `json:"endId"`
+	Stages    string    `json:"Stages"`
+	StartID   string    `json:"StartId"`
+	EndID     string    `json:"EndId"`
 }
 
 func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[string]string, err error) {
@@ -35,7 +36,7 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 	//TODO
 	// Запрос из параметров доски какой последний этап чтобы в первый день вычесть его
 	//
-	endStage := "8"
+	endStage := params.EndID
 	firstIteration := true
 	deltaEndStageValue := 0
 	for i := 0; i <= int(deltaDays); i++ {
@@ -53,15 +54,15 @@ func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[str
 
 		mm[`date`] = dateForSQL.Format(time.RFC3339)
 		for _, value := range dataStage {
-			if firstIteration && value["idstages"].(string) == endStage {
+			if firstIteration && value["stage_id"].(string) == endStage {
 				deltaEndStageValue, _ = strconv.Atoi(value["counttask"].(string))
 				firstIteration = false
-			} else if !firstIteration && value["idstages"].(string) == endStage {
+			} else if !firstIteration && value["stage_id"].(string) == endStage {
 				newvalue, _ := strconv.Atoi(value["counttask"].(string))
 				newvalue = newvalue - deltaEndStageValue
-				mm[value["idstages"].(string)] = strconv.Itoa(newvalue)
+				mm[value["stage_id"].(string)] = strconv.Itoa(newvalue)
 			} else {
-				mm[value["idstages"].(string)] = value["counttask"].(string)
+				mm[value["stage_id"].(string)] = value["counttask"].(string)
 			}
 		}
 		CFDdataReturn = append(CFDdataReturn, mm)
@@ -95,7 +96,12 @@ func (Cb *KanbanServiceGraph) ControlChart(params Params) (dataControlChart []ma
 	return dataControlChart, nil
 }
 
-func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralChart []map[string]int, err error) {
+type TaskRow struct {
+	TypeTask string `json:"typeTask"`
+	Value    int    `json:"value"`
+}
+
+func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralChart map[string]interface{}, err error) {
 
 	paramMap := make(map[string]string)
 
@@ -104,17 +110,28 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
 	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
 	paramMap[`endId`] = params.EndID
-	paramMap[`startId`] = params.StartID
-	data, _ := model.GetDataForSpectralChart(paramMap)
+	paramMap[`stages`] = params.Stages
+	data, _ := model.GetDataForSpectralChartV2(paramMap)
 	maxDay := 0
+	tasksData := make(map[string]TaskRow)
+
 	for _, raw := range data {
+
+		if raw["end"] != nil && raw["start"] != nil {
+
+			tasksData[raw["idtask"].(string)] = TaskRow{
+				raw["type"].(string),
+				DifferenceInDays(raw["start"].(string), raw["end"].(string)),
+			}
+		}
+	}
+	dataChart := make(map[int]map[string]int)
+	for _, value := range tasksData {
 		dayBe := false
 
-		durationInWorkDays := DifferenceInDays(raw["start"].(string), raw["end"].(string))
-		for _, rawGlobal := range dataSpectralChart {
-			_, _ = strconv.Atoi(raw["duration"].(string))
-			if durationInWorkDays == rawGlobal["day"] {
-				rawGlobal["id"+raw["typetask"].(string)]++
+		for _, rawGlobal := range dataChart {
+			if value.Value == rawGlobal["day"] {
+				rawGlobal["id"+value.TypeTask] = rawGlobal["id"+value.TypeTask] + 1
 				dayBe = true
 				break
 			} else {
@@ -124,20 +141,18 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 
 		if !dayBe {
 			newRaw := make(map[string]int)
-			duration, _ := strconv.Atoi(raw["duration"].(string))
-			newRaw["day"] = durationInWorkDays
-			newRaw["id"+raw["typetask"].(string)]++
-
-			dataSpectralChart = append(dataSpectralChart, newRaw)
-			if maxDay < duration {
-				maxDay = duration
+			newRaw["day"] = value.Value
+			newRaw["id"+value.TypeTask]++
+			dataChart[len(dataChart)] = newRaw
+			if maxDay < value.Value {
+				maxDay = value.Value
 			}
 		}
-	}
 
+	}
 	for i := 0; i <= maxDay; i++ {
 		dayBe := false
-		for _, rawGlobal := range dataSpectralChart {
+		for _, rawGlobal := range dataChart {
 			if i == rawGlobal["day"] {
 				dayBe = true
 				break
@@ -149,11 +164,31 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 		if !dayBe {
 			newRaw := make(map[string]int)
 			newRaw["day"] = i
-			dataSpectralChart = append(dataSpectralChart, newRaw)
+			dataChart[len(dataChart)] = newRaw
 		}
 	}
 
+	dataSpectralChart = make(map[string]interface{})
+	dataSpectralChart["dataChart"] = dataChart
+	dataSpectralChart["dataTask"] = tasksData
+
 	return dataSpectralChart, nil
+}
+
+func (Cb *KanbanServiceGraph) GetThroughPutChartData(params Params) (data map[string]interface{}, err error) {
+	paramMap := make(map[string]string)
+
+	paramMap[`desk`] = params.Desk
+
+	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
+	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
+	paramMap[`endId`] = params.EndID
+	paramMap[`stages`] = params.Stages
+
+	///data, _ := model.GetDataForSpectralChartV2(paramMap)
+
+	return data, nil
+
 }
 
 func DifferenceInDays(start interface{}, end interface{}) (day int) {
@@ -192,10 +227,56 @@ func DifferenceInDays(start interface{}, end interface{}) (day int) {
 		if startTime.Equal(endTime) {
 			return days
 		}
-		if startTime.Weekday() != 6 && startTime.Weekday() != 7 {
+		if !isHoliday(startTime) {
 			days++
 		}
 		startTime = startTime.Add(time.Hour * 24)
 	}
 
+}
+
+func isHoliday(day time.Time) (t bool) {
+	var Holidays = make([]time.Time, 30)
+	Holidays = append(Holidays, time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 1, 3, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 1, 4, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 1, 7, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 1, 8, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 3, 8, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 5, 2, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 5, 3, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 5, 9, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 5, 10, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 6, 12, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 11, 4, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2019, 12, 30, 0, 0, 0, 0, time.UTC))
+
+	Holidays = append(Holidays, time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 1, 6, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 1, 8, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 1, 7, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 2, 24, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 3, 9, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 5, 1, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 5, 4, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 5, 5, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 5, 11, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 6, 12, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 11, 4, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 12, 30, 0, 0, 0, 0, time.UTC))
+
+	if day.Weekday() == 6 || day.Weekday() == 0 {
+		return true
+	}
+
+	for _, value := range Holidays {
+		if day.Equal(value) {
+			return true
+		}
+	}
+	return false
 }

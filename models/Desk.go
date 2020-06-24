@@ -6,25 +6,22 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+//Desk model KanbanDesk
 type Desk struct {
-	Id            int `orm:"auto"`
-	Name          string
-	Description   string
-	Projectsb24   string
-	Innerhtml     template.HTML
-	Startstage    int
-	Endstage      int
-	TypeWorkItems []*TypeWorkItem `orm:"rel(m2m)"`
-}
-
-type Deskstages struct {
-	Iddesk   int `orm:"auto"`
-	Idstages int
+	Id             int `orm:"auto"`
+	Name           string
+	Description    string
+	Projectsb24    string
+	Innerhtml      template.HTML
+	Startstage     int
+	Endstage       int
+	ClassOfService []*ClassOfService `orm:"rel(m2m)"`
+	TypeWorkItems  []*TypeWorkItem   `orm:"rel(m2m)"`
+	Stages         []*Stage          `orm:"rel(m2m)"`
 }
 
 func init() {
 	orm.RegisterModel(new(Desk))
-	orm.RegisterModel(new(Deskstages))
 }
 
 func GetDeskFromDBById(id int) (desk Desk, err error) {
@@ -33,6 +30,8 @@ func GetDeskFromDBById(id int) (desk Desk, err error) {
 
 	err = database.QueryTable(new(Desk)).Filter("id", id).One(&desk)
 	database.LoadRelated(&desk, "TypeWorkItems")
+	database.LoadRelated(&desk, "Stages")
+	database.LoadRelated(&desk, "ClassOfService")
 	return desk, err
 }
 
@@ -51,11 +50,4 @@ func GetDeskListFromDB() (desks []Desk, err error) {
 	database.Using("default")
 	_, err = database.QueryTable(new(Desk)).OrderBy("Name").All(&desks, "Id", "Name", "Description")
 	return desks, err
-}
-
-func GetDeskStagesFromDB(iddesk int) (deskstages []Deskstages, err error) {
-	database := orm.NewOrm()
-	database.Using("default")
-	_, err = database.QueryTable("deskstages").Filter("iddesk", iddesk).All(&deskstages)
-	return deskstages, err
 }

@@ -38,48 +38,50 @@ type User struct {
 
 // WorkItem type need for send to frontEnd workItem
 type WorkItem struct {
-	ID              int                `json:"Id,string"`
-	IDBitrix24      int                `json:"IdBitrix24"`
-	Name            string             `json:"Name"`
-	Stage           int                `json:"Stage,string"`
-	DateStart       time.Time          `json:"DateStart"`
-	DateStartStage  time.Time          `json:"DateStartStage"`
-	Users           []User             `json:"Users"`
-	LeadTime        int                `json:"LeadTime"`
-	CyrcleTime      int                `json:"CyrcleTime"`
-	FlowEffectives  int                `json:"FlowEffectives"`
-	Blokers         []Bloker           `json:"Blokers"`
-	TypeTask        model.TypeWorkItem `json:"TypeTask"`
-	IDProject       int                `json:"IdProject"`
-	ImageProject    string             `json:"ImageProject"`
-	NameProject     string             `json:"NameProject"`
-	Swimline        int                `json:"Swimline,string"`
-	СommentsCount   string             `json:"СommentsCount"`
-	IDDesk          string             `json:"IDDesk"`
-	DescriptionHTML template.HTML      `json:"DescriptionHTML"`
-	StagesHistory   []StageHistory     `json:"StagesHistory"`
-	Comments        []Comments         `json:"Comments"`
+	ID              int                  `json:"Id,string"`
+	IDBitrix24      int                  `json:"IdBitrix24"`
+	Name            string               `json:"Name"`
+	Stage           int                  `json:"Stage,string"`
+	DateStart       time.Time            `json:"DateStart"`
+	DateStartStage  time.Time            `json:"DateStartStage"`
+	Users           []User               `json:"Users"`
+	LeadTime        int                  `json:"LeadTime"`
+	CyrcleTime      int                  `json:"CyrcleTime"`
+	FlowEffectives  int                  `json:"FlowEffectives"`
+	Blokers         []Bloker             `json:"Blokers"`
+	TypeTask        model.TypeWorkItem   `json:"TypeTask"`
+	Class           model.ClassOfService `json:"Class"`
+	IDProject       int                  `json:"IdProject"`
+	ImageProject    string               `json:"ImageProject"`
+	NameProject     string               `json:"NameProject"`
+	Swimline        int                  `json:"Swimline,string"`
+	СommentsCount   string               `json:"СommentsCount"`
+	IDDesk          string               `json:"IDDesk"`
+	DescriptionHTML template.HTML        `json:"DescriptionHTML"`
+	StagesHistory   []StageHistory       `json:"StagesHistory"`
+	Comments        []Comments           `json:"Comments"`
 }
 
 //Tasks need for show on desk OLD
 type Tasks struct {
-	ID             int                `json:"Id,string"`
-	IDBitrix24     int                `json:"IdBitrix24"`
-	Name           string             `json:"Name"`
-	Stage          int                `json:"Stage,string"`
-	DateStart      time.Time          `json:"DateStart"`
-	DateStartStage time.Time          `json:"DateStartStage"`
-	Users          []User             `json:"Users"`
-	Blokers        []Bloker           `json:"Blokers"`
-	Swimline       int                `json:"Swimline,string"`
-	TypeTask       model.TypeWorkItem `json:"TypeTask"`
-	IdProject      int                `json:"IdProject"`
-	ImageProject   string             `json:"ImageProject"`
-	NameProject    string             `json:"NameProject"`
-	СommentsCount  string             `json:"СommentsCount"`
-	LeadTime       int                `json:"LeadTime"`
-	CyrcleTime     int                `json:"CyrcleTime"`
-	FlowEffectives int                `json:"FlowEffectives"`
+	ID             int                  `json:"Id,string"`
+	IDBitrix24     int                  `json:"IdBitrix24"`
+	Name           string               `json:"Name"`
+	Stage          int                  `json:"Stage,string"`
+	DateStart      time.Time            `json:"DateStart"`
+	DateStartStage time.Time            `json:"DateStartStage"`
+	Users          []User               `json:"Users"`
+	Blokers        []Bloker             `json:"Blokers"`
+	Swimline       int                  `json:"Swimline,string"`
+	TypeTask       model.TypeWorkItem   `json:"TypeTask"`
+	Class          model.ClassOfService `json:"Class"`
+	IdProject      int                  `json:"IdProject"`
+	ImageProject   string               `json:"ImageProject"`
+	NameProject    string               `json:"NameProject"`
+	СommentsCount  string               `json:"СommentsCount"`
+	LeadTime       int                  `json:"LeadTime"`
+	CyrcleTime     int                  `json:"CyrcleTime"`
+	FlowEffectives int                  `json:"FlowEffectives"`
 }
 
 //StageHistory need for WorkItems
@@ -148,6 +150,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].Stage = TaskFromDB.Stageid
 		tasks[i].Swimline = TaskFromDB.Swimline
 		tasks[i].TypeTask = *TaskFromDB.Typetask
+		tasks[i].Class = *TaskFromDB.Class
 		tasks[i].Name = TaskFromDB.Title
 		for _, valuesB24 := range values.Result.Tasks {
 
@@ -222,7 +225,7 @@ func (Cb *KanbanService) GetStages(id int) (stagesAPI Stages, err error) {
 		return stagesAPI, err
 	}
 
-	stagesAPI = Stages{stagesFromDB.Idstage, stagesFromDB.Name, 0, stagesFromDB.Description}
+	stagesAPI = Stages{stagesFromDB.Id, stagesFromDB.Name, 0, stagesFromDB.Description}
 
 	return stagesAPI, nil
 }
@@ -234,6 +237,7 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 	task.Stageid = tasks.Stage
 	task.Swimline = tasks.Swimline
 	task.Typetask = &tasks.TypeTask
+	task.Class = &tasks.Class
 
 	err = model.UpdateTaskInDB(task)
 	if err != nil {
@@ -267,22 +271,24 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 	}
 	//Если перенесли Рабочий элемент на дргой этап значит все блокировки закончились закрываем их
 	//Получить все события изменить их и записать
-	events, count, err := model.GetActiveBlokersFromDB(tasks.ID)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
+	if rowHistory.Idstage != task.Stageid {
+		events, count, err := model.GetActiveBlokersFromDB(tasks.ID)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
 
-	if count > 0 {
-		for _, event := range events {
-			event.Enddate = timeNow
-			event.Finished = true
-			err = model.UpdateBlokerInDB(event)
+		if count > 0 {
+			for _, event := range events {
+				event.Enddate = timeNow
+				event.Finished = true
+				err = model.UpdateBlokerInDB(&event)
 
-			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+
 			}
-
 		}
 	}
 	return nil
@@ -422,6 +428,7 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 	workItem.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
 	stages, _ := model.GetStages()
 	workItem.TypeTask = *taskBD.Typetask
+	workItem.Class = *taskBD.Class
 	StagesHistory, _ := model.GetTaskHistoryStages(id)
 
 	if err != nil {
@@ -439,7 +446,7 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 			"",
 		}
 		for _, rowStage := range stages {
-			if rowStage.Idstage == row.Idstage {
+			if rowStage.Id == row.Idstage {
 				newRow.Name = rowStage.Name
 			}
 		}
@@ -554,7 +561,7 @@ func (Cb *KanbanService) GetBloker(id int) (bloker model.Bloker, err error) {
 	return bloker, nil
 }
 
-func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
+func (Cb *KanbanService) UpdateBloker(bloker *Bloker) (err error) {
 	task := model.Tasks{}
 	task.Idtasks = bloker.Idtask
 	blokerDb := model.Bloker{}
@@ -572,11 +579,11 @@ func (Cb *KanbanService) UpdateBloker(bloker Bloker) (err error) {
 		blokerDb.Finished = false
 	}
 
-	err = model.UpdateBlokerInDB(blokerDb)
+	err = model.UpdateBlokerInDB(&blokerDb)
 	if err != nil {
 		return err
 	}
-
+	bloker.Id = blokerDb.Id
 	return nil
 }
 

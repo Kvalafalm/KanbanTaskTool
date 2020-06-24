@@ -9,11 +9,38 @@ body {
 
 .graph {
     width: 100%;
-    height: 600px;
+    height: 80%;
     background: #adadadc2;
+    display: flex;
 }
-
+.chart {
+    width: 80%;
+}
 .SChart{
     width: 100%;
     height: 600px;
+}
+
+
+.form-check {
+    background: gray;
+    position: relative;
+    width: 20%;
+    display: block;
+    padding-left: 1.25rem;
+    padding: 5px;
+}
+.gray {
+    background: lightgrey;
+}
+
+.rowWithTask{
+    display: flex;
+    padding: 2px;
+    border: 1px solid;
+    margin: 2px;
+}
+
+.activeRow{
+    background: darkgray;
 }
