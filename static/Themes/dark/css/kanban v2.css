@@ -199,6 +199,31 @@ body {
     padding-left: 20px;
     text-align: left;
 }
+.KanbanDesk__Info{
+    display: none;
+    z-index: 999;
+    position: fixed;
+    right: 1px;
+    top: 5%;
+    background: #7c7c7c;
+    padding: 15px;
+    border: 1px solid #9e9c9c;
+    border-radius: 15px;
+    width: 20%;
+    height: 95%;
+}
+.KanbanDesk__Info span{
+    display: flex;
+    margin: 5px auto;
+    vertical-align:middle;
+    margin-left: unset;
+    color: white;
+}
+
+.KanbanDesk__Info img{
+    margin-left: unset;
+    border: 1px solid white;
+}
 .taskKanbanTool{
     WIDTH: 39%;
     min-height: 400px;
@@ -268,7 +293,7 @@ body {
 .comments{
     margin-top: 15px;
     padding: 5px;
-    background: #a9a9a92b;
+    background: #7c7c7c2b;
     border-radius: 15px;
 }
 .CMauthor{

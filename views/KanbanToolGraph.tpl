@@ -9,6 +9,7 @@
   </script>
   {{template "bootstrap.html" .}}
   <script src="../static/js/class/WorkItem.js?ver=1.0.1.1"></script>
+  <script src="../static/js/class/Desk.js?ver=1.0.0.0"></script>
   <script src="../static/js/kanbanGraph.js"></script>
   <script src="https://www.amcharts.com/lib/4/core.js"></script>
   <script src="https://www.amcharts.com/lib/4/charts.js"></script>

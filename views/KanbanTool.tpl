@@ -8,6 +8,8 @@
   var Bitrix24id = {{.User.Bitrix24id}}
   </script>
   {{template "bootstrap.html" .}}
+  <script src="../static/js/class/WorkItem.js?ver=1.0.1.1"></script>
+  <script src="../static/js/class/Desk.js?ver=1.0.0.0"></script>
   <script src="../static/js/kanban v3.js?ver=1.0.1.1"></script>
   <script src="../static/js/websocket.js"></script>
 
@@ -85,6 +87,8 @@
          
         </div>
       </div>
+      <div class="KanbanDesk__Info">
+      </div>
   </div>  
   </div>      
     <div id="KanbanMore" >
@@ -103,6 +107,10 @@
           ">
             <p> Тип рабочего элемента
               <select class="form-control" id="Type">
+              </select>
+            </p>
+            <p> Класс обслуживания
+              <select class="form-control" id="ClassWorkItem">
               </select>
             </p>
           </div>

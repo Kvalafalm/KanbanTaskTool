@@ -17,7 +17,7 @@ class WorkItem {
 		this.Swimline = "";     
 		//this.DateStart = "";      
 		//this.DateStartStage = "";
-		this.Users = "";         
+		this.Users = new Array;         
 		
 		this.TypeTask  = "";    
 		this.Class  = "";
@@ -111,6 +111,16 @@ class WorkItem {
 		}
 	}
 
+	thisElementHaveUser(id){
+		let thisUserWeHave = false;
+		this.Users.forEach((element)=>{
+			if (element.id == id){
+				thisUserWeHave = true
+			}
+		});
+		
+		return thisUserWeHave
+	}
 	refreshCard(){
 
 		this.div.className = `Kanban typeTask${this.TypeTask.Id}`;
@@ -142,7 +152,7 @@ class WorkItem {
 	   innerHTML += `<a target="_blank" style="color:black" href="https://rer.bitrix24.ru/company/personal/user/`+ window.Bitrix24id + `/tasks/task/view/`+this.IdBitrix24+`/">№` + this.IdBitrix24 + `</a></div>`  ;
 	   if (Array.isArray(this.Users)){
 			this.Users.forEach(function(item, i, arr) {
-			   innerHTML += `<img class="UserIcon" src=` + item.icon + `>` ;
+			   innerHTML += `<img class="UserIcon User${item.id}" src="${item.icon}">` ;
 		   });
 	   }
 	   innerHTML += `</div>`;
@@ -194,14 +204,14 @@ class WorkItem {
 		let thisElement = this;
 		let SaveFunction = ()=>{
 
-			deskTypesWorkItem.forEach((element)=>{
+			window.KanbanDesk.TypesWorkItem.forEach((element)=>{
 				if (element.Id === $(".taskKanbanTool #Type option:selected").val()){
 					this.TypeTask = element;
 					return
 				}
 			});
 
-			deskClassWorkItem.forEach((element)=>{
+			window.KanbanDesk.ClassWorkItem.forEach((element)=>{
 				if (element.Id === $(".taskKanbanTool #ClassWorkItem option:selected").val()){
 					this.Class = element;
 					return
@@ -256,7 +266,7 @@ class WorkItem {
 				$("#Parametrs #Type").empty();
 				let selected="";
 				// Вывод типов работ
-				deskTypesWorkItem.sort(function (a, b) {
+				window.KanbanDesk.TypesWorkItem.sort(function (a, b) {
 					if (a.Order > b.Order) {
 					  return 1;
 					}
@@ -266,7 +276,7 @@ class WorkItem {
 					return 0;
 				});
 
-				deskTypesWorkItem.forEach(function(element) {
+				window.KanbanDesk.TypesWorkItem.forEach(function(element) {
 	
 						if (element.Id == Kanbans.TypeTask.Id){
 							selected = 'selected="selected"';
@@ -277,7 +287,7 @@ class WorkItem {
 		
 				});
 				$("#Parametrs #ClassWorkItem").empty();
-				deskClassWorkItem.sort(function (a, b) {
+				window.KanbanDesk.ClassWorkItem.sort(function (a, b) {
 					if (a.Order > b.Order) {
 					  return 1;
 					}
@@ -287,7 +297,7 @@ class WorkItem {
 					return 0;
 				});
 
-				deskClassWorkItem.forEach(function(element) {
+				window.KanbanDesk.ClassWorkItem.forEach(function(element) {
 	
 					if (element.Id == Kanbans.Class.Id){
 						selected = 'selected="selected"';

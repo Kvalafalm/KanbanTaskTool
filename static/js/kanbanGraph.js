@@ -3,11 +3,14 @@ let deskTypesWorkItem;
 let deskGloabal;
 var Kanbans;
 let CumulativeChart, SpectralChart, ControlChart,ThroughputChart;
-
+window.KanbanDesk;
 window.onload = function() {
 
     refreshDeskList();
+    
     initDesk($("#DeskList option:selected").val());
+    window.KanbanDesk = new KanbanDesk($("#DeskList option:selected").val());
+    window.KanbanDesk.GetDeskDataFromServer();
     const init = new Promise( (resolve, reject)=> {
       while (true) {
         if (Array.isArray(deskTypesWorkItem)){
@@ -22,6 +25,8 @@ window.onload = function() {
     
     $("#DeskList").change(function() {
       initDesk($("#DeskList option:selected").val());
+      window.KanbanDesk = new KanbanDesk($("#DeskList option:selected").val());
+      window.KanbanDesk.GetDeskDataFromServer()
     })
     
 
@@ -324,7 +329,6 @@ function initDesk(DeskId){
 			return
     }
     deskGloabal = desk;
-    
     deskTypesWorkItem = desk.TypeWorkItems;
     StagesSelect = document.getElementById("StagesSC");
     StagesSelect.innerHTML="";
@@ -396,6 +400,7 @@ class SpectralChartGraph {
     valueAxis.renderer.inside = true;
     valueAxis.renderer.labels.template.disabled = true;
     valueAxis.min = 0;
+    valueAxis.extraMax = 0.5; 
     valueAxis.calculateTotals = true;
     // Legend
     this.Graph.legend = new am4charts.Legend();

@@ -166,12 +166,11 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 				for _, addUser := range valuesB24.Accomplices {
 					UserAccomplices, _ := connectionBitrix24API.GetUserFromChat(addUser)
 					user := User{
-						ID:   UserAccomplices.Result.ID,
-						Name: UserAccomplices.Result.LastName + " " + UserAccomplices.Result.Name,
+						ID:   addUser,
+						Name: UserAccomplices.Result.Name,
 						Link: "",
 						Icon: UserAccomplices.Result.Avatar}
 					Users = append(Users, user)
-
 				}
 				tasks[i].Users = make([]User, len(Users))
 				copy(tasks[i].Users, Users)
