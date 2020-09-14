@@ -18,6 +18,8 @@ type Desk struct {
 	ClassOfService []*ClassOfService `orm:"rel(m2m)"`
 	TypeWorkItems  []*TypeWorkItem   `orm:"rel(m2m)"`
 	Stages         []*Stage          `orm:"rel(m2m)"`
+	Experements    []*Experement     `orm:"reverse(many)"`
+	UseExperements bool
 }
 
 func init() {
@@ -32,6 +34,7 @@ func GetDeskFromDBById(id int) (desk Desk, err error) {
 	database.LoadRelated(&desk, "TypeWorkItems")
 	database.LoadRelated(&desk, "Stages")
 	database.LoadRelated(&desk, "ClassOfService")
+	database.LoadRelated(&desk, "Experements")
 	return desk, err
 }
 

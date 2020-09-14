@@ -116,6 +116,7 @@ type TaskB struct {
 	SITEID                string        `json:"SITE_ID"`
 	SUBORDINATE           string        `json:"SUBORDINATE"`
 	MULTITASK             string        `json:"MULTITASK"`
+	//Checklist             map[string]CheckListElement
 }
 
 type TaskB24 struct {
@@ -155,7 +156,7 @@ type TaskB24 struct {
 		CHANGEDDATE         string `json:"CHANGED_DATE"`
 		STATUSCHANGEDBY     string `json:"STATUS_CHANGED_BY"`
 		STATUSCHANGEDDATE   string `json:"STATUS_CHANGED_DATE"`
-
+		//Checklist           map[string]CheckListElement
 		CLOSEDDATE string `json:"CLOSED_DATE"`
 		GUID       string `json:"GUID"`
 
@@ -238,7 +239,8 @@ type TasksB24 struct {
 			//Accomplices      string `json:"accomplices`
 			NewCommentsCount int    `json:"newCommentsCount"`
 			SubStatus        string `json:"subStatus"`
-			Creator          struct {
+			//Checklist        map[string]CheckListElement
+			Creator struct {
 				ID   string `json:"id"`
 				Name string `json:"name"`
 				Link string `json:"link"`
@@ -407,6 +409,23 @@ type UserFromChat struct {
 		DateStart  time.Time `json:"date_start"`
 		DateFinish time.Time `json:"date_finish"`
 	} `json:"time"`
+}
+
+type CheckListElement struct {
+	ID               string        `json:"id"`
+	TaskID           string        `json:"taskId"`
+	CreatedBy        string        `json:"createdBy"`
+	ParentID         int           `json:"parentId"`
+	Title            string        `json:"title"`
+	SortIndex        string        `json:"sortIndex"`
+	IsComplete       string        `json:"isComplete"`
+	IsImportant      string        `json:"isImportant"`
+	ToggledBy        interface{}   `json:"toggledBy"`
+	ToggledDate      interface{}   `json:"toggledDate"`
+	UfChecklistFiles bool          `json:"ufChecklistFiles"`
+	Members          []interface{} `json:"members"`
+	Attachments      []interface{} `json:"attachments"`
+	EntityID         string        `json:"entityId"`
 }
 
 func (Cb *ConnectionBitrix24) GetTask(id string) (app TaskB24, err error) {
@@ -665,6 +684,5 @@ func GetUserOauth2Bitrix24(code string) (User model.User, err error) {
 	if err != nil {
 		return User, errors.New("Ошибка Авторизации")
 	}
-
 	return User, nil
 }

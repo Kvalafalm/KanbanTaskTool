@@ -9,13 +9,33 @@ import (
 type KanbanServiceGraph struct {
 }
 
+//TypesEvent typeOfBlokers/Events
+type TypePeriod int
+
+//TypesEvent
+const (
+	TypePeriod_day = iota
+	TypePeriod_week
+	TypePeriod_month
+	TypePeriod_quarter
+)
+
+func (d TypePeriod) String() string {
+	return [...]string{"День", "Неделя", "Месяц", "Квартал"}[d]
+}
+
+func (d TypePeriod) StringParam() string {
+	return [...]string{"0", "1", "2", "3", "4"}[d]
+}
+
 type Params struct {
-	Startdate time.Time `json:"Startdate"`
-	Enddate   time.Time `json:"Enddate"`
-	Desk      string    `json:"Desk"`
-	Stages    string    `json:"Stages"`
-	StartID   string    `json:"StartId"`
-	EndID     string    `json:"EndId"`
+	Startdate  time.Time  `json:"Startdate"`
+	Enddate    time.Time  `json:"Enddate"`
+	Desk       string     `json:"Desk"`
+	Stages     string     `json:"Stages"`
+	StartID    string     `json:"StartId"`
+	EndID      string     `json:"EndId"`
+	Typeperiod TypePeriod `json:"Typeperiod,string"`
 }
 
 func (Cb *KanbanServiceGraph) GetCFDData(params Params) (CFDdataReturn []map[string]string, err error) {
@@ -82,14 +102,15 @@ func (Cb *KanbanServiceGraph) ControlChart(params Params) (dataControlChart []ma
 	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
 	paramMap[`endId`] = params.EndID
 	paramMap[`startId`] = params.StartID
-	data, _ := model.GetDataForSpectralChart(paramMap)
+	paramMap[`stages`] = params.Stages
+	data, _ := model.GetDataForSpectralChartV2(paramMap)
 	for i, raw := range data {
 		newRaw := make(map[string]string)
 		durationInWorkDays := DifferenceInDays(raw["start"].(string), raw["end"].(string))
-		newRaw["typetask"] = raw["typetask"].(string)
-		newRaw["id"+raw["typetask"].(string)+"_x"] = strconv.Itoa(i)
-		newRaw["id"+raw["typetask"].(string)+"_y"] = strconv.Itoa(durationInWorkDays)
-		newRaw["id"+raw["typetask"].(string)+"_idtask"] = raw["idtask"].(string)
+		newRaw["typetask"] = raw["type"].(string)
+		newRaw["id"+raw["type"].(string)+"_x"] = strconv.Itoa(i)
+		newRaw["id"+raw["type"].(string)+"_y"] = strconv.Itoa(durationInWorkDays)
+		newRaw["id"+raw["type"].(string)+"_idtask"] = raw["idtask"].(string)
 		dataControlChart = append(dataControlChart, newRaw)
 	}
 
@@ -175,19 +196,50 @@ func (Cb *KanbanServiceGraph) GetSpectralChartData(params Params) (dataSpectralC
 	return dataSpectralChart, nil
 }
 
-func (Cb *KanbanServiceGraph) GetThroughPutChartData(params Params) (data map[string]interface{}, err error) {
+func (Cb *KanbanServiceGraph) GetThroughPutChartData(params Params) (dataChart map[string]interface{}, err error) {
 	paramMap := make(map[string]string)
 
 	paramMap[`desk`] = params.Desk
 
 	paramMap[`startDate`] = params.Startdate.Format("2006-01-02 15:04:05")
 	paramMap[`endDate`] = params.Enddate.Format("2006-01-02 15:04:05")
-	paramMap[`endId`] = params.EndID
-	paramMap[`stages`] = params.Stages
 
-	///data, _ := model.GetDataForSpectralChartV2(paramMap)
+	paramMap[`Typeperiod`] = params.Typeperiod.StringParam()
+	//Период тип1 тип2 тип3 тип4 ...
+	data, _ := model.GetDataForThroughPutChart(paramMap)
 
-	return data, nil
+	tasksData := make(map[int]map[string]string)
+	ChartValues := make(map[int]map[string]string)
+	for i, raw := range data {
+		taskRow := make(map[string]string)
+		taskRow["Id"] = raw["Id"].(string)
+		taskRow["Period"] = raw["Period"].(string)
+		taskRow["type"] = raw["type"].(string)
+		tasksData[i] = taskRow
+		// Период взависимости от params.Typeperiod
+		var foundPeriod = false
+		for _, rowCart := range ChartValues {
+
+			if rowCart["Data"] == raw["Period"].(string) {
+				value, _ := strconv.Atoi(rowCart["type"+raw["type"].(string)])
+				rowCart["type"+raw["type"].(string)] = strconv.Itoa(value + 1)
+				foundPeriod = true
+			}
+		}
+
+		if !foundPeriod {
+			newDataRaw := make(map[string]string)
+			newDataRaw["Data"] = raw["Period"].(string)
+			newDataRaw["type"+raw["type"].(string)] = "1"
+			ChartValues[len(ChartValues)] = newDataRaw
+		}
+	}
+
+	dataChart = make(map[string]interface{})
+	dataChart["dataChart"] = ChartValues
+	dataChart["dataTask"] = tasksData
+
+	return dataChart, nil
 
 }
 
@@ -266,6 +318,8 @@ func isHoliday(day time.Time) (t bool) {
 	Holidays = append(Holidays, time.Date(2020, 5, 5, 0, 0, 0, 0, time.UTC))
 	Holidays = append(Holidays, time.Date(2020, 5, 11, 0, 0, 0, 0, time.UTC))
 	Holidays = append(Holidays, time.Date(2020, 6, 12, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 6, 24, 0, 0, 0, 0, time.UTC))
+	Holidays = append(Holidays, time.Date(2020, 7, 1, 0, 0, 0, 0, time.UTC))
 	Holidays = append(Holidays, time.Date(2020, 11, 4, 0, 0, 0, 0, time.UTC))
 	Holidays = append(Holidays, time.Date(2020, 12, 30, 0, 0, 0, 0, time.UTC))
 

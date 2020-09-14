@@ -20,7 +20,7 @@ class WorkItem {
 		this.Users = new Array;         
 		
 		this.TypeTask  = "";    
-		this.Class  = "";
+		this.ClassOfService  = "";
 		this.IdProject = "";    
 		this.ImageProject= "";  
 		this.NameProject = "";  
@@ -81,9 +81,10 @@ class WorkItem {
 		this.FlowEffectives = data.FlowEffectives; 
 		this.DateStartStage = data.DateStartStage;
 		this.Users = data.Users;     
-		this.Class = data.Class;  
+		this.ClassOfService = data.ClassOfService;  
 		this.Swimline = data.Swimline;    
-		this.TypeTask  = data.TypeTask;    
+		this.TypeTask  = data.TypeTask;
+	    
 		this.IdProject =data.IdProject;    
 		this.ImageProject= data.ImageProject;  
 		this.NameProject = data.NameProject; 
@@ -97,10 +98,35 @@ class WorkItem {
 		}
 		
 		this.СommentsCount= data.СommentsCount;
-		this.div.className = `Kanban typeTask${this.TypeTask.Id}`;
+		//this.div.className = `Kanban typeTask${this.TypeTask.Id}`;
+		this.div.className = `Kanban`;
 		this.div.id=`${this.Id}`
 		this.div.draggable = true; 
-		this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
+		//TODO
+		if (
+			this.Stage==1 
+		 || this.Stage==2 
+		 || this.Stage==3
+		 || this.Stage==4
+		 || this.Stage==5
+		 || this.Stage==6
+		 || this.Stage==7
+		 || this.Stage==8
+		 || this.Stage==9
+		 || this.Stage==10
+		 || this.Stage==11
+		 || this.Stage==12
+		 || this.Stage==13
+		 || this.Stage==14
+		 || this.Stage==15
+		 || this.Stage==16
+		 || this.Stage==17
+
+		 ){
+			this.div.style.borderLeft = `7px solid ${this.ClassOfService.Color}`;
+		}else{
+			this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
+		}
 
 		this.Parent.append(this.div);
 
@@ -123,13 +149,37 @@ class WorkItem {
 	}
 	refreshCard(){
 
-		this.div.className = `Kanban typeTask${this.TypeTask.Id}`;
+		//this.div.className = `Kanban typeTask${this.TypeTask.Id}`;
+		this.div.className = `Kanban`;
 		if (this.blinking){
 			this.div.classList.add("blink");
 		}
 		this.div.id=`${this.Id}`
 		this.div.draggable = true; 
-		this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
+		if (
+			   this.Stage==1 
+			|| this.Stage==2 
+			|| this.Stage==3
+			|| this.Stage==4
+			|| this.Stage==5
+			|| this.Stage==6
+			|| this.Stage==7
+			|| this.Stage==8
+			|| this.Stage==9
+			|| this.Stage==10
+			|| this.Stage==11
+			|| this.Stage==12
+			|| this.Stage==13
+			|| this.Stage==14
+			|| this.Stage==15
+			|| this.Stage==16
+			|| this.Stage==17
+
+			){
+			this.div.style.borderLeft = `7px solid ${this.ClassOfService.Color}`;
+		}else{
+			this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
+		}
 		this.show();
 	}
 
@@ -159,7 +209,7 @@ class WorkItem {
 	   // KanbanDescription
 	   innerHTML += `<div class="KanbanDescription"> <span class='nameClient'>${this.Name}</span>
 					 <div class="KanbanDurationStatus">
-					 <div class="KanbanNameProject"><div style="text-align: right;" class="onhover">`;
+					 <div class="KanbanNameProject"><div style="text-align: right;" class="onhover"><span class="projectName">${this.TypeTask.Name}</span><br>`;
 		 
 	   if (this.СommentsCount> 0) {
 		   innerHTML += `<i class="fa fa-comments-o fa-lg" aria-hidden="true">`+this.СommentsCount+`</i>`;
@@ -213,7 +263,7 @@ class WorkItem {
 
 			window.KanbanDesk.ClassWorkItem.forEach((element)=>{
 				if (element.Id === $(".taskKanbanTool #ClassWorkItem option:selected").val()){
-					this.Class = element;
+					this.ClassOfService = element;
 					return
 				}
 			});
@@ -299,7 +349,7 @@ class WorkItem {
 
 				window.KanbanDesk.ClassWorkItem.forEach(function(element) {
 	
-					if (element.Id == Kanbans.Class.Id){
+					if (element.Id == Kanbans.ClassOfService.Id){
 						selected = 'selected="selected"';
 					}else {
 						selected = "";
@@ -545,15 +595,15 @@ class EventOfWorkItem {
 
 		form += this.addInputRow("Причина","BlokerReason","text",this.Description,"");
 		form += this.addInputRow("Решение","BlokerDecision","text",this.Diside,"");
-		form += this.addInputRow("Время начала","BlokerStart","text",this.StartDate.toISOString(),"");
+		form += this.addInputRow("Время начала","BlokerStart","date",this.StartDate.GetFormatDate(),"");
 		if (!this.newEvent){
 			if (this.Finished){
-				form += this.addInputRow("Время окончания","BlokerEnd","text",this.EndDate.toISOString(),"");
+				form += this.addInputRow("Время окончания","BlokerEnd","date",this.EndDate.GetFormatDate(),"");
 			}else{
-				form += this.addInputRow("Время окончания","BlokerEnd","text",(new Date()).toISOString(),"");
+				form += this.addInputRow("Время окончания","BlokerEnd","date",(new Date()).GetFormatDate(),"");
 			}
 		}else{
-			form += this.addInputRow("Время окончания","BlokerEnd","text","","");
+			form += this.addInputRow("Время окончания","BlokerEnd","date","","");
 		}
 
 		body.append(form);
@@ -749,4 +799,20 @@ Date.prototype.addDays = function (days) {
 	var date = new Date(this.valueOf());
 	date.setDate(date.getDate() + days);
 	return date;
+};
+
+Date.prototype.GetFormatDate = function () {
+	
+	const year = this.getFullYear();
+	let month = this.getMonth()+1;
+	
+	if (month<10){
+		month = "0"+month;
+	}
+	let day = this.getDate();
+	if (day<10){
+		day = "0"+day;
+	}
+	formatDate = `${year}-${month}-${day}`;
+	return formatDate;
 };

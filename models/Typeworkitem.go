@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+
 type TypeWorkItem struct {
 	Id          int `orm:"pk" json:"Id,string"`
 	Name        string

@@ -8,16 +8,16 @@ import (
 )
 
 type Tasks struct {
-	Idtasks    int `orm:"auto"`
-	Title      string
-	Desk       int
-	Idbitrix24 int
-	Swimline   int
-	Stageid    int
-	Finished   bool
-	Class      *ClassOfService `orm:"rel(fk)"`
-	Typetask   *TypeWorkItem   `orm:"rel(fk);column(typetask)"`
-	Blokers    []*Bloker       `orm:"reverse(many)"`
+	Idtasks        int `orm:"auto"`
+	Title          string
+	Desk           int
+	Idbitrix24     int
+	Swimline       int
+	Stageid        int
+	Finished       bool
+	ClassOfService *ClassOfService `orm:"rel(fk);column(class_id)"`
+	Typetask       *TypeWorkItem   `orm:"rel(fk);column(typetask)"`
+	Blokers        []*Bloker       `orm:"reverse(many)"`
 }
 
 func init() {
@@ -43,8 +43,8 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	for i, task := range taskListFromDB {
 		database.LoadRelated(&task, "Blokers")
 		taskListFromDB[i].Blokers = task.Blokers
-		database.LoadRelated(&task, "Class")
-		taskListFromDB[i].Class = task.Class
+		database.LoadRelated(&task, "ClassOfService")
+		taskListFromDB[i].ClassOfService = task.ClassOfService
 		database.LoadRelated(&task, "Typetask")
 		taskListFromDB[i].Typetask = task.Typetask
 		//database.LoadRelated(&task, "Class")
@@ -58,7 +58,7 @@ func GetTaskFromDB(id int) (taskFromDB Tasks, err error) {
 
 	_, err = database.QueryTable(new(Tasks)).Filter("Idtasks", id).All(&taskFromDB)
 	database.LoadRelated(&taskFromDB, "Blokers")
-	database.LoadRelated(&taskFromDB, "Class")
+	database.LoadRelated(&taskFromDB, "ClassOfService")
 	database.LoadRelated(&taskFromDB, "Typetask")
 	return taskFromDB, err
 }
@@ -79,7 +79,7 @@ func UpdateTaskInDB(task Tasks) (err error) {
 		"stageid":  task.Stageid,
 		"swimline": task.Swimline,
 		"typetask": task.Typetask.Id,
-		"Class":    task.Class.Id,
+		"class_id": task.ClassOfService.Id,
 	})
 
 	if err == nil {
@@ -114,7 +114,7 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	idType, _ := strconv.Atoi(NewTask["Typetask"])
 	typeWorkItem := TypeWorkItem{Id: idType}
 	task.Typetask = &typeWorkItem
-	task.Class = &ClassOfService{Id: 0}
+	task.ClassOfService = &ClassOfService{Id: 0}
 	//getTypeTask(idType)
 	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
 

@@ -132,17 +132,22 @@ func (this *KanbanToolAPI) Post() {
 	case "task.new":
 		task := service.WorkItem{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &task)
-		id, _ := serv.NewTask(task, User.(Models.User))
+		id, err := serv.NewTask(task, User.(Models.User))
+
 		taskPublish, _ := serv.GetTask(id)
+		if err != nil {
+			this.Data["json"] = "{ \"successful\" : \"false\" }"
+		} else {
+			publish <- newEvent(
+				models.EVENT_NEWCARD,
+				User.(Models.User).Id,
+				User.(Models.User).Firstname,
+				User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" создал(а) новую задачу №"+strconv.Itoa(taskPublish.IDBitrix24),
+				&taskPublish)
 
-		publish <- newEvent(
-			models.EVENT_NEWCARD,
-			User.(Models.User).Id,
-			User.(Models.User).Firstname,
-			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" создал(а) новую задачу №"+strconv.Itoa(taskPublish.IDBitrix24),
-			&taskPublish)
+			this.Data["json"] = &taskPublish
+		}
 
-		this.Data["json"] = &taskPublish
 		this.ServeJSON()
 
 	case "task.create":
@@ -201,6 +206,26 @@ func (this *KanbanToolAPI) Post() {
 			this.Data["json"] = "{ \"successful\" : \"false\" }"
 		} else {
 			this.Data["json"] = bloker
+		}
+		this.ServeJSON()
+	case "experement.new":
+		experement := models.Experement{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &experement)
+		experement.Save()
+		if err != nil {
+			this.Data["json"] = "{ \"successful\" : \"false\" }"
+		} else {
+			this.Data["json"] = experement
+		}
+		this.ServeJSON()
+	case "experement.update":
+		experement := models.Experement{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &experement)
+		experement.Save()
+		if err != nil {
+			this.Data["json"] = "{ \"successful\" : \"false\" }"
+		} else {
+			this.Data["json"] = experement
 		}
 		this.ServeJSON()
 

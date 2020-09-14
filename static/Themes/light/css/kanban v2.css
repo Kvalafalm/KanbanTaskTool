@@ -217,6 +217,16 @@ body {
     vertical-align:middle;
     margin-left: unset;
 }
+.KanbanDesk__Info span:hover{
+    border-radius: 15px;
+    background: #706f6f;
+    cursor: pointer;
+}
+
+.activeSpan{
+    border-radius: 15px;
+    background: #a1a0a0;
+}
 
 .KanbanDesk__Info img{
     margin-left: unset;

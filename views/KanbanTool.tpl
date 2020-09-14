@@ -6,12 +6,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <script>
   var Bitrix24id = {{.User.Bitrix24id}}
+  var defaultDesk = {{.User.Defaultdesk}}
   </script>
   {{template "bootstrap.html" .}}
-  <script src="../static/js/class/WorkItem.js?ver=1.0.1.1"></script>
-  <script src="../static/js/class/Desk.js?ver=1.0.0.0"></script>
-  <script src="../static/js/kanban v3.js?ver=1.0.1.1"></script>
-  <script src="../static/js/websocket.js"></script>
+  <script src="../static/js/class/WorkItem.js?ver=1.0.1.4"></script>
+  <script src="../static/js/class/Desk.js?ver=1.0.1.4"></script>
+  <script src="../static/js/kanban v3.js?ver=1.0.1.4"></script>
+  <script src="../static/js/websocket.js?ver=1.0.1.4"></script>
 
 
 </head>
@@ -93,9 +94,9 @@
   </div>      
     <div id="KanbanMore" >
       <div id="preloaderbg2" class="preloaderbg">
-      <div class="centerbg2">
-        <div id="preloader"></div>
-      </div>
+        <div class="centerbg2">
+          <div id="preloader"></div>
+        </div>
       </div>
       <div class="">
         <div class="taskKanbanTool">
@@ -137,13 +138,13 @@
           <div class="KanbanMoreComents">
           </div>
         </div>
-
       </div>
+      
     </div>
 
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade " id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">

@@ -1,4 +1,166 @@
+class Experement {
+	constructor(){
+		this.Id = "";                     
+		this.Desk  = ""; 
+		this.Name  =  ""; 
+		this.ExperementBelive  = "";  
+		this.ExperementExpect  =  "";  
+		this.ExperementSuccessfulCriteria =  "";  
+	
+		this.LerningObservedBehaivor =  ""; 
+		this.LerningWeWantSee        =  ""; 
+		this.LerningDiscovered       =  ""; 
+		this.isNew = false;
+		this.Start   = new Date()
+		this.End     = new Date("000000000000000000")
+		this.finised = false
+	} 
+	show(){
+		const element = document.getElementById("exampleModal");
+		
+		while (element.firstChild) {
+			element.removeChild(element.firstChild);
+		  }
+		const html =` 
+		<div class="modal-dialog modal-xl" role="document" >
+        <div class="modal-content">
+          <div class="modal-header" style="display: block;">
+			<div class="input-group-append">
+			 	<input class="form-control" id="Experement${this.Id}" value="${this.Name}">
+			</div>
+          </div>
 
+			<div class="modal-body">
+				<form>
+				<h5 >Гипотеза</h5>
+				  <div class="form-group">
+
+				  	<label for="ExperementBelive">Мы верим </label>
+					<div class="input-group-append">
+						<input class="form-control" id="ExperementBelive" value="${this.ExperementBelive}">
+					</div>
+
+					<label for="ExperementExpect">Мы ожидаем</label>
+					<div class="input-group-append">
+						<input class="form-control" id="ExperementExpect" value="${this.ExperementExpect}">
+					</div>
+
+					<label for="ExperementSuccessfulCriteria">Как мы поймем что попали</label>
+					<div class="input-group-append">
+						<input class="form-control" id="ExperementSuccessfulCriteria" value="${this.ExperementSuccessfulCriteria}">
+					</div>
+				  </div>
+
+				  <h5 >Обучение</h5>
+				  <div class="form-group">
+					<label for="LerningObservedBehaivor">Наблюдаемое поведение</label>
+					<div class="input-group-append">
+						<input class="form-control" id="LerningObservedBehaivor" value="${this.LerningObservedBehaivor}" rows="3">
+					</div>
+
+					<label for="LerningWeWantSee">Мы хотим увидеть</label>
+					<div class="input-group-append">
+						<input class="form-control" id="LerningWeWantSee" value="${this.LerningWeWantSee}">
+					</div>
+
+					<label for="LerningDiscovered">Мы обнаружили</label>
+					<div class="input-group-append">
+						<input class="form-control" id="LerningDiscovered" value="${this.LerningDiscovered}">
+					</div>
+				  </div>
+
+				  <div class="form-group">
+					<div class="input-group-append">
+						<label for="ExperementStart">Начало</label> 
+						<input class="form-control" type="date" id="ExperementStart" value="${this.Start.GetFormatDate()}">
+						<label for="ExperementEnd">Окончание</label> 
+						<input class="form-control" type="date" id="ExperementEnd" value="${this.End.GetFormatDate()}">
+					</div>
+
+				  </div>
+				</form> 
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" >Закрыть</button>
+              <button type="button" class="btn btn-primary"  data-dismiss="modal" id="SaveExperement" >Сохранить</button>
+			</div>
+			
+          </div>
+        </div>
+      </div>`
+		element.insertAdjacentHTML("afterBegin",html);
+		$('#exampleModal').modal('show');
+		  const btnSave = document.getElementById("SaveExperement");
+		  const SaveExperement = ()=>{
+			  this.ExperementBelive = document.getElementById("ExperementBelive").value;
+			  this.ExperementExpect = document.getElementById("ExperementExpect").value;
+			  this.ExperementSuccessfulCriteria = document.getElementById("ExperementSuccessfulCriteria").value;
+			  this.LerningObservedBehaivor = document.getElementById("LerningObservedBehaivor").value;
+			  this.LerningWeWantSee = document.getElementById("LerningWeWantSee").value;
+			  this.LerningDiscovered = document.getElementById("LerningDiscovered").value;
+			  this.Name = document.getElementById(`Experement${this.Id}`).value;
+			  if (document.getElementById("ExperementStart").value != ""){
+				this.Start = new Date(document.getElementById("ExperementStart").value);
+			  }else{
+				this.Start = new Date('0000-00-00T00:00:00');  
+			  }
+
+			  if (document.getElementById("ExperementEnd").value != ""){
+			  	this.End = new Date(document.getElementById("ExperementEnd").value);
+			  }else{
+				this.End = new Date('0000-00-00T00:00:00');
+			  }
+			  this.save();
+		  }
+
+		  btnSave.removeEventListener("click",SaveExperement);
+		  btnSave.addEventListener("click",() => SaveExperement(this));
+	}
+	save(){
+		
+		$.ajax({
+			type: "POST",
+			url: "/KanbanToolAPI/experement.update/0",
+			contentType: "application/json; charset=utf-8",
+			crossDomain : true,
+			processData: false,
+			data: JSON.stringify(this,(key, value)=> {
+				if (key === 'Blokers' || key === 'Parent'|| key === 'div') {
+				  return undefined; 
+				}
+				return value;
+			  }),
+			async: true
+	   }).done((element) => {
+				if( element.errorId != undefined && element.errorId == "401" ){
+					window.location.replace("/login")
+					return false
+				}
+				this.updateData(element);
+				if (this.isNew){
+					window.KanbanDesk.Experements.push(this);
+					this.isNew = false;
+				}
+	   });
+	}
+	updateData(data){
+		this.Id = data.Id                           
+		this.Desk  =data.Desk 
+		this.Name  = data.Name
+		this.ExperementBelive  =data.ExperementBelive 
+		this.ExperementExpect  = data.ExperementExpect 
+		this.ExperementSuccessfulCriteria = data.ExperementSuccessfulCriteria 
+	
+		this.LerningObservedBehaivor = data.LerningObservedBehaivor 
+		this.LerningWeWantSee        = data.LerningWeWantSee
+		this.LerningDiscovered       = data.LerningDiscovered
+	
+		this.Start   = new Date(data.Start)
+		this.End     = new Date(data.End)
+		this.finised = data.finised
+	}
+}
 class KanbanDesk {
 	constructor(Id){
 		this.div = document.createElement('div');
@@ -10,14 +172,17 @@ class KanbanDesk {
 		this.ClassWorkItem = new Array;
 		this.Users = new Array;
 		this.WorkItems = new Array;
+		this.Experements  = new Array;
 		this.Innerhtml = "";
 		this.isLoading = true;
 		this.Endstage = "";
 		this.Startstage = "";
 		this.Stages = new Array;
+		this.UseExperements = false;
 
 	}
 	GetDeskDataFromServerAndRefresh(){
+		let thisClass = this
 		$.ajax({
 			type: "GET",
 			url: "/KanbanToolAPI/desk/"+this.Id ,
@@ -29,15 +194,22 @@ class KanbanDesk {
 				window.location.replace("/login")
 				return
 			}
-			this.TypesWorkItem = desk.TypeWorkItems;
-			this.ClassWorkItem = desk.ClassOfService;
-			this.Innerhtml = desk.Innerhtml;
-			this.Name = desk.Name;
-			this.isLoading = false;
-			this.Endstage = desk.Endstage;
-			this.Startstage = desk.Startstage;
-			this.Stages = desk.Stages;
-			this.Stages.sort(function (a, b) {
+			thisClass.TypesWorkItem = desk.TypeWorkItems;
+			thisClass.ClassWorkItem = desk.ClassOfService;
+			thisClass.Innerhtml = desk.Innerhtml;
+			thisClass.Name = desk.Name;
+			thisClass.isLoading = false;
+			thisClass.Endstage = desk.Endstage;
+			thisClass.Startstage = desk.Startstage;
+			thisClass.UseExperements = desk.UseExperements;
+			thisClass.Experements = new Array;
+			desk.Experements.forEach(el=>{
+				const Exp = new Experement();
+				Exp.updateData(el);
+				thisClass.Experements.push(Exp);	
+			});
+			thisClass.Stages = desk.Stages;
+			thisClass.Stages.sort(function (a, b) {
 				if (a.Order > b.Order) {
 				  return 1;
 				}
@@ -46,10 +218,15 @@ class KanbanDesk {
 				}
 				return 0;
 			}); 
-			this.StartLoading();
-			this.Show();
-			this.UpdateWorkItemList();
-			
+			thisClass.StartLoading();
+			thisClass.Show();
+			thisClass.UpdateWorkItemList();
+
+			if(window.KanbanDesk.UseExperements){
+				$("#Experements").show();	
+			}else{
+				$("#Experements").hide();	
+			}
 		});
 	}
 
@@ -70,7 +247,13 @@ class KanbanDesk {
 			this.Innerhtml = desk.Innerhtml;
 			this.Endstage = desk.Endstage;
 			this.Startstage = desk.Startstage;
+			this.UseExperements = desk.UseExperements;
 			this.Stages = desk.Stages;
+			desk.Experements.forEach(el=>{
+				const Exp = new Experement();
+				Exp.updateData(el);
+				this.Experements.push(Exp);	
+			});
 			this.Stages.sort(function (a, b) {
 				if (a.Order > b.Order) {
 				  return 1;
@@ -161,6 +344,8 @@ class KanbanDesk {
 							element.div.style.display = "none";
 						}
 				});
+				$(`.KanbanDesk__Info .activeSpan`).removeClass("activeSpan");
+				$(`#userInfo${userId}`).addClass("activeSpan");
 			}
 			const resetFiltr = ()=> {
 				this.WorkItems.forEach(element=>{
@@ -182,6 +367,27 @@ class KanbanDesk {
 			let row = document.createElement("span");
 			row.insertAdjacentHTML("beforeend",`Юзер - всего РЭ/ РЭ в работе`);
 			info.append(row);			
+
+
+			let startCount= false;
+			let countWIP = 0;
+			this.Stages.forEach(elementStage=>{
+
+				if (elementStage.Id == this.Endstage){
+					return
+				}
+
+				if(startCount){
+					countWIP = countWIP+ $(`.Stage${elementStage.Id} .Kanban`).length
+				}
+				if (elementStage.Id == this.Startstage){
+					startCount = true;
+				}
+			});
+
+			let rowAll = document.createElement("span");
+			rowAll.insertAdjacentHTML("beforeend",`Всего - ${$(".Kanban").length}/ ${countWIP}`);
+			info.append(rowAll);	
 
 			this.Users.forEach((element )=>{
 				let row = document.createElement("span");
@@ -218,7 +424,45 @@ class KanbanDesk {
 		}
 
 	}
+	InfoExperements(){
+		if ($(".KanbanDesk__Info").css('display')==`none`){
+			const info = $(".KanbanDesk__Info");
+			info.empty();
+
+			const addNewExperement = ()=>{
+				const newExperement = new Experement();
+				newExperement.Desk  = {"Id":parseInt(this.Id)}; 
+				newExperement.isNew = true;
+				newExperement.show();
+				
+			}
+
+			let btn = document.createElement("span");
+			btn.insertAdjacentHTML("beforeend",`<button type="button" class="btn btn-light btn-xs" style="padding:2px" ><i class="fa fa-plus-circle" aria-hidden="true"></i></button>`);
+			btn.removeEventListener("click",addNewExperement);
+			btn.addEventListener("click",() => addNewExperement());
+			info.append(btn);
+			
+			this.Experements.forEach(el=>{
+				
+				const ShowHideExperement = (el)=> {	el.show(); }
+
+
+				let row = document.createElement("span");
+				row.id = `experement${el.id}`;
+				row.insertAdjacentHTML("beforeend",`${el.Name} - ${el.Start.GetFormatDate()}/${el.End.GetFormatDate()}`);
+				row.removeEventListener("click",ShowHideExperement);
+				row.addEventListener("click",() => ShowHideExperement(el));
+				info.append(row);
+			});
+			$(".KanbanDesk__Info").css("display", "block");
+		}else{
+			$(".KanbanDesk__Info").empty();
+			$(".KanbanDesk__Info").css("display", "none");
+		}
+	}
 	Show(){
+		const thisClass = this
 		$(".KanbanDeskCanvas").empty();
 		$(".KanbanDeskCanvas").append(this.Innerhtml)
 
@@ -255,8 +499,9 @@ class KanbanDesk {
 						<textarea class="form-control newWorkItemText" aria-label="With textarea"></textarea>
 					</div>
 				</div>
-			</div>`);
-			$(".NewKanban").keydown(function(e) {
+			</div>`  );
+			
+			$(".NewKanban").keydown((e)=> {
 				if (firstPress){
 					if (e.keyCode == 27) {
 						e.target.value = "";
@@ -276,7 +521,7 @@ class KanbanDesk {
 						newWorkItems.Parent = $("#SL"+newWorkItems.Swimline+" .Stage"+newWorkItems.Stage+" .KanbanColumnContent");
 						newWorkItems.newTask = true;
 						newWorkItems.save();
-						WorkItems.push(newWorkItems);
+						thisClass.WorkItems.push(newWorkItems);
 
 					}
 				}

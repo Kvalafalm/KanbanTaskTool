@@ -50,7 +50,7 @@ type WorkItem struct {
 	FlowEffectives  int                  `json:"FlowEffectives"`
 	Blokers         []Bloker             `json:"Blokers"`
 	TypeTask        model.TypeWorkItem   `json:"TypeTask"`
-	Class           model.ClassOfService `json:"Class"`
+	ClassOfService  model.ClassOfService `json:"ClassOfService"`
 	IDProject       int                  `json:"IdProject"`
 	ImageProject    string               `json:"ImageProject"`
 	NameProject     string               `json:"NameProject"`
@@ -74,7 +74,7 @@ type Tasks struct {
 	Blokers        []Bloker             `json:"Blokers"`
 	Swimline       int                  `json:"Swimline,string"`
 	TypeTask       model.TypeWorkItem   `json:"TypeTask"`
-	Class          model.ClassOfService `json:"Class"`
+	ClassOfService model.ClassOfService `json:"ClassOfService"`
 	IdProject      int                  `json:"IdProject"`
 	ImageProject   string               `json:"ImageProject"`
 	NameProject    string               `json:"NameProject"`
@@ -150,7 +150,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 		tasks[i].Stage = TaskFromDB.Stageid
 		tasks[i].Swimline = TaskFromDB.Swimline
 		tasks[i].TypeTask = *TaskFromDB.Typetask
-		tasks[i].Class = *TaskFromDB.Class
+		tasks[i].ClassOfService = *TaskFromDB.ClassOfService
 		tasks[i].Name = TaskFromDB.Title
 		for _, valuesB24 := range values.Result.Tasks {
 
@@ -236,7 +236,7 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 	task.Stageid = tasks.Stage
 	task.Swimline = tasks.Swimline
 	task.Typetask = &tasks.TypeTask
-	task.Class = &tasks.Class
+	task.ClassOfService = &tasks.ClassOfService
 
 	err = model.UpdateTaskInDB(task)
 	if err != nil {
@@ -308,6 +308,7 @@ func (Cb *KanbanService) NewTask(workItem WorkItem, user model.User) (id int, er
 	taskMap["TITLE"] = workItem.Name
 	taskMap["GROUP_ID"] = ProjectList[0]
 	taskMap["RESPONSIBLE_ID"] = strconv.Itoa(user.Bitrix24id)
+	taskMap["CREATED_BY"] = strconv.Itoa(user.Bitrix24id)
 
 	newtaskK := make(map[string]string)
 
@@ -366,7 +367,6 @@ func (Cb *KanbanService) NewTask(workItem WorkItem, user model.User) (id int, er
 }
 
 func (Cb *KanbanService) CompleteTask(taskId int) (err error) {
-	fmt.Println("Complete")
 	taskDb, err := model.GetTaskFromDB(taskId)
 
 	connectionBitrix24API := ConnectionBitrix24{
@@ -379,6 +379,7 @@ func (Cb *KanbanService) CompleteTask(taskId int) (err error) {
 		return err
 	}
 	rowHistory, err := model.GetCurrentTaskStage(taskId)
+
 	timeNow := time.Now()
 	if rowHistory.Id > 0 {
 		rowHistory.Finised = true
@@ -427,7 +428,8 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 	workItem.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
 	stages, _ := model.GetStages()
 	workItem.TypeTask = *taskBD.Typetask
-	workItem.Class = *taskBD.Class
+
+	workItem.ClassOfService = *taskBD.ClassOfService
 	StagesHistory, _ := model.GetTaskHistoryStages(id)
 
 	if err != nil {

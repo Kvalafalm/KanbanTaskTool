@@ -192,37 +192,38 @@ func GetDataForSpectralChartV2(param map[string]string) (raws []orm.Params, err 
 		}
 	}
 	var text = `SELECT
-    TableTasks.idtask,
-    MIN(TableTasks.start) as start,
-    MAX(TableTasks.end) as end,
-    TableTasks.type
-FROM 
-(SELECT 
-    stagehistory.idtask,
-    stagehistory.start,
-    stagehistory.idstage,
-    stagehistory.end,
-    tableTask.typetask as type
-FROM
-     (SELECT 
-        stagehistory.idtask,
-        tasks.typetask
-    FROM
-        kanbantool.stagehistory
-    LEFT JOIN kanbantool.tasks ON stagehistory.idtask = tasks.idtasks
-    WHERE
-	tasks.finished
-	AND stagehistory.idstage = ?
-	AND stagehistory.start <= ?
-	AND stagehistory.start >= ?
-    GROUP BY stagehistory.idtask,tasks.typetask) AS tableTask 
-		LEFT JOIN
-         kanbantool.stagehistory
-    ON stagehistory.idtask = tableTask.idtask
-	` + WhereText + `) as TableTasks
-GROUP BY 
-	TableTasks.idtask,
-	TableTasks.type`
+		TableTasks.idtask,
+		MIN(TableTasks.start) as start,
+		MAX(TableTasks.end) as end,
+		TableTasks.type
+	FROM 
+	(SELECT 
+		stagehistory.idtask,
+		stagehistory.start,
+		stagehistory.idstage,
+		stagehistory.end,
+		tableTask.typetask as type,
+		tableTask.finished
+	FROM
+		(SELECT 
+			stagehistory.idtask,
+			tasks.typetask,
+			tasks.finished
+		FROM
+			kanbantool.stagehistory
+		LEFT JOIN kanbantool.tasks ON stagehistory.idtask = tasks.idtasks
+		WHERE
+		stagehistory.idstage = ?
+		AND stagehistory.start <= ?
+		AND stagehistory.start >= ?
+		GROUP BY stagehistory.idtask,tasks.typetask,tasks.finished) AS tableTask 
+			LEFT JOIN
+			kanbantool.stagehistory
+		ON stagehistory.idtask = tableTask.idtask
+		` + WhereText + `) as TableTasks
+	GROUP BY 
+		TableTasks.idtask,
+		TableTasks.type`
 
 	num, err := database.Raw(text, param[`endId`], param[`endDate`], param[`startDate`]).Values(&mapRaw)
 	if err != nil && num > 0 {
@@ -274,6 +275,76 @@ func GetDateCommitmentPointList(iddesk int) (raws []orm.Params, err error) {
 			stagehistory.desk_id = ?
 		;
 		`, iddesk).Values(&mapRaw)
+	if err != nil && num > 0 {
+		return mapRaw, err
+	}
+
+	return mapRaw, nil
+}
+
+func GetDataForThroughPutChart(param map[string]string) (raws []orm.Params, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	var mapRaw []orm.Params
+	var period string
+
+	switch param[`Typeperiod`] {
+	case "0":
+		period = "DATE_FORMAT(max(stagehistory.start),'%m/%d')"
+	case "1":
+		period = `
+		CASE 
+			WHEN LENGTH(WEEK(max(stagehistory.start),1)) = 1 
+		THEN
+			CONCAT("0",WEEK(max(stagehistory.start),1))
+		ELSE 
+			WEEK(max(stagehistory.start),1)
+		END `
+		//period = "WEEK(max(stagehistory.start),1)"
+	case "2":
+		period = "DATE_FORMAT(max(stagehistory.start),'%m')" //MONTH(max(stagehistory.start))"
+	case "3":
+		period = "QUARTER(max(stagehistory.start))"
+	default:
+		period = "WEEK(max(stagehistory.start),1)"
+	}
+	var text = `Select 
+			Data.Id,
+			Data.type,
+			CONCAT(Data.Year,"/",Data.period) as Period
+		From 
+		(SELECT 
+		task.idtasks As Id,
+		YEAR(max(stagehistory.start)) As Year,
+		` + period + ` as Period,
+		task.typetask as type
+	FROM
+		kanbantool.tasks AS task
+			INNER JOIN
+		(SELECT 
+			desk_stages.stage_id
+		FROM
+			kanbantool.desk AS desk
+		LEFT JOIN kanbantool.desk_stages AS desk_stages ON desk.id = desk_stages.desk_id
+		WHERE
+			desk.id = ?) AS DeskStages ON DeskStages.stage_id = task.stageid
+			AND task.finished
+			LEFT JOIN
+		kanbantool.stagehistory AS stagehistory ON stagehistory.idtask = task.idtasks
+			AND stagehistory.idstage = task.stageid
+	WHERE
+		stagehistory.start BETWEEN ? AND ?
+
+	group by
+		task.idtasks,
+		task.typetask
+	Order By
+		Year,
+		period) as Data`
+
+	num, err := database.Raw(text, param[`desk`], param[`startDate`], param[`endDate`]).Values(&mapRaw)
+
 	if err != nil && num > 0 {
 		return mapRaw, err
 	}

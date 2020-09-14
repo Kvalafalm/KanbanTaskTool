@@ -3,6 +3,15 @@ let deskTypesWorkItem;
 let deskGloabal;
 var Kanbans;
 let CumulativeChart, SpectralChart, ControlChart,ThroughputChart;
+
+let Typeperiod = [
+  { Id:0,Name:"День"},
+  { Id:1,Name:"Неделя"},
+  { Id:2,Name:"Месяц"},
+  { Id:3,Name:"Квартал"},
+]
+
+
 window.KanbanDesk;
 window.onload = function() {
 
@@ -51,11 +60,26 @@ window.onload = function() {
 
     });  
   });
+  $("#btnShowExperement").click(function(){
+    CumulativeChart.showExperements();
+  });
+
+  $("#btnShowExperementTPC").click(function(){
+    ThroughputChart.showExperements();
+  });
+
+  $("#btnTaksForView").click(function(){
+    
+    let workItem = new WorkItem(); 
+    workItem.Id = document.getElementById("idTaksForView").value;
+    workItem.StartModalWindow();
+  });
 
   $("#btnRefreshCC").click(function(){
     let JSONData ={
-    "Startdate":new Date($("#DateStart").val()),
-        "Enddate": new Date($("#DateEnd").val()),
+    "Startdate":new Date($("#DateStartCC").val()),
+        "Enddate": new Date($("#DateEndCC").val()),
+        "Stages" : $('#StagesCC').val().toString(),
         "Desk" : $("#DeskList option:selected").val(),
         "StartId":deskGloabal.Startstage.toString(),
         "EndId":deskGloabal.Endstage.toString()
@@ -70,7 +94,11 @@ window.onload = function() {
     }).done(function (Json) {
           ControlChart.NewSeries(deskTypesWorkItem);
           ControlChart.Graph.data = Json; 
+          const info = document.getElementById("infoCC");
+          info.innerHTML = `Всего элементов: <b> ${Json.length} </b>`;
           checkedTrend($("#showTrend").is(':checked'))
+          
+          
     }); 
 
   });
@@ -94,9 +122,12 @@ window.onload = function() {
       async: true,
       data: JSON.stringify(JSONData),
     }).done(function (SpectralChartJSON) {
-      let newArray = [];
+      let newArray = [],newArrayTasks = [];;
       for (var key in SpectralChartJSON.dataChart) {
         newArray.push(SpectralChartJSON.dataChart[key]);
+      }
+      for (var key in SpectralChartJSON.dataTask) {
+        newArrayTasks.push(SpectralChartJSON.dataTask[key]);
       }
       SpectralChart.Graph.data = newArray.sort(function(obj1, obj2) {
         if (obj1.day < obj2.day) return -1;
@@ -105,16 +136,20 @@ window.onload = function() {
       });
       SpectralChart.NewSeries(deskTypesWorkItem)
       SpectralChart.Graph.dataTasks = SpectralChartJSON.dataTask;
+      const info = document.getElementById("infoSC");
+      info.innerHTML = `Всего элементов: <b> ${newArrayTasks.length} </b>`;
+
       checkedPercentils($("#showPercentils").is(':checked'));  
   }); 
 });
   $("#btnRefreshTPC").click(function(){
     let JSONData = {
-        "Enddate": new Date($("#DateEndSC").val()),
-        "Startdate":new Date($("#DateStartSC").val()),
+        "Enddate": new Date($("#DateEndTPC").val()),
+        "Startdate":new Date($("#DateStartTPC").val()),
         "Desk" : $("#DeskList option:selected").val(),
         "StartId":deskGloabal.Startstage.toString(),
-        "EndId":  deskGloabal.Endstage.toString()
+        "EndId":  deskGloabal.Endstage.toString(),
+        "Typeperiod":$("#TypeperiodTPC option:selected").val()
         }
       
     $.ajax({
@@ -123,8 +158,30 @@ window.onload = function() {
       crossDomain : true,
       async: true,
       data: JSON.stringify(JSONData),
-    }).done(function (SpectralChartJSON) {  
+    }).done(function (Data) { 
+      
+      let newArray = [],newArrayTasks = [];
+      for (var key in Data.dataChart) {
+        newArray.push(Data.dataChart[key]);
+      }
 
+      for (var key in Data.dataTask) {
+        newArrayTasks.push(Data.dataTask[key]);
+      }
+
+      ThroughputChart.Graph.data = newArray.sort(function(obj1, obj2) {
+        if (obj1.Data < obj2.Data) return -1;
+        if (obj1.Data > obj2.Data) return 1;
+        return 0;
+      });
+      ThroughputChart.Graph.dataTasks = newArrayTasks;
+      ThroughputChart.dateAxis.axisRanges.clear();
+      ThroughputChart.NewSeries(deskTypesWorkItem)
+      
+
+      const info = document.getElementById("infoTPC");
+      info.innerHTML = `Всего элементов: <b> ${newArrayTasks.length} </b>`;
+      
     });
 
   });
@@ -256,14 +313,16 @@ function refreshDeskList(){
         data: ""
    }).done(function (DeskList) {
         $("#DeskList").empty();
-        let FirstEvent=true;
+        let select ="";
         DeskList.forEach(function(element) {
-            if (FirstEvent){
-                $("#DeskList").append('<option selected="selected" value="' + element.Id+ '">'+ element.Name + '</h3>');
-                FirstEvent = false;
-            }else{
-                $("#DeskList").append('<option value="' + element.Id+ '">'+ element.Name + '</h3>');
-            }
+
+          if (window.defaultDesk==element.Id) {
+            select = `selected="selected"`;
+          }else{
+            select = ``;
+          }
+
+          $("#DeskList").append(`<option ${select} value="${element.Id}">${element.Name}</option>`);
 
         });
     });  
@@ -332,15 +391,27 @@ function initDesk(DeskId){
     deskTypesWorkItem = desk.TypeWorkItems;
     StagesSelect = document.getElementById("StagesSC");
     StagesSelect.innerHTML="";
-    
+
+    StagesCCSelect = document.getElementById("StagesCC");
+    StagesCCSelect.innerHTML="";    
     if (Array.isArray(deskGloabal.Stages)) {
       deskGloabal.Stages.sort((a, b)=>{
           return a.Order - b.Order;
       });
       deskGloabal.Stages.forEach((element)=>{
         StagesSelect.insertAdjacentHTML("beforeend",`<option value="${element.Id}" >${element.Name}</option>`);
+        StagesCCSelect.insertAdjacentHTML("beforeend",`<option value="${element.Id}" >${element.Name}</option>`);
       });
     }
+
+    Select = document.getElementById("TypeperiodTPC");
+    Select.innerHTML="";
+    
+    Typeperiod.forEach((element)=>{
+      Select.insertAdjacentHTML("beforeend",`<option value="${element.Id}" >${element.Name}</option>`);
+    });
+
+
   });
 }
 
@@ -390,8 +461,6 @@ class SpectralChartGraph {
 
 
     this.Graph.cursor = new am4charts.XYCursor();
-    
-
     
     this.Graph.cursor.xAxis = dateAxis;
     this.Graph.scrollbarX = new am4core.Scrollbar();
@@ -487,22 +556,22 @@ class CumulativeFlowDiagramm{
     this.Graph.exporting.menu.verticalAlign = "top";
 
     this.Graph.dateFormatter.inputDateFormat = "yyyy-MM-dd";
-    var dateAxis = this.Graph.xAxes.push(new am4charts.DateAxis());
-    dateAxis.renderer.minGridDistance = 5;
-    dateAxis.startLocation = 0.5;
-    dateAxis.endLocation = 0.5;
-    dateAxis.baseInterval = {
+    this.dateAxis = this.Graph.xAxes.push(new am4charts.DateAxis());
+    this.dateAxis.renderer.minGridDistance = 5;
+    this.dateAxis.startLocation = 0.5;
+    this.dateAxis.endLocation = 0.5;
+    this.dateAxis.baseInterval = {
       timeUnit: "day",
       count: 1
     };
 
-    dateAxis.dateFormats.setKey("day", "[font-size: 12px]dd");
-    dateAxis.periodChangeDateFormats.setKey("day", "[bold]w ");
-    dateAxis.periodChangeDateFormats.setKey("week", "[bold]MM ");
-    dateAxis.skipEmptyPeriods = true; 
+    this.dateAxis.dateFormats.setKey("day", "[font-size: 12px]dd");
+    this.dateAxis.periodChangeDateFormats.setKey("day", "[bold]w ");
+    this.dateAxis.periodChangeDateFormats.setKey("week", "[bold]MM ");
+    this.dateAxis.skipEmptyPeriods = true; 
 
-    dateAxis.groupData = true;
-    dateAxis.groupIntervals.setAll([
+    this.dateAxis.groupData = true;
+    this.dateAxis.groupIntervals.setAll([
         { timeUnit: "day", count: 1 },
         { timeUnit: "week", count: 1 },
         { timeUnit: "month", count: 1 }
@@ -519,7 +588,7 @@ class CumulativeFlowDiagramm{
         am4core.color("#ba0085")
       ];
     this.Graph.cursor = new am4charts.XYCursor();
-    this.Graph.cursor.xAxis = dateAxis;
+    this.Graph.cursor.xAxis = this.dateAxis;
     var valueAxis = this.Graph.yAxes.push(new am4charts.ValueAxis());
     this.Graph.scrollbarX = new am4core.Scrollbar();
     
@@ -572,6 +641,39 @@ class CumulativeFlowDiagramm{
 
     Stages.forEach((element) => {
       this.createSeries(element.Id,element.Name,"");  
+    });
+  }
+
+  createRange(name,start,end){
+    var range = this.dateAxis.axisRanges.create();
+    range.date = start;
+    range.endDate = end;
+    //range.axisFill.fill = chart.colors.getIndex(7);
+    range.axisFill.fillOpacity = 0.2;
+
+    range.label.text = name;
+    range.label.inside = true;
+    range.label.rotation = 90;
+    range.label.horizontalCenter = "right";
+    range.label.verticalCenter = "bottom";
+  }
+
+  showExperements(){
+    while (this.dateAxis.axisRanges.length > 0) {
+      this.dateAxis.axisRanges.removeIndex(0).dispose();
+    }
+
+    window.KanbanDesk.Experements.forEach(element =>{
+      let start = element.Start;
+      if (new Date($("#DateStart").val()) > start){
+        start = new Date($("#DateStart").val());
+      }
+
+      let end = element.End;
+      if (new Date($("#DateEnd").val()) < end){
+        end = new Date($("#DateEnd").val());
+      }
+      this.createRange(element.Name,start,end);
     });
   }
 }
@@ -756,6 +858,11 @@ class Persentil{
     this.range.grid.strokeWidth = 2;
     this.range.label.location = -0.5;
     this.range.label.disabled = false;
+
+    this.range.label.inside = true;
+    this.range.label.rotation = 90;
+    //this.range.label.horizontalCenter = "left";
+    this.range.label.verticalCenter = "bottom";
     this.range.label.adapter.add("horizontalCenter", function() {
       return "middle";
     });
@@ -794,51 +901,31 @@ class ThroughputChartGraph {
   constructor (div){
     this.Graph = am4core.create(div, am4charts.XYChart);
     this.categoryAxis = this.Graph.xAxes.push(new am4charts.CategoryAxis());
-    this.categoryAxis.dataFields.category = "day";
+    this.categoryAxis.dataFields.category = "Data";
     this.categoryAxis.renderer.grid.template.location = 0;
-
-
-    var dateAxis = this.Graph.xAxes.push(new am4charts.DateAxis());
-        dateAxis.renderer.minGridDistance = 5;
-        dateAxis.startLocation = 0.5;
-        dateAxis.endLocation = 0.5;
-        dateAxis.baseInterval = {
-          timeUnit: "day",
-          count: 1
-        };
-
-        dateAxis.dateFormats.setKey("day", "[font-size: 12px]dd");
-        dateAxis.periodChangeDateFormats.setKey("day", "[bold]w ");
-        dateAxis.periodChangeDateFormats.setKey("week", "[bold]MM ");
-        dateAxis.skipEmptyPeriods = true; 
-
-        dateAxis.groupData = true;
-        dateAxis.groupIntervals.setAll([
-            { timeUnit: "day", count: 1 },
-            { timeUnit: "week", count: 1 },
-            { timeUnit: "month", count: 1 }
-          ]);
+    this.dateAxis =  this.categoryAxis;
 
 
     this.Graph.cursor = new am4charts.XYCursor();
     
-    this.Graph.cursor.xAxis = dateAxis;
+    //scrollbars
     this.Graph.scrollbarX = new am4core.Scrollbar();
+    this.Graph.scrollbarY = new am4core.Scrollbar();
 
     var valueAxis = this.Graph.yAxes.push(new am4charts.ValueAxis());
-    valueAxis.renderer.inside = true;
-    valueAxis.renderer.labels.template.disabled = true;
+    valueAxis.renderer.inside = false;
+
     valueAxis.min = 0;
     valueAxis.calculateTotals = true;
     // Legend
     this.Graph.legend = new am4charts.Legend();
     this.Graph.exporting.menu = new am4core.ExportMenu();
     this.Graph.exporting.menu.align = "left";
-    this.Graph.exporting.menu.verticalAlign = "top";
+    this.Graph.exporting.menu.verticalAlign = "bottom";
     // Create series
     
     deskTypesWorkItem.forEach((element) => {
-      this.createSeries("id"+element.Id,rgba2hex(element.Color), element.Name);  
+      this.createSeries("type"+element.Id,rgba2hex(element.Color), element.Name);  
     });
 
   }
@@ -849,14 +936,14 @@ class ThroughputChartGraph {
     series.id = field;
     series.name = name;
     series.dataFields.valueY = field;
-    series.dataFields.categoryX = "day";
-    series.sequencedInterpolation = true;
+    series.dataFields.categoryX = "Data";
+    series.sequencedInterpolation = false;
     series.stacked = true;
     series.fill = am4core.color(color)
     series.strokeWidth = 0;
     // Configure columns
     series.columns.template.width = am4core.percent(60);
-    series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: {valueY}";
+    //series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: {valueY}";
     
     // Add label
     var labelBullet = series.bullets.push(new am4charts.LabelBullet());
@@ -900,8 +987,108 @@ class ThroughputChartGraph {
     }
       
     deskTypesWorkItem.forEach((element) => {
-      this.createSeries("id"+element.Id,rgba2hex(element.Color), element.Name);  
+      this.createSeries("type"+element.Id,rgba2hex(element.Color), element.Name);  
     });
    
+  }
+
+  createRange(name,start,end){
+    const range = this.dateAxis.axisRanges.create();
+    range.category = start;
+    range.endCategory = end;
+    range.axisFill.fillOpacity = 0.2;
+    range.label.location = 0.1;
+    range.label.text = name;
+    range.label.inside = true;
+    range.label.rotation = 90;
+    range.label.valign = "top";
+    range.label.horizontalCenter = "left";
+    
+  }
+
+  showExperements(){
+   /* while (this.dateAxis.axisRanges.length > 0) {
+      this.dateAxis.axisRanges.removeIndex(0).dispose();
+    }*/
+    this.dateAxis.axisRanges.clear();
+    window.KanbanDesk.Experements.forEach(element =>{
+      if (  element.End > new Date( $("#DateStartTPC").val() )  ) {
+
+        let start = element.Start;
+        if (new Date($("#DateStartTPC").val()) > start){
+          start = new Date($("#DateStartTPC").val());
+        }
+
+        let end = element.End;
+        if (new Date($("#DateEndTPC").val()) < end){
+          end = new Date($("#DateEndTPC").val());
+        }
+
+        this.createRange(element.Name,this.TransformDateToCategory(start,$("#TypeperiodTPC option:selected").val()),this.TransformDateToCategory(end,$("#TypeperiodTPC option:selected").val()));
+        
+      }
+      this.Graph.reinit();
+    });
+  }
+
+  TransformDateToCategory(date,period){
+    let value;
+    
+    switch (period) {
+      case "1":{
+        let onejan = new Date(date.getFullYear(), 0, 1);
+        let week;
+        week = Math.ceil( (((date - onejan) / 86400000) + onejan.getDay() + 1) / 7 );
+        if (week < 10 ){
+          week = "0"+week;
+        }
+        value = date.getFullYear() + "/" + week
+      }
+      break;
+
+      case "2":{
+        let month;
+        if ((date.getMonth()+1) < 10 ){
+          month = "0"+(date.getMonth()+1);
+        }else{
+          month = date.getMonth()+1;
+        }
+        value = date.getFullYear() + "/" + month
+      }
+      break;
+
+      case "3":{
+        let quarter
+        if ((date.getMonth()+1) % 3  == 0 ) {
+          quarter = (date.getMonth()+1) / 3;
+        }else{
+          quarter =Math.trunc((date.getMonth()+1) % 3)+1;
+        }
+        value = date.getFullYear() + "/" + quarter
+      }
+      break;
+
+      default:{
+        let month,day;
+
+        if ((date.getMonth()+1) < 10 ){
+          month = "0"+(date.getMonth()+1);
+        }else{
+          month = date.getMonth()+1;
+        }
+
+        if ( date.getDate()  < 10 ){
+          day = "0"+date.getDate();
+        }else{
+          day = date.getDate();
+        }
+
+        value = date.getFullYear() + "/" + month + "/" + day
+      }
+      break;
+    }
+
+    // неделя
+    return value
   }
 }

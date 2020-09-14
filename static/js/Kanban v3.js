@@ -25,6 +25,10 @@ window.onload = function() {
 		});
 	});
 
+	$("#Experements").click(function(){
+		window.KanbanDesk.InfoExperements();
+	});
+	
 	$("#InfoDesk").click(function(){
 		window.KanbanDesk.InfoDesk();
 	});
@@ -52,14 +56,15 @@ function refreshDeskList(){
 		return
 	}
 		$("#DeskList").empty();
-		let FirstEvent=true;
+		let select ="";
 		DeskList.forEach(function(element) {
-			if (FirstEvent){
-				$("#DeskList").append('<option selected="selected" value="' + element.Id+ '">'+ element.Name + '</h3>');
-				FirstEvent = false;
-			}else{
-				$("#DeskList").append('<option value="' + element.Id+ '">'+ element.Name + '</h3>');
+
+            if (window.defaultDesk==element.Id) {
+                select = `selected="selected"`;
+            }else{
+				select = ``;
 			}
+                $("#DeskList").append(`<option ${select} value="${element.Id}">${element.Name}</option>`);
 
 		});
 	});  
@@ -67,5 +72,6 @@ function refreshDeskList(){
 	$( "#DeskList" ).change(function() {
 		window.KanbanDesk = new KanbanDesk($("#DeskList option:selected").val());
 		window.KanbanDesk.GetDeskDataFromServerAndRefresh();
+
 	});
 }

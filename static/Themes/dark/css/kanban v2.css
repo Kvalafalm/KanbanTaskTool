@@ -224,6 +224,18 @@ body {
     margin-left: unset;
     border: 1px solid white;
 }
+
+.KanbanDesk__Info span:hover{
+    border-radius: 15px;
+    background: #a59999;
+    cursor: pointer;
+}
+
+.activeSpan{
+    border-radius: 15px;
+    background: #ddcece;
+}
+
 .taskKanbanTool{
     WIDTH: 39%;
     min-height: 400px;

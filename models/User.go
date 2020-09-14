@@ -15,6 +15,7 @@ type User struct {
 	Theme          string
 	Bitrix24id     int
 	Defaulttaskb24 int
+	Defaultdesk    int
 }
 
 func init() {
@@ -34,6 +35,7 @@ func (user *User) ValidCurentUserOrAdd() (err error) {
 		user.Secondname = UserFromDB.Secondname
 		user.Theme = UserFromDB.Theme
 		user.Defaulttaskb24 = UserFromDB.Defaulttaskb24
+		user.Defaultdesk = UserFromDB.Defaultdesk
 	} else {
 		UserFromDB.Firstname = user.Firstname
 		UserFromDB.Secondname = user.Secondname
