@@ -216,18 +216,31 @@ class WorkItem {
 	   }
    
 	   let duration = "";
+	   let NewIndicatorSLA = "";
+	   let ProgressInfo = "bg-success";
 	   if (this.LeadTime != undefined) {
    
 		   let tapeInfo = "badge-success";
+		  
 		   if (this.TypeTask.SLA < this.LeadTime && (Math.round(this.TypeTask.SLA*0.8)) < this.LeadTime){
 			   tapeInfo = "badge-danger";  
+			   ProgressInfo = "bg-danger";
 		   }else if ( (this.TypeTask.SLA*0.7) < this.LeadTime ){
-			   tapeInfo = "badge-warning";  
+			   tapeInfo = "badge-warning"; 
+			   ProgressInfo = "bg-warning"; 
+			   
 		   }
-		   duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  this.LeadTime + ` д. </span>`;
+		  
+		   //duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  this.LeadTime + ` д. </span>`;
+		   NewIndicatorSLA = `
+		   	<div class="progress" style="margin-top:2px;background-color: #a9abad; height:10px;font-size: .60rem;">
+		   		<div class="progress-bar progress-bar-striped ${ProgressInfo}" role="progressbar" aria-valuenow="${Math.round(this.LeadTime/ this.TypeTask.SLA*100)}" aria-valuemin="0" aria-valuemax="100" style="width: ${Math.round(this.LeadTime/ this.TypeTask.SLA*100)}%">
+					<span style="margin:auto">`+  this.LeadTime + ` д.</span>
+		   		</div>
+		 	</div>`;
 	   }
-   
-	   	innerHTML += `` + duration +`<span class="projectName">` + this.NameProject + `</span> </div>`;
+
+	   	innerHTML += `` + duration +`<span class="projectName">` + this.NameProject + `</span> </div></div> ${NewIndicatorSLA}</div> `;
    
 	    this.div.innerHTML = innerHTML;
 		let btn = document.getElementById(`btnFinishWorkItem${this.Id}`);
