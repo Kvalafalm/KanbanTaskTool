@@ -18,7 +18,7 @@ func GetStageFromDB(id int) (Stage Stage, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Stage").Filter("Idstage", id).All(&Stage)
+	_, err = database.QueryTable("Stage").Filter("Id", id).All(&Stage)
 	return Stage, err
 }
 
