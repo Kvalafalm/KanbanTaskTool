@@ -15,8 +15,10 @@ class WorkItem {
 		this.Name = "";
 		this.Stage = "";
 		this.Swimline = "";     
-		//this.DateStart = "";      
-		//this.DateStartStage = "";
+		//this.DateStart = ""; 
+		this.DueDate = undefined;
+  
+
 		this.Users = new Array;         
 		
 		this.TypeTask  = "";    
@@ -79,6 +81,11 @@ class WorkItem {
 		this.LeadTime = data.LeadTime;
 		this.CyrcleTime = data.CyrcleTime;
 		this.FlowEffectives = data.FlowEffectives; 
+		if (data.DueDate == "0001-01-01T00:00:00Z" || data.DueDate === undefined){
+			this.DueDate = undefined;
+		}else{
+			this.DueDate = new Date(data.DueDate)
+		}  
 		this.DateStartStage = data.DateStartStage;
 		this.Users = data.Users;     
 		this.ClassOfService = data.ClassOfService;  
@@ -218,29 +225,39 @@ class WorkItem {
 	   let duration = "";
 	   let NewIndicatorSLA = "";
 	   let ProgressInfo = "bg-success";
+	   let style = ``;
+
 	   if (this.LeadTime != undefined) {
-   
+			let SLAleft = this.TypeTask.SLA - this.LeadTime;
 		   let tapeInfo = "badge-success";
-		  
-		   if (this.TypeTask.SLA < this.LeadTime && (Math.round(this.TypeTask.SLA*0.8)) < this.LeadTime){
+		   style = `style="width: ${100-Math.round(this.LeadTime/ this.TypeTask.SLA*100)}%;margin-left: auto;"`;
+
+		   if (this.TypeTask.SLA < this.LeadTime){
 			   tapeInfo = "badge-danger";  
 			   ProgressInfo = "bg-danger";
+			   style = `style="width: ${Math.round(this.LeadTime/ this.TypeTask.SLA*100)}%"`;
+			   SLAleft = SLAleft*-1;
 		   }else if ( (this.TypeTask.SLA*0.7) < this.LeadTime ){
 			   tapeInfo = "badge-warning"; 
 			   ProgressInfo = "bg-warning"; 
-			   
+			   SLAleft = this.TypeTask.SLA - this.LeadTime;
 		   }
 		  
-		   //duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  this.LeadTime + ` д. </span>`;
+		   duration = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge `+ tapeInfo+ `" style="font-size: 100%;">`+  this.LeadTime + ` д. </span>`;
 		   NewIndicatorSLA = `
 		   	<div class="progress" style="margin-top:2px;background-color: #a9abad; height:10px;font-size: .60rem;">
-		   		<div class="progress-bar progress-bar-striped ${ProgressInfo}" role="progressbar" aria-valuenow="${Math.round(this.LeadTime/ this.TypeTask.SLA*100)}" aria-valuemin="0" aria-valuemax="100" style="width: ${Math.round(this.LeadTime/ this.TypeTask.SLA*100)}%">
-					<span style="margin:auto">`+  this.LeadTime + ` д.</span>
+		   		<div class="progress-bar progress-bar-striped ${ProgressInfo}" role="progressbar" ${style}">
+					<span style="margin:auto">`+  SLAleft + ` д.</span>
 		   		</div>
 		 	</div>`;
 	   }
-
-	   	innerHTML += `` + duration +`<span class="projectName">` + this.NameProject + `</span> </div></div> ${NewIndicatorSLA}</div> `;
+	   let DueDate
+		if (this.DueDate != undefined){
+			DueDate = `<span style="margin-left: 3px; margin-right: 3px; font-size:100%;" class="badge badge-primary" style="font-size: 100%;">${this.DueDate.toLocaleDateString()}</span>`
+		}else{
+			DueDate = "";
+		}
+	   	innerHTML += `` + DueDate+  duration +`<span class="projectName">` + this.NameProject + `</span> </div></div> ${NewIndicatorSLA}</div> `;
    
 	    this.div.innerHTML = innerHTML;
 		let btn = document.getElementById(`btnFinishWorkItem${this.Id}`);

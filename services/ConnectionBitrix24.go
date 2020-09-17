@@ -125,7 +125,7 @@ type TaskB24 struct {
 		STAGEID             string        `json:"STAGE_ID"`
 		DESCRIPTION         string        `json:"DESCRIPTION"`
 		DESCRIPTIONHTML     template.HTML `json:"DESCRIPTION_HTML"`
-		DEADLINE            string        `json:"DEADLINE"`
+		DEADLINE            time.Time     `json:"DEADLINE"`
 		STARTDATEPLAN       string        `json:"START_DATE_PLAN"`
 		ENDDATEPLAN         string        `json:"END_DATE_PLAN"`
 		PRIORITY            string        `json:"PRIORITY"`
@@ -206,7 +206,7 @@ type TasksB24 struct {
 			ClosedBy            interface{} `json:"closedBy"`
 			ClosedDate          interface{} `json:"closedDate"`
 			DateStart           time.Time   `json:"dateStart"`
-			Deadline            interface{} `json:"deadline"`
+			Deadline            time.Time   `json:"deadline"`
 			StartDatePlan       interface{} `json:"startDatePlan"`
 			EndDatePlan         interface{} `json:"endDatePlan"`
 			GUID                string      `json:"guid"`

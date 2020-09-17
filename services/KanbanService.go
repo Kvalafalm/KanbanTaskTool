@@ -43,6 +43,7 @@ type WorkItem struct {
 	Name            string               `json:"Name"`
 	Stage           int                  `json:"Stage,string"`
 	DateStart       time.Time            `json:"DateStart"`
+	DueDate         time.Time            `json:"DueDate"`
 	DateStartStage  time.Time            `json:"DateStartStage"`
 	Users           []User               `json:"Users"`
 	LeadTime        int                  `json:"LeadTime"`
@@ -69,6 +70,7 @@ type Tasks struct {
 	Name           string               `json:"Name"`
 	Stage          int                  `json:"Stage,string"`
 	DateStart      time.Time            `json:"DateStart"`
+	DueDate        time.Time            `json:"DueDate"`
 	DateStartStage time.Time            `json:"DateStartStage"`
 	Users          []User               `json:"Users"`
 	Blokers        []Bloker             `json:"Blokers"`
@@ -179,6 +181,7 @@ func (Cb *KanbanService) GetTaskList(id int) (tasks []Tasks, err error) {
 				}
 				tasks[i].IdProject = valuesB24.GroupID
 				tasks[i].СommentsCount = valuesB24.CommentsCount
+				tasks[i].DueDate = valuesB24.Deadline
 			}
 
 		}
@@ -423,6 +426,8 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 	} else {
 		workItem.Name = taskBD.Title
 	}
+
+	workItem.DueDate = taskB24.Result.DEADLINE
 	//task.DateStart = taskB24.Result.DATESTART
 	//task.DateStartStage		= ;
 	workItem.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML
