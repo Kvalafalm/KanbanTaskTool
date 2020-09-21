@@ -125,7 +125,7 @@ type TaskB24 struct {
 		STAGEID             string        `json:"STAGE_ID"`
 		DESCRIPTION         string        `json:"DESCRIPTION"`
 		DESCRIPTIONHTML     template.HTML `json:"DESCRIPTION_HTML"`
-		DEADLINE            time.Time     `json:"DEADLINE"`
+		DEADLINE            string        `json:"DEADLINE"`
 		STARTDATEPLAN       string        `json:"START_DATE_PLAN"`
 		ENDDATEPLAN         string        `json:"END_DATE_PLAN"`
 		PRIORITY            string        `json:"PRIORITY"`

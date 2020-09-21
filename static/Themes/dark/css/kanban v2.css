@@ -147,10 +147,8 @@ body {
     font-weight: bold;
 }
 .KanbanDurationStatus{
-    position: absolute;
-    bottom: 10;
-    right: 10;
-    width: 90%;
+
+    width: 100%;
 }
 .blocked{
     background: #ef9bb7;

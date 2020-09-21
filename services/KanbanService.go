@@ -427,7 +427,7 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 		workItem.Name = taskBD.Title
 	}
 
-	workItem.DueDate = taskB24.Result.DEADLINE
+	workItem.DueDate, _ = time.Parse("", taskB24.Result.DEADLINE)
 	//task.DateStart = taskB24.Result.DATESTART
 	//task.DateStartStage		= ;
 	workItem.DescriptionHTML = taskB24.Result.DESCRIPTIONHTML

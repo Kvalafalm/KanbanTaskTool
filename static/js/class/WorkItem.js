@@ -18,7 +18,7 @@ class WorkItem {
 		//this.DateStart = ""; 
 		this.DueDate = undefined;
   
-
+		
 		this.Users = new Array;         
 		
 		this.TypeTask  = "";    
@@ -33,7 +33,7 @@ class WorkItem {
 		this.СommentsCount= "";
 		this.Parent ="";
 		this.newTask = false;
-
+		this.onPause = false; 
 		this.div.addEventListener("dblclick" , ()=>{
 			this.StartModalWindow();
 		});
@@ -96,11 +96,16 @@ class WorkItem {
 		this.ImageProject= data.ImageProject;  
 		this.NameProject = data.NameProject; 
 		this.ActiveBlokers= data.ActiveBlokers;
+		this.onPause = false; 
+		
 		if (Array.isArray(data.Blokers)){
 			this.Blokers = [];
 			data.Blokers.forEach(element => {
 				let Event = new EventOfWorkItem(element,this)
 				this.Blokers.push(Event);
+				if (Event.TypeEvent == 2 && !Event.Finished){
+					this.onPause = true; 
+				}
 			});
 		}
 		
@@ -276,6 +281,24 @@ class WorkItem {
 		});
 		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnFinish);
 
+		let btnOnPause = document.createElement("button");
+		btnOnPause.type = "button";
+		btnOnPause.id = `btnOnPause${this.Id}`;
+		btnOnPause.className = "btn btn-light btn-xs";
+		if (this.onPause) {
+			btnOnPause.insertAdjacentHTML("beforeend",`<i class="fa fa-play-circle-o" aria-hidden="true"></i>`);
+			btnOnPause.addEventListener("click" , ()=>{
+				this.SetPause(true);
+			});
+		}else{
+			btnOnPause.insertAdjacentHTML("beforeend",`<i class="fa fa-pause-circle-o " aria-hidden="true"></i>`);
+			btnOnPause.addEventListener("click" , ()=>{
+				this.SetPause(false);
+			});
+		}
+
+		btnOnPause.style.padding = "1px";
+		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnOnPause);
 	}
 
 	//Открытие информации по Рабочему элементу 
@@ -511,6 +534,36 @@ class WorkItem {
 	   });
 	}
 
+	SetPause(setPause){
+		if (setPause){
+			this.Blokers.forEach((element)=>{
+				if (element.TypeEvent==2){
+					element.EndDate = new Date().toISOString();
+					element.Finished = true;
+					element.Diside = "Нашли время (btn)";
+					element.save();
+				}
+			});
+			this.onPause = false;
+			this.refreshCard();
+		}else{
+			const pause = new EventOfWorkItem({
+				"Idtask": parseInt(this.Id),
+				"StartDate"	:new Date().toISOString()
+			},this)
+			pause.Description = "Нет времени (btn)";
+			//this.Diside = $("#BlokerDecision")[0].value;
+			pause.EndDate = undefined;
+			pause.Finished = false;
+			pause.TypeEvent = 2;
+			this.Blokers.push(pause);
+			this.onPause = true;
+			pause.save();
+			pause.showPreview();
+		}
+
+	}
+
 	save(){
 
 		if (this.newTask){
@@ -661,6 +714,9 @@ class EventOfWorkItem {
 			this.TypeEvent = parseInt($("#BlokerType")[0].value);
 			if(this.newEvent){
 				this.Task.Blokers.push(this);
+			}
+			if(this.TypeEvent==2 && !this.Finished){
+				this.Task.onPause = true;
 			}
 			this.save();
 			this.showPreview();
