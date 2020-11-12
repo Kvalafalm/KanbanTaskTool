@@ -32,7 +32,7 @@
           <div id="preloader"></div>
         </div>
       </div>
-      <div class="KanbanDeskCanvas" id="">
+      <div class="KanbanDeskCanvas" id="KanbanDeskCanvas">
         <div class="KanbanDesk" style="grid-template-columns: 1fr 1fr 1fr 3fr 1fr;;     width: 100%;">
             <div class="KanbanColumn" id="Stage9"  >
                 <div class="NameColumn">Идея<span class="count"></span></div>

@@ -41,6 +41,15 @@ func GetActiveBlokersFromDB(idtask int) (ActiveBlokers []Bloker, count int, err 
 	return ActiveBlokers, int(count64), err
 }
 
+func BlokerDeleteInDB(BlokerId int) (err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+	if _, err := database.Delete(&Bloker{Id: BlokerId}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetBlokerFromDBbyId(id int) (bloker Bloker, err error) {
 	database := orm.NewOrm()
 	database.Using("default")

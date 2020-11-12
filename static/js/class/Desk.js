@@ -164,6 +164,7 @@ class Experement {
 class KanbanDesk {
 	constructor(Id){
 		this.div = document.createElement('div');
+		this.Canvas = document.getElementById('KanbanDeskCanvas');
 		this.Id = Id;
 		this.Name = "";
 		this.Des = "";     
@@ -208,7 +209,10 @@ class KanbanDesk {
 				Exp.updateData(el);
 				thisClass.Experements.push(Exp);	
 			});
-			thisClass.Stages = desk.Stages;
+			desk.Stages.forEach(el=>{
+				const stage = new StageOfDesk(el);
+				this.Stages.push(stage);	
+			});
 			thisClass.Stages.sort(function (a, b) {
 				if (a.Order > b.Order) {
 				  return 1;
@@ -248,7 +252,13 @@ class KanbanDesk {
 			this.Endstage = desk.Endstage;
 			this.Startstage = desk.Startstage;
 			this.UseExperements = desk.UseExperements;
-			this.Stages = desk.Stages;
+
+			desk.Stages.forEach(el=>{
+				const stage = new StageOfDesk(el);
+				this.Stages.push(stage);	
+			});
+
+
 			desk.Experements.forEach(el=>{
 				const Exp = new Experement();
 				Exp.updateData(el);
@@ -285,17 +295,28 @@ class KanbanDesk {
 
 
 				thisClass.WorkItems = new Array;
-				
+				thisClass.StagesWorkItemClear();
 				Kanbans.forEach(element=> {
 					let workItem = new WorkItem();
 					thisClass.WorkItems.push(workItem);
 					workItem.updateData(element);
-					workItem.show();
 					
+					thisClass.Stages.forEach((elStage)=>{
+						if(workItem.Stage === elStage.Id){
+
+							elStage.SwimlineList.forEach((SWL)=>{
+								if(SWL.Id === workItem.Swimline){
+									SWL.WorkItemsList.push(workItem);
+								}
+							});
+						}
+					});
 					thisClass.AddUser(workItem.Users);
 
 				});
-	
+				thisClass.orderingWorkItems(1);
+				thisClass.groupWorkItems();
+				thisClass.showWorkItems();
 			   $(".KanbanColumnContent").each(function(){
 					$(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ( "
 									+ this.childElementCount + " / 0 ) ");
@@ -306,6 +327,157 @@ class KanbanDesk {
 	
 				thisClass.StopLoading();
 		});
+	}
+	refreshCards(){
+		this.WorkItems.forEach(element=> {
+			element.show();
+		});
+
+	}
+
+	StagesWorkItemClear(){
+		this.Stages.forEach(element => {
+			element.SwimlineList=new Array;
+			element.SwimlineList.push({Id:"0",WorkItemsList:new Array});
+			element.SwimlineList.push({Id:"1",WorkItemsList:new Array});
+			element.SwimlineList.push({Id:"2",WorkItemsList:new Array});
+			element.SwimlineList.push({Id:"3",WorkItemsList:new Array});
+			element.SwimlineList.push({Id:"4",WorkItemsList:new Array});
+			element.SwimlineList.push({Id:"5",WorkItemsList:new Array});
+			element.WorkItemsList = new Array;	
+
+		});
+	}
+	orderingWorkItems(typeOfOrder){
+
+		//Сортировка По КлассуОбслуживания
+		if (typeOfOrder==1){
+			//this.WorkItems.sort((elemA,elemB)=>{
+
+			//	return ( !(elemA.ClassOfService.Order < elemB.ClassOfService.Order) - !(elemB.ClassOfService.Order < elemA.ClassOfService.Order) )
+			//	|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
+			//});
+
+			this.Stages.forEach((elementStage)=>{
+				elementStage.SwimlineList.forEach((SWL)=>{
+					SWL.WorkItemsList.sort((elemA,elemB)=>{
+						return ( !(elemA.ClassOfService.Order < elemB.ClassOfService.Order) - !(elemB.ClassOfService.Order < elemA.ClassOfService.Order) )
+						|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
+					});	
+				});
+			});			
+		//Сортировка По ВидуРабот
+		}else if(typeOfOrder==2){
+			//const Stages = new Map();
+			//this.Stages.forEach((element)=>{
+			//	Stages.set(element.Id,element.Order);
+			//});
+			//Stages.set("0",0);
+			//this.WorkItems.sort((elemA,elemB)=>{
+			//	return ( !(Stages[elemA.ClassOfService.Order] < elemB.ClassOfService.Order) - !(elemB.ClassOfService.Order < elemA.ClassOfService.Order) )
+			//	|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
+			//});
+
+		}
+	
+
+	}
+	groupWorkItems(){
+		this.Stages.forEach((elementStage)=>{
+			elementStage.SwimlineList.forEach((SWL)=>{
+				if(elementStage.Group===1){
+							
+					const List = new Array;
+					let prevProject = 0;
+					while (SWL.WorkItemsList.length>0){
+						const oldElement = SWL.WorkItemsList.shift();
+						if(prevProject === oldElement.ClassOfService.Id){
+							List[List.length-1].Count++;
+						}else{
+							const groupCart= new GroupWorkItem();
+							prevProject= oldElement.ClassOfService.Id;
+							groupCart.Swimline = oldElement.Swimline;
+							groupCart.Stage= oldElement.Stage;
+							groupCart.NameGroup = "Сгруппированно по классу обслуживания";
+							groupCart.Name = oldElement.Name;
+							groupCart.NameProject = oldElement.ClassOfService.Name;
+							groupCart.TypeTask  = oldElement.TypeTask;
+							groupCart.ClassOfService  = oldElement.ClassOfService;
+							groupCart.Count  = 1;
+							List.push(groupCart);
+						}
+						oldElement.div.outerHTML = "";
+					}
+					SWL.WorkItemsList = List;
+				}else if(elementStage.Group===2){
+
+						SWL.WorkItemsList.sort((elemA,elemB)=>{
+							return ( !(elemA.TypeTask.Order < elemB.TypeTask.Order) - !(elemB.TypeTask.Order < elemA.TypeTask.Order) )
+							|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
+						});		
+
+						const List = new Array;
+						let prevProject = 0;
+						while (SWL.WorkItemsList.length>0){
+							const oldElement = SWL.WorkItemsList.shift();
+							if(prevProject=== oldElement.TypeTask.Id){
+								List[List.length-1].Count++;
+							}else{
+								const groupCart= new GroupWorkItem();
+								prevProject= oldElement.TypeTask.Id;
+								groupCart.Swimline = oldElement.Swimline;
+								groupCart.Stage= oldElement.Stage;
+								groupCart.NameGroup = "Сгруппированно по типу работ";
+								groupCart.Name = oldElement.Name;
+								groupCart.NameProject =oldElement.TypeTask.Name;
+								groupCart.TypeTask  = oldElement.TypeTask;
+								groupCart.ClassOfService  = oldElement.ClassOfService;
+								groupCart.Count  = 1;
+								List.push(groupCart);
+							}
+							oldElement.div.outerHTML = "";
+						}
+						SWL.WorkItemsList = List;
+				}else if(elementStage.Group===3){
+							
+					const List = new Array;
+					let prevProject = 0;
+					while (SWL.WorkItemsList.length>0){
+						const oldElement = SWL.WorkItemsList.shift();
+						if(prevProject === oldElement.IdProject){
+							List[List.length-1].Count++;
+						}else{
+							const groupCart= new GroupWorkItem();
+							prevProject= oldElement.IdProject
+							groupCart.Swimline = oldElement.Swimline;
+							groupCart.Stage= oldElement.Stage;
+							groupCart.NameGroup = "Сгруппированно по проекту";
+							groupCart.Name = oldElement.Name;
+							groupCart.NameProject =oldElement.NameProject;
+							groupCart.TypeTask  = oldElement.TypeTask;
+							groupCart.ClassOfService  = oldElement.ClassOfService;
+							groupCart.Count  = 1;
+							List.push(groupCart);
+						}
+						oldElement.div.outerHTML = "";
+					}
+					SWL.WorkItemsList = List;
+				}
+			});
+		});
+	}
+	showWorkItems(){
+
+		this.Stages.forEach((elementStage)=>{
+			elementStage.SwimlineList.forEach((SWL)=>{
+				SWL.WorkItemsList.forEach((element)=>{
+					element.Parent = $("#SL"+element.Swimline+" .Stage"+element.Stage+" .KanbanColumnContent");
+					element.show();
+					element.Parent.append(element.div);
+				});
+			});
+		});
+
 	}
 	AddUser(Users){
 		let isUnicUser = true;
@@ -462,32 +634,29 @@ class KanbanDesk {
 		}
 	}
 	Show(){
-		const thisClass = this
-		$(".KanbanDeskCanvas").empty();
-		$(".KanbanDeskCanvas").append(this.Innerhtml)
+		const thisClass = this;
+		this.Canvas.innerHTML="";
+		this.Canvas.insertAdjacentHTML("beforeend",this.Innerhtml);
 
-		//$(".SwimlineName").each(function () {
+		this.Stages.forEach((stage)=>{
+			stage.SwimlineList.forEach((SWL)=>{
+					SWL.div = document.querySelector("#SL"+SWL.Id);
+					
+					if (SWL.div != null) {
+						SWL.divInfo =SWL.div.querySelector(".SwimlineName").querySelector("#StageInfo"+stage.Id);
+							if (SWL.divInfo != null) {
+								SWL.divInfo.append(getBtnStageCount(0,0));
+								SWL.divInfo.append(getBtnStageSettings());
+								SWL.divInfo.append(getBtnStageInfo(stage));
+								SWL.divInfo.append(getBtnStageshowhideSL(SWL.div.querySelector(".SwimlineContent")));
+							}
+					}
+				});
+				
+		});
 			$(".KanbanDeskCanvas").find(".StageInfo").addClass("onhover").append(`
-			<span class="count"> (0 / 0)</span>
-			<button type="button" class="btn btn-light btn-xs infoCollumn" style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
-			<button type="button" class="btn btn-light btn-xs openOnFullWindow" style="padding:2px" ><i class="fa fa-clone" aria-hidden="true"></i></button>
-			<button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  ><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
-			<button type="button" class="btn btn-light btn-xs showhideSL" style="padding:2px"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+				<button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  ><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
 			`);
-		//});
-
-/*		$(".openOnFullWindow").click(function(){
-			alert($(this).closest(".KanbanColumn").attr('id') );
-		});
-*/
-		$(".showhideSL").click(function(){
-			let element = $(this).closest(".Swimline").find(".SwimlineContent");
-			if (element.is(":visible")){
-				element.hide();
-			}else{
-				element.show();
-			}
-		});
 
 		$(".addKanban").click(function(){
 			let firstPress = true;
@@ -530,24 +699,6 @@ class KanbanDesk {
 			
 		});
 
-		$(".infoCollumn").click(function(){
-			
-			$.ajax({
-				type: "GET",
-				url: "/KanbanToolAPI/stage/"+$(this).closest(".StageInfo").attr("id").replace("StageInfo",""),
-				crossDomain : true,
-				data: "",
-				async: false
-		   }).done(function (stages) {
-			if( stages.errorId != undefined && stages.errorId == "401" ){
-				window.location.replace("/login")
-				return
-			}
-					
-				alert(stages.Description)
-		
-			});
-		});   
 		this.setFunctionDADOnCollumn();   
 	}
 
@@ -652,4 +803,433 @@ function FantomCard(height){
 		</div>
 	</div>`;
 	return FantomCard
+}
+
+class deskStage {
+	constructor(){
+
+	}
+
+}
+
+class deskViewer {
+	constructor(div){
+		this.Layer = document.getElementById(div);
+		this.Layer.classList.add("container-fluid");
+		
+		this.notificatinon = document.createElement("div");
+		this.notificatinon.className = "notifications ";
+		this.Layer.append(this.notificatinon);
+
+		this.LayerDesk = document.createElement("div");
+		this.LayerDesk.className= "KanbanTool_Desk";
+		this.ModalDiv = this.getModal(div + "__modal");
+		this.Layer.append(this.LayerDesk);
+		this.Layer.append(this.ModalDiv);
+		this.createDeskCanvas(this.LayerDesk);
+		
+
+	}
+	createDeskCanvas(Layer){
+		this.Canvas = document.createElement("div");
+		this.Canvas.className= "KanbanTool_KanbanDeskCanvas";
+		this.CanvasInfo = document.createElement("div");
+		this.CanvasInfo.className= "KanbanTool_KanbanDeskCanvasInfo";
+		this.createPreLoader(Layer);
+		Layer.append(this.Canvas);
+		Layer.append(this.CanvasInfo);
+	}
+	
+	createPreLoader(div){
+		const preloader = document.createElement("div");
+		preloader.className= "KanbanTool_preloader";	
+		preloader.id = "preloaderbg";
+		preloader.style.display="none";
+		preloader.insertAdjacentHTML("beforeEnd",`
+
+			<div class="centerbg">
+			  <div id="preloader"></div>
+			</div>
+
+		  `);
+		  div.append(preloader);
+	}
+
+	showDesk(KanbanDesk){
+		this.clearDeskCanvas();
+
+		this.Canvas.insertAdjacentHTML("beforeend",KanbanDesk.Innerhtml);
+
+			$(".KanbanDeskCanvas").find(".StageInfo").addClass("onhover").append(`
+			<span class="count"> (0 / 0)</span>
+			<button type="button" class="btn btn-light btn-xs infoCollumn" style="padding:2px" ><i class="fa fa-info" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs StageSettings" style="padding:2px" ><i class="fa fa-cogs" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs addKanban" style="padding:2px"  ><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+			<button type="button" class="btn btn-light btn-xs showhideSL" style="padding:2px"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+			`);
+
+
+		$(".showhideSL").click(function(){
+			let element = $(this).closest(".Swimline").find(".SwimlineContent");
+			if (element.is(":visible")){
+				element.hide();
+			}else{
+				element.show();
+			}
+		});
+
+		$(".addKanban").click(function(){
+			let firstPress = true;
+			$(".NewKanban").remove();
+			$(this).closest(".Swimline").children(".SwimlineContent").children(".Stage" + $(this).closest(".StageInfo").attr("id").replace("StageInfo","")).children(".KanbanColumnContent").append(`
+			<div draggable="true" class="Kanban NewKanban">
+				<div class="KanbanDescription">
+					<div class="input-group">
+						<textarea class="form-control newWorkItemText" aria-label="With textarea"></textarea>
+					</div>
+				</div>
+			</div>`  );
+			
+			$(".NewKanban").keydown((e)=> {
+				if (firstPress){
+					if (e.keyCode == 27) {
+						e.target.value = "";
+						$(".NewKanban").remove();
+						e.target.blur();     
+					}else if(e.ctrlKey && e.keyCode == 13  ){
+						firstPress = false;
+						let newWorkItems = new WorkItem();
+						newWorkItems.Name = $(".newWorkItemText")[0].value;
+						newWorkItems.Stage = $(".NewKanban")[0].parentElement.parentElement.className.replace("Stage","");
+						newWorkItems.IDDesk = $("#DeskList option:selected").val();
+						newWorkItems.Swimline = $(".NewKanban").closest(".Swimline").attr('id').replace("SL","");
+						newWorkItems.div = $(".NewKanban")[0];
+						newWorkItems.div.addEventListener("dblclick" , ()=>{
+							newWorkItems.StartModalWindow();
+						});
+						newWorkItems.Parent = $("#SL"+newWorkItems.Swimline+" .Stage"+newWorkItems.Stage+" .KanbanColumnContent");
+						newWorkItems.newTask = true;
+						newWorkItems.save();
+						thisClass.WorkItems.push(newWorkItems);
+
+					}
+				}
+			});
+			$(".newWorkItemText").focus();
+			
+		});
+
+
+		
+		this.setFunctionDADOnCollumn();   
+	}
+
+
+
+
+		
+	
+	getBtnStageInfo(Stage){
+
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "btn btn-light btn-xs";
+		btn.style.padding = "2px";
+		btn.insertAdjacentHTML("beforeend",`<i class="fa fa-info" aria-hidden="true"></i>`);
+		btn.addEventListener("click" , ()=>{
+
+			$.ajax({
+				type: "GET",
+				url: "/KanbanToolAPI/stage/"+$(this).closest(".StageInfo").attr("id").replace("StageInfo",""),
+				crossDomain : true,
+				data: "",
+				async: false
+			}).done(function (stages) {
+			if( stages.errorId != undefined && stages.errorId == "401" ){
+				window.location.replace("/login")
+				return
+			}
+					
+				alert(stages.Description);
+		
+			});
+  
+		});
+		return btn;
+	}
+
+	getBtnStageSettings(Stage){
+
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "btn btn-light btn-xs";
+		btn.style.padding = "2px";
+		btn.insertAdjacentHTML("beforeend",`<i class="fa fa-cogs" aria-hidden="true"></i>`);
+		btn.addEventListener("click" , ()=>{
+			alert();
+  
+		});
+		return btn;
+	}
+
+	clearDeskCanvas() {
+		this.Canvas.innerHTML="";
+	}
+
+	getModal(id){
+		const ModalDiv = document.createElement("div");
+		ModalDiv.classList.add("modal");
+		ModalDiv.classList.add("fade");
+
+		ModalDiv.id = id
+		ModalDiv.tabindex = -1;
+		ModalDiv.role = "dialog";
+		ModalDiv.aria_labelledby = `${id}Label`;
+		ModalDiv.aria_hidden = true;
+
+		ModalDiv.Dialog = document.createElement("div");
+		ModalDiv.Dialog.classList.add("modal-dialog");
+		ModalDiv.Dialog.classList.add("modal-lg");
+		ModalDiv.Dialog.role = "document";
+		ModalDiv.append(ModalDiv.Dialog);
+		
+		ModalDiv.Content = document.createElement("div");
+		ModalDiv.Content.classList.add("modal-content");
+		ModalDiv.Dialog.append(ModalDiv.Content)
+
+		return ModalDiv;
+	}
+
+	getFantomCard(height){
+		return `
+		<div class="Kanban StandartClient" id="FantomKanban" style="height:`+height + `px">
+			<div class="KanbanName">
+			</div>
+			<div class="KanbanDescription">
+			</div>
+			<div class="KanbanDurationStatus">
+			</div>
+			<div class="KanbanUsers">
+			</div>
+		</div>`;
+
+	}
+
+	setFunctionDADOnCollumn(){
+
+		//ОтпустилиКарточку
+		$("td").on("drop",(e)=>{
+	
+		  e.preventDefault();
+		  let data=e.originalEvent.dataTransfer.getData("Text");
+		  let fromId = $("#"+data).closest(".KanbanColumnContent")[0].parentElement.id.replace("Stage","");
+		  
+		  if (
+			  fromId != CurrentStageDrop.id.replace("Stage","") 
+			  ||  $("#"+data).closest(".Swimline")[0].id.replace("SL","") != CurrentStageDrop.parentElement.parentElement.id.replace("SL","")
+			  ) {
+				  this.WorkItems.forEach(element => {
+					  if (element.Id == data){
+						  element.Stage = CurrentStageDrop.id.replace("Stage","");
+						  element.Swimline = CurrentStageDrop.parentElement.parentElement.id.replace("SL","");
+						  element.Parent = $("#SL"+element.Swimline+" .Stage"+element.Stage+" .KanbanColumnContent");
+						  element.Blokers.forEach((element)=>{
+							  if (!element.Finished){
+								  element.Finished=true;
+							  }
+						  });
+						  element.refreshCard();
+						  element.save();
+					  }
+				  });
+		  }
+		  if (CurrentKanbanDrop != ""){
+			  $(CurrentKanbanDrop).after($(document.getElementById(data)))
+		  }else{
+			  $(CurrentStageDrop).children(".KanbanColumnContent").append(document.getElementById(data))
+		  }
+		  $(CurrentStageDrop).find(".count").text("( "+ $(e.currentTarget).find(".KanbanColumnContent")[0].childElementCount + "/0)");
+		  
+		});
+	
+		// Если навели на Столбец Stage
+		$("td").on("dragenter",function dragenterKanban(e){
+		  if(e.currentTarget != CurrentStageDrop){
+			  $(CurrentStageDrop).removeClass('over');
+			  CurrentStageDrop = e.currentTarget;
+			  $("#FantomKanban").remove();
+			  $(CurrentStageDrop).addClass('over');
+			  $(CurrentStageDrop).children(".KanbanColumnContent").append(FantomCard(FantomKanbanHeight));
+			  CurrentKanbanDrop="";
+		  }
+	   });
+	   // Если навели на карточку "Kanban"
+	
+		// Удаление фантомной карточки если ушли из активной зоны 
+		$("td").on("dragover",function(e){
+		 if (e.preventDefault) {
+			  e.preventDefault();
+			}
+			
+			if(e.currentTarget != CurrentStageDrop){
+			  $("#FantomKanban").remove();
+			  }
+	
+			e.originalEvent.dropEffect = "move";
+			return false;
+		});
+	
+		//  отмена обработки обработчика у дочерних элементов
+		$("td").children().on("dragover",function(e){
+		  if (e.preventDefault) {
+			   e.preventDefault();
+			 }
+	
+			 e.originalEvent.dropEffect = "move";
+			 return false;
+		 });
+	
+		// Конец перетаскивания Убиварем класс Over и Удаляем Фантомную карточку со всей доски
+		$("td").on("dragend",function(e){
+		  $(".over").removeClass('over');
+		  $("#FantomKanban").remove();
+		});
+	
+	}
+}
+
+class StageOfDesk{
+	constructor(data){
+		this.Id = data.Id;
+		this.Name = data.Name;
+		this.Description = data.Description;
+		this.Order = data.Order;
+		this.Group = data.Group;
+		this.SwimlineList=new Array;
+		this.SwimlineList.push({Id:"0",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"1",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"2",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
+		this.WorkItemsList = new Array;	
+	}
+	clearData(){
+		this.SwimlineList=new Array;
+		this.SwimlineList.push({Id:"0",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"1",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"2",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
+		this.WorkItemsList = new Array;		
+	}
+
+}
+
+class GroupWorkItem{
+	constructor(){
+		this.div = document.createElement('div');
+		this.div.classList.add("KanbanGroup");
+		this.Parent ="";
+		this.TypeTask  = "";    
+		this.ClassOfService  = "";
+		this.Count  = "";
+		this.Swimline = "";
+		this.Stage="";
+		this.NameGroup = "";
+		this.Name = "";
+		this.NameProject ="";
+		this.TypeTask  = "";
+		this.ClassOfService  = "";
+		this.Count  = 0;
+	}
+	getGroupCard(){
+		return  		`
+		<div class="Kanban">
+			<div class="KanbanName">
+				<div>
+					${this.NameGroup} 
+				</div>
+			</div>
+
+			<div class="KanbanDescription"> <span class="nameClient">${this.Name}</span>
+				<div class="KanbanDurationStatus">
+				<div class="KanbanNameProject">
+				<div style="text-align: right;" >
+					<span class="projectName"><b> Количество: ${this.Count}</b></span>
+					<span class="projectName">${this.NameProject}</span><br>
+				</div>
+			</div> 
+		</div> 
+		<div class="Kanban">
+		тест
+		</div>
+		`; 
+	}
+	show(){
+		this.div.insertAdjacentHTML("beforeend",this.getGroupCard() );
+		this.div.style.borderLeft = `7px solid ${this.ClassOfService.Color}`;
+	}
+	edit(){
+
+	}
+}
+
+function getBtnStageSettings(Stage){
+
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.className = "btn btn-light btn-xs";
+	btn.style.padding = "2px";
+	btn.style.margin = "2px";
+	btn.insertAdjacentHTML("beforeend",`<i class="fa fa-cogs" aria-hidden="true"></i>`);
+	btn.addEventListener("click" , ()=>{
+		alert();
+
+	});
+	return btn;
+}
+
+
+function getBtnStageInfo(Stage){
+
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.className = "btn btn-light btn-xs";
+	btn.style.padding = "2px";
+	btn.style.margin = "2px";
+	btn.insertAdjacentHTML("beforeend",`<i class="fa fa-info" aria-hidden="true"></i>`);
+	btn.addEventListener("click" , ()=>{
+			alert(Stage.Description)
+	});
+	return btn;
+}
+
+function getBtnStageCount(count,WIP){
+
+	const span = document.createElement("span");
+	span.className = "class";
+	span.textContent = ` ( ${count} / ${WIP} ) `;
+	return span;
+}
+
+function getBtnStageshowhideSL(element){
+
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.className = "btn btn-light btn-xs";
+	btn.style.padding = "2px";
+	btn.style.margin = "2px";
+	btn.insertAdjacentHTML("beforeend",`<i class="fa fa-angle-double-up" aria-hidden="true"></i>`);
+	const ShowHide = ()=>{
+		if ($(element).is(":visible")){
+			$(element).hide();
+		}else{
+			$(element).show();
+		}
+	}
+	btn.addEventListener("click" , ShowHide);
+
+	return btn;
 }

@@ -193,7 +193,7 @@ func (this *KanbanToolAPI) Post() {
 	case "bloker.update":
 		bloker := service.Bloker{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
-		err := serv.UpdateBloker(&bloker)
+		err := serv.BlokerUpdate(&bloker)
 
 		taskPublish, _ := serv.GetTask(bloker.Idtask)
 		publish <- newEvent(
@@ -208,6 +208,31 @@ func (this *KanbanToolAPI) Post() {
 			this.Data["json"] = bloker
 		}
 		this.ServeJSON()
+
+	case "bloker.delete":
+
+		id, _ := strconv.Atoi(this.Ctx.Input.Param(":id"))
+		err := serv.BlokerDelete(id)
+		bloker := service.Bloker{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &bloker)
+		taskPublish, _ := serv.GetTask(bloker.Idtask)
+		publish <- newEvent(
+			models.EVENT_UPDATECARD,
+			User.(Models.User).Id,
+			User.(Models.User).Firstname,
+			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" удалил событие по задаче №"+strconv.Itoa(taskPublish.IDBitrix24),
+			&taskPublish)
+		resultJSON := make(map[string]string)
+		if err == nil {
+			resultJSON["result"] = "successful"
+			resultJSON["resultId"] = "100"
+		} else {
+			resultJSON["result"] = err.Error()
+			resultJSON["resultId"] = "401"
+		}
+		this.Data["json"] = resultJSON
+		this.ServeJSON()
+
 	case "experement.new":
 		experement := models.Experement{}
 		json.Unmarshal(this.Ctx.Input.RequestBody, &experement)

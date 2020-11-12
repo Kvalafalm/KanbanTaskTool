@@ -446,8 +446,8 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 			row.Id,
 			row.Idtask,
 			row.Idstage,
-			row.Start,
-			row.End,
+			DateToUTC(row.Start),
+			DateToUTC(row.End),
 			DifferenceInDays(row.Start, row.End),
 			"",
 		}
@@ -479,8 +479,8 @@ func (Cb *KanbanService) GetTask(id int) (workItem WorkItem, err error) {
 			row.Id,
 			row.Idtask.Idtasks,
 			row.Description,
-			row.Startdate.UTC(),
-			row.Enddate.UTC(),
+			DateToUTC(row.Startdate),
+			DateToUTC(row.Enddate),
 			row.Diside,
 			row.Finished,
 			row.TypeEvent,
@@ -567,7 +567,7 @@ func (Cb *KanbanService) GetBloker(id int) (bloker model.Bloker, err error) {
 	return bloker, nil
 }
 
-func (Cb *KanbanService) UpdateBloker(bloker *Bloker) (err error) {
+func (Cb *KanbanService) BlokerUpdate(bloker *Bloker) (err error) {
 	task := model.Tasks{}
 	task.Idtasks = bloker.Idtask
 	blokerDb := model.Bloker{}
@@ -593,6 +593,18 @@ func (Cb *KanbanService) UpdateBloker(bloker *Bloker) (err error) {
 	return nil
 }
 
+func (Cb *KanbanService) BlokerDelete(blokerId int) (err error) {
+
+	err = model.BlokerDeleteInDB(blokerId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (Cb *KanbanService) GetEventId(id int) (desk []model.Desk, err error) {
+	return
+}
 func (Cb *KanbanService) GetDeskList(id int) (desk []model.Desk, err error) {
 	desk, err = model.GetDeskListFromDB()
 	return desk, err
@@ -601,4 +613,18 @@ func (Cb *KanbanService) GetDeskList(id int) (desk []model.Desk, err error) {
 func (Cb *KanbanService) GetDeskById(id int) (desk model.Desk, err error) {
 	desk, err = model.GetDeskFromDBById(id)
 	return desk, err
+}
+
+func DateToUTC(date time.Time) (newDate time.Time) {
+	newDate = time.Date(
+		date.Year(),
+		date.Month(),
+		date.Day(),
+		date.Hour(),
+		date.Minute(),
+		date.Second(),
+		0,
+		time.UTC)
+
+	return newDate
 }

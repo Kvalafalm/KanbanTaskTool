@@ -635,17 +635,17 @@ class EventOfWorkItem {
 		}
 		
 		this.StartDate = new Date(data.StartDate)
-		this.StartDateString = this.StartDate.toLocaleDateString()
+		//this.StartDateString = this.StartDate.toLocaleDateString()
 		
 
 		if (data.EndDate == "0001-01-01T00:00:00Z" || data.EndDate === undefined){
 			this.EndDate = undefined;
-			this.EndDateString = "настоящее время";
+			//this.EndDateString = "настоящее время";
 			this.Finished = false;
 			this.Duration = calculationGapDatesString(this.StartDate,new Date());		
 		}else{
 			this.EndDate = new Date(data.EndDate)
-			this.EndDateString = this.EndDate.toLocaleDateString();
+			//this.EndDateString = this.EndDate.toLocaleDateString();
 			this.Finished = true;
 			this.Duration = calculationGapDatesString(this.StartDate,this.EndDate);
 		}
@@ -678,15 +678,15 @@ class EventOfWorkItem {
 
 		form += this.addInputRow("Причина","BlokerReason","text",this.Description,"");
 		form += this.addInputRow("Решение","BlokerDecision","text",this.Diside,"");
-		form += this.addInputRow("Время начала","BlokerStart","date",this.StartDate.GetFormatDate(),"");
+		form += this.addInputRow("Время начала","BlokerStart","datetime-local",this.StartDate.getDateTimetoLocalString(),"");
 		if (!this.newEvent){
 			if (this.Finished){
-				form += this.addInputRow("Время окончания","BlokerEnd","date",this.EndDate.GetFormatDate(),"");
+				form += this.addInputRow("Время окончания","BlokerEnd","datetime-local",this.EndDate.getDateTimetoLocalString(),"");
 			}else{
-				form += this.addInputRow("Время окончания","BlokerEnd","date",(new Date()).GetFormatDate(),"");
+				form += this.addInputRow("Время окончания","BlokerEnd","datetime-local",(new Date()).getDateTimetoLocalString(),"");
 			}
 		}else{
-			form += this.addInputRow("Время окончания","BlokerEnd","date","","");
+			form += this.addInputRow("Время окончания","BlokerEnd","datetime-local","","");
 		}
 
 		body.append(form);
@@ -752,12 +752,12 @@ class EventOfWorkItem {
 	}
 
 	showPreview(){
-		let span = document.getElementById(`eventId${this.Id}`);
+		//this.span = document.getElementById(`eventId${this.Id}`);
 		
-		if(span === null){
-			span = document.createElement("span")
+		if(this.span === undefined){
+			this.span = document.createElement("span")
 		}else{
-			span.innerHTML="";
+			this.span.innerHTML="";
 		}
 
 		let btn = document.getElementById("btnEditEvent");
@@ -773,7 +773,7 @@ class EventOfWorkItem {
 		btnEdit.insertAdjacentHTML("beforeend",`<i class="fa fa-pencil" aria-hidden="true"></i>`);
 		btnEdit.style.padding = "1px";
 		btnEdit.addEventListener("click" , ()=>{
-			this.edit()
+			this.edit();
 		});
 
 		const btnDelete = document.createElement("button");
@@ -781,29 +781,32 @@ class EventOfWorkItem {
 		btnDelete.style.padding = "1px";
 		btnDelete.type = "button"
 		btnDelete.insertAdjacentHTML("beforeend",`<i class="fa fa-trash" aria-hidden="true"></i>`);
-
+		btnDelete.addEventListener("click" , ()=>{
+			this.delete();
+		});
 		
-		span.classList.add("onhover");
-		span.style.backgroundColor = TypeEventColor[this.TypeEvent-1];
+		//span.classList.add("onhover");
+		this.span.style.backgroundColor = TypeEventColor[this.TypeEvent-1];
 
-		span.id = `eventId${this.Id}`;
-		span.innerHTML = `<b>${this.Description}</b> c ${this.StartDateString} по 
-		${this.EndDateString} (${this.Duration})
+		this.span.id = `eventId${this.Id}`;
+		this.span.innerHTML = `<b>${this.Description}</b> c ${this.StartDate.toLocaleDateString()} по 
+		${this.EndDate!=undefined?this.EndDate.toLocaleDateString():"настоящее время"} (${this.Duration})
 		${this.Diside} `;
-		span.append(btnEdit);
-		span.append(btnDelete);
+		this.span.append(btnEdit);
+		this.span.append(btnDelete);
 		if (this.Finished){ 
-			span.insertAdjacentHTML("afterbegin",`<i class="fa fa-check-square-o" aria-hidden="true"></i> `);
+			this.span.insertAdjacentHTML("afterbegin",`<i class="fa fa-check-square-o" aria-hidden="true"></i> `);
 		}else{
-			span.insertAdjacentHTML("afterbegin",`<i class="fa fa-exclamation-circle" aria-hidden="true"></i> `);
+			this.span.insertAdjacentHTML("afterbegin",`<i class="fa fa-exclamation-circle" aria-hidden="true"></i> `);
 		}
-		$(".BlokersMore").append(span);
+		$(".BlokersMore").append(this.span);
 
 	}
 
 	// Блокеры
-	save(th){
-		let curretntTask = this.Task
+	save(){
+		//let curretntTask = this.Task;
+		let EventTask = this;
 		$.ajax({
 			type: "POST",
 			url: "/KanbanToolAPI/bloker.update/0",
@@ -821,9 +824,46 @@ class EventOfWorkItem {
 				window.location.replace("/login")
 				return
 			}
-			this.Id = element.Id
-			curretntTask.refreshCard();
+			EventTask.Id = element.Id
+			EventTask.showPreview();
+			EventTask.Task.refreshCard();
 		});   
+	}
+
+	delete(){
+		let EventTask = this;
+		EventTask.span.insertAdjacentHTML("beforeend",`<i class="fa fa-spinner fa-spin" aria-hidden="true"></i>`);
+		$.ajax({
+			type: "POST",
+			url: "/KanbanToolAPI/bloker.delete/"+EventTask.Id,
+			contentType: "application/json; charset=utf-8",
+			crossDomain : true,
+			processData: false,
+			data: JSON.stringify(this,(key, value)=> {
+				if (key === 'Task') {
+				  return undefined; 
+				}
+				return value;
+			  })
+
+		}).done(function (element) {
+			if( element.resultId != undefined && element.resultId === "401" ){
+				window.location.replace("/login")
+				return
+			}else if(element.resultId != undefined && element.resultId === "100"){
+				EventTask.clearSpan();
+				EventTask.Task.Blokers.splice(EventTask.Task.Blokers.indexOf(EventTask),1);
+				EventTask.Task.refreshCard();
+			}else{
+				EventTask.showPreview();
+			}
+
+
+		});   
+	}
+	clearSpan(){
+		this.span.parentNode.removeChild(this.span);
+
 	}
 }
 
@@ -902,3 +942,24 @@ Date.prototype.GetFormatDate = function () {
 	formatDate = `${year}-${month}-${day}`;
 	return formatDate;
 };
+
+Date.prototype.getDateTimetoLocalString= function(){
+
+	let formatterTime = new Intl.DateTimeFormat("ru", {
+	hour: "numeric",
+	minute:"numeric"
+	});
+	const year = this.getFullYear();
+	let month = this.getMonth()+1;
+	
+	if (month<10){
+		month = "0"+month;
+	}
+	let day = this.getDate();
+	if (day<10){
+		day = "0"+day;
+	}
+
+	return `${year}-${month}-${day}T${formatterTime.format(this)}`;
+			   
+}
