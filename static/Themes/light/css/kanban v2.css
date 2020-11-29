@@ -192,12 +192,15 @@ body {
     background-color: #F5F5F5;
     display: none; 
     border-radius: 20px;
-    z-index: 1000;
+    z-index: 1051;
     position: fixed;
     overflow: auto;
     top: 4%;
     height:90%;
     width:98%;
+}
+.KanbanGroups {
+    padding-block-end: 15px;
 }
 .KanbanDesk__Info{
     display: none;
@@ -354,3 +357,11 @@ td {
       -webkit-animation-timing-function:ease-in-out;
       -webkit-animation-direction: alternate;
 }
+
+::-webkit-scrollbar { 
+    width: 3px; 
+}
+::-webkit-scrollbar-track {  background-color: #999;}
+::-webkit-scrollbar-track-piece { background-color: #ffffff;}
+::-webkit-scrollbar-thumb { height: 50px; background-color: #666; border-radius: 3px;}
+::-webkit-scrollbar-corner { background-color: #999;}

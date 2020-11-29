@@ -5,6 +5,7 @@ import (
 	_ "KanbanTaskTool/routers"
 	"encoding/gob"
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -40,7 +41,8 @@ func init() {
 func main() {
 
 	orm.Debug, _ = beego.AppConfig.Bool("debug")
-
+	orm.DefaultTimeLoc = time.FixedZone("Novosibirsk", 25200)
+	//	time.LoadLocation("Asia/Bangkok")
 	beego.Run()
 
 }

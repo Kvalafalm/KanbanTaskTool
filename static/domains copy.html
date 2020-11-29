@@ -8,7 +8,193 @@
 
 <body style="background-color: #e7e7e785;">
 <!-- Styles -->
+<style>
+/* CSS */
 
+.list-counter-circle {
+  list-style: none;
+  counter-reset: list;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.list-counter-circle>li {
+  position: relative;
+  display: block;
+  height: 2rem;
+  line-height: 2rem;
+  margin-left: 1.75rem;
+  margin-bottom: .25rem;
+  padding-left: 1rem;
+  padding-right: .5rem;
+  color: #e7e7e7;
+  background: #27ac49;
+  white-space: nowrap;
+  border-radius: .25rem;
+  white-space: pre-wrap;
+    height: auto;
+}
+.list-counter-circle>li:last-child {
+  margin-bottom: 0;
+}
+.list-counter-circle>li::before {
+  content: counter(list);
+  counter-increment: list;
+  position: absolute;
+  left: -2rem;
+  top: -.25rem;
+  bottom: -.25rem;
+  width: 2.5rem;
+  line-height: 2rem;
+  border-radius: 1.25rem;
+  border: .25rem solid #e7e7e7;
+  text-align: center;
+  color: #e7e7e7;
+  background: #1e8827;
+}
+    .domain__name {
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+    .domain__name h3 {
+      display: inline-block;
+      position: relative;
+      background: #0097a7;
+      color: #e7e7e7;
+      margin-bottom: 0;
+      padding: .5rem 3rem;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+    }
+    .domain__name h3::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+    .domain__name h3::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right: 1.5rem solid #e7e7e7;
+      border-top: 3rem solid transparent; 
+      border-bottom: 3rem solid transparent;      
+    }
+
+.domain{
+  font-family: SegoePrintRegular;
+  margin: 0 auto;
+  width: 70%;
+  display: block;
+}
+.domain__name{
+
+}
+.domain__discription{
+  
+  
+}
+.domain__members{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/1s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__delegat{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/1s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__driver{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/2s.png') no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__key-function{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/3s.png')  no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__сonstraints{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/4s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__resourses{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/5s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__experience{
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/6s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__KPI{
+  list-style:none;
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/7s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__date-review{
+  list-style:none;
+  list-style:none;
+  background-position: left bottom;
+  background: url('../static/img/domains/8s.png')   no-repeat;
+  padding:10px 0 30px 50px;
+}
+.domain__contentName{
+  font-weight: bold;
+  
+}
+
+.onhover {
+  cursor: pointer;
+}
+
+.onhover button {
+  display: none;
+}
+
+.onhover:hover button {
+  display: inline-block;
+  padding: 0px;
+  font-size: 0.8rem;
+}
+
+
+.domain__content{
+  /*font-family: 'Times New Roman', Times, serif;*/
+}
+.domain__list-in-element{
+}
+.domain__row-list{
+ padding-top: 6px;
+ padding-bottom: 6px;
+}
+@font-face {
+			font-family: "SegoePrintRegular";
+			src: url("../static/fonts/SegoePrintRegular.eot");
+			src: url("../static/fonts/SegoePrintRegular.eot?#iefix")format("embedded-opentype"),
+			url("../static/fonts/SegoePrintRegular.woff") format("woff"),
+			url("../static/fonts/SegoePrintRegular.ttf") format("truetype");
+			font-style: normal;
+			font-weight: normal;
+	}
+</style>
     <script>
 
       const JSONdata = [{
@@ -138,7 +324,7 @@
       "Экономическая ситуация",
       "Законодательство",
       "Финансовые возможности",
-      "Учредители",
+      " Учредители",
       "Время"
    ],
    "Experience":[
@@ -182,38 +368,188 @@
         const navTab = document.getElementById("nav-tab");
         const navTabContent = document.getElementById("nav-tabContent");
         let ID = 1;
+        JSONdata.forEach((element)=>{
 
-        $.ajax({
-              type: "GET",
-              url: "/DomainAPI/domains.get",
-              contentType: "application/json; charset=utf-8",
-              crossDomain : true,
-              processData: false,
-              async: true
-            }).done((elementData) => {
-              elementData.forEach((element)=>{
-
-                navTab.insertAdjacentHTML("beforeend",
-                `<a class="nav-item nav-link" id="panel${element.ID}-tab" data-toggle="tab" href="#panel${element.ID}" role="tab" aria-controls="panel${element.ID}" aria-selected="false">${element.Name}</a>`
-                );
-                navTabContent.insertAdjacentHTML("beforeend",
-                `<div class="tab-pane fade" id="panel${element.ID}" role="tabpanel" aria-labelledby="panel${element.ID}-tab"></div>`
-                );
-                const domain = new Domain(element,element.ID,document.getElementById(`panel${element.ID}`));
-                //ID += 1;
-                domain.show();
-                window.Domains.push(domain);
-                });
-            });	
-
-
+          navTab.insertAdjacentHTML("beforeend",
+          `<a class="nav-item nav-link" id="panel${element.ID}-tab" data-toggle="tab" href="#panel${element.ID}" role="tab" aria-controls="panel${element.ID}" aria-selected="false">${element.Name}</a>`
+          );
+          navTabContent.insertAdjacentHTML("beforeend",
+          `<div class="tab-pane fade" id="panel${element.ID}" role="tabpanel" aria-labelledby="panel${element.ID}-tab"></div>`
+          );
+          const domain = new Domain(element,ID,document.getElementById(`panel${element.ID}`));
+          ID += 1;
+          domain.show();
+          window.Domains.push(domain);
+        });
 
 
 
           
       }
 
+      class Domain{
+        constructor(dataJSON,ID,div){
+            this.ID= ID;
+            this.div= div;
+          if (dataJSON !=undefined){
+            this.Name = dataJSON.Name,
+            this.Driver = dataJSON.Driver;
+            this.Delegat = dataJSON.Delegat
+            this.KeyFunction = dataJSON.KeyFunction;
+            this.Constraints = dataJSON.Constraints;
+            this.Experience = dataJSON.Experience;
+            this.KPI =  dataJSON.KPI;
+            this.Resourses  = dataJSON.Resourses;
+            this.DateReview = dataJSON.DateReview;
+            this.Members = dataJSON.Members;
+          }else{
+            this.Name = "",
+            this.Driver = "";
+            this.Delegat = "";
+            this.KeyFunction = [];
+            this.Constraints = [];
+            this.Experience = [];
+            this.KPI =  [];
+            this.Resourses  = [];
+            this.DateReview = "";
+            this.Members = [];
+          }
 
+        }
+
+        update(){
+            $.ajax({
+              type: "POST",
+              url: "/KanbanToolAPI/domain.update/0",
+              contentType: "application/json; charset=utf-8",
+              crossDomain : true,
+              processData: false,
+              data: JSON.stringify(this, null, ' '),
+              async: true
+            }).done((element) => {
+                if( element.errorId != undefined && element.errorId == "401" ){
+                  window.location.replace("/login")
+                  return false
+                }
+            });		
+        }
+        
+        getHTMLli(inputArray){
+          let HTMLCode = "";
+          inputArray.forEach(element => {
+            HTMLCode = HTMLCode + `
+            <li class="domain__row-list onhover"> ${element}
+            <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContentList(this.parentElement)">
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </li>`;
+          });
+          return HTMLCode
+        }
+        show(){
+          this.div.insertAdjacentHTML("beforeend",`
+          <div class="domain" id=${this.ID}>
+      <h3 class="domain__name onhover">${this.Name}
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="getJSONStruct(this)">
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="save(this)">
+          <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-second btn-xs btn-lg" onclick="delete(this)">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+        
+      </h3>
+      <ul class="domain__discription">
+        <li class="domain__delegat">
+          <span class="domain__contentName onhover">Делегирующий:
+            <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </span>
+          <div class="domain__content">${this.Delegat}</div>
+        </li>
+      <li class="domain__driver">
+        <span class="domain__contentName onhover">Исходный драйвер:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </button>
+        </span>
+        <div class="domain__content">${this.Driver}</div>
+      </li>
+      <li class="domain__key-function ">
+        <span class="domain__contentName onhover">Ключевые обязанности:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.KeyFunction)}
+        </ul>
+      </li>
+      <li class="domain__сonstraints">
+        <span class="domain__contentName onhover">Ограничения:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Constraints)}
+        </ul>
+      </li>
+      <li class="domain__resourses">
+        <span class="domain__contentName onhover">Ресурсы:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Resourses)}
+        </ul>
+      </li>
+      <li class="domain__experience">
+        <span class="domain__contentName onhover">Предпочтительные качества, навыки, опыт:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Experience)}
+        </ul>
+      </li>
+      <li class="domain__KPI">
+        <span class="domain__contentName onhover">Критерии оценки:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.KPI)}
+        </ul>
+      </li>
+      <li class="domain__members">
+        <span class="domain__contentName onhover">Участники:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="addDomainContentList(this)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          </button>
+        </span>
+        <ul class="domain__list-in-element">
+          ${this.getHTMLli(this.Members)}
+        </ul>
+      </li>
+      <li class="domain__date-review">
+        <span class="domain__contentName onhover" >Дата оценки:
+          <button type="button" class="btn btn-second btn-xs btn-lg" onclick="editDomainContent(this)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </button>
+        </span>
+        <div class="domain__content">${this.DateReview}</div>
+      </li>
+      </ul>
+    </div>`);
+        }
+      }
 
 
 
@@ -226,7 +562,36 @@
 
         return data
       }
+      function getJSONStruct(element){
+      const domain = element.parentElement.parentElement;
       
+      const JSONStruct = {
+        ID : 0,
+        Name: domain.getElementsByClassName("domain__name")[0].textContent,
+        Driver: domain.getElementsByClassName("domain__driver")[0].getElementsByClassName("domain__content")[0].textContent,
+        Delegat: domain.getElementsByClassName("domain__delegat")[0].getElementsByClassName("domain__content")[0].textContent,
+        KeyFunction: getGataFromUL(domain,"domain__key-function"),
+        Constraints: getGataFromUL(domain,"domain__сonstraints"),
+        Experience: getGataFromUL(domain,"domain__experience"),
+        KPI: getGataFromUL(domain,"domain__KPI"),
+        Resourses: getGataFromUL(domain,"domain__resourses"),
+        Members: getGataFromUL(domain,"domain__members"),
+        DateReview: domain.getElementsByClassName("domain__date-review")[0].getElementsByClassName("domain__content")[0].textContent
+      }
+
+      const data = JSON.stringify(JSONStruct, null, ' ');
+      alert(data);
+      navigator.clipboard.writeText(data)
+      .then(() => {
+        alert("Данные в буфере обмена");
+      })
+      .catch(err => {
+        alert(err.message);
+
+      });
+
+
+      }
       function addDomainContentList(e){
         let ul = e.parentElement.parentElement.getElementsByClassName("domain__list-in-element")[0];
         const li = document.createElement("li");
@@ -287,7 +652,7 @@
         li.append(divGroup);
 
       }
-      function editDomainContent(e,valueDomain){
+      function editDomainContent(e){
         let div = e.parentElement.parentElement.getElementsByClassName("domain__content")[0];
         const value = div.textContent;
         div.textContent="";
@@ -308,16 +673,13 @@
         btnOk.className = "btn btn-outline-secondary";
         btnOk.type = "button";
         btnOk.insertAdjacentHTML("beforeend",`<i class="fa fa-floppy-o" aria-hidden="true"></i>`);
-
         const Save = ()=>{
           const newValue = input.value;
           div.classList.remove("input-group");
           div.classList.remove("mb-3");
           div.innerHTML = "";
           div.textContent = newValue;
-          valueDomain = newValue;
         }
-
         btnOk.removeEventListener("click",Save);
         btnOk.addEventListener("click",Save);
         divGroup.append(btnOk);
@@ -325,7 +687,6 @@
         btnCancel.className = "btn btn-outline-secondary";
         btnCancel.type = "button";
         btnCancel.insertAdjacentHTML("beforeend",`<i class="fa fa-times" aria-hidden="true"></i>`);
-
         const Close = ()=>{
           div.classList.remove("input-group");
           div.classList.remove("mb-3");
@@ -340,15 +701,12 @@
       }
     </script>
     <!-- Resources -->
-    <link href="../static/css/domains.css?1.0" rel="stylesheet">
-
+    <!-- BEGIN Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
-    <script src="../static/js/class/Domens.js?ver=1.0.0.0"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
       <a class="navbar-brand" href="#">KanbanTool</a>

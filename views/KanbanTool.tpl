@@ -9,10 +9,10 @@
   var defaultDesk = {{.User.Defaultdesk}}
   </script>
   {{template "bootstrap.html" .}}
-  <script src="../static/js/class/WorkItem.js?ver=1.0.1.4"></script>
-  <script src="../static/js/class/Desk.js?ver=1.0.1.4"></script>
-  <script src="../static/js/kanban v3.js?ver=1.0.1.4"></script>
-  <script src="../static/js/websocket.js?ver=1.0.1.4"></script>
+  <script src="../static/js/class/WorkItem.js?ver=1.0.1.7"></script>
+  <script src="../static/js/class/Desk.js?ver=1.0.1.7"></script>
+  <script src="../static/js/kanban v3.js?ver=1.0.1.7"></script>
+  <script src="../static/js/websocket.js?ver=1.0.1.7"></script>
 
 
 </head>
@@ -32,7 +32,7 @@
           <div id="preloader"></div>
         </div>
       </div>
-      <div class="KanbanDeskCanvas" id="">
+      <div class="KanbanDeskCanvas" id="KanbanDeskCanvas">
         <div class="KanbanDesk" style="grid-template-columns: 1fr 1fr 1fr 3fr 1fr;;     width: 100%;">
             <div class="KanbanColumn" id="Stage9"  >
                 <div class="NameColumn">Идея<span class="count"></span></div>
@@ -144,7 +144,7 @@
 
 
     <!-- Modal -->
-    <div class="modal fade " id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade " id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="z-index: 1052">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">

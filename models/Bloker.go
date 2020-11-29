@@ -1,9 +1,9 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -18,14 +18,16 @@ const (
 )
 
 type Bloker struct {
-	Id          int    `orm:"auto"`
-	Idtask      *Tasks `orm:"rel(fk);column(idtask)"`
-	Description string
-	Startdate   time.Time
-	Enddate     time.Time
-	Diside      string
-	Finished    bool
-	TypeEvent   TypesEvent
+	Id            int    `orm:"auto"`
+	Idtask        *Tasks `orm:"rel(fk);column(idtask)"`
+	IdStage       int
+	Description   string
+	Startdate     time.Time
+	Enddate       time.Time
+	Diside        string
+	Finished      bool
+	TypeEvent     TypesEvent
+	Durationinmin int
 }
 
 func init() {
@@ -36,16 +38,25 @@ func GetActiveBlokersFromDB(idtask int) (ActiveBlokers []Bloker, count int, err 
 	database := orm.NewOrm()
 	database.Using("default")
 	var count64 int64
-	count64, err = database.QueryTable("bloker").Filter("idtask", idtask).Filter("finished", false).All(&ActiveBlokers)
+	count64, err = database.QueryTable(new(Bloker)).Filter("idtask", idtask).Filter("finished", false).All(&ActiveBlokers)
 
 	return ActiveBlokers, int(count64), err
+}
+
+func BlokerDeleteInDB(BlokerId int) (err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+	if _, err := database.Delete(&Bloker{Id: BlokerId}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetBlokerFromDBbyId(id int) (bloker Bloker, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("bloker").Filter("id", id).All(&bloker)
+	_, err = database.QueryTable(new(Bloker)).Filter("id", id).All(&bloker)
 
 	return bloker, err
 }
@@ -54,7 +65,7 @@ func GetAllBlokersFromDB(idtask int) (ActiveBloker []Bloker, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("bloker").Filter("idtask", idtask).All(&ActiveBloker)
+	_, err = database.QueryTable(new(Bloker)).Filter("idtask", idtask).All(&ActiveBloker)
 
 	return ActiveBloker, err
 }
@@ -68,13 +79,15 @@ func UpdateBlokerInDB(bloker *Bloker) (err error) {
 	}
 	Param := orm.Params{
 
-		"idtask":      bloker.Idtask.Idtasks,
-		"description": bloker.Description,
-		"startdate":   bloker.Startdate.UTC(),
-		"enddate":     bloker.Enddate.UTC(),
-		"diside":      bloker.Diside,
-		"finished":    bloker.Finished,
-		"TypeEvent":   bloker.TypeEvent,
+		"idtask":        bloker.Idtask.Idtasks,
+		"id_stage":      bloker.IdStage,
+		"description":   bloker.Description,
+		"startdate":     bloker.Startdate.UTC(),
+		"enddate":       bloker.Enddate.UTC(),
+		"diside":        bloker.Diside,
+		"finished":      bloker.Finished,
+		"TypeEvent":     bloker.TypeEvent,
+		"durationinmin": bloker.Durationinmin,
 	}
 	if bloker.Id == 0 {
 		var id int64
@@ -84,8 +97,15 @@ func UpdateBlokerInDB(bloker *Bloker) (err error) {
 		_, err = database.QueryTable(new(Bloker)).Filter("id", bloker.Id).Update(Param)
 	}
 	if err != nil {
-		fmt.Println(err)
+		beego.Error(err)
 	}
 
 	return nil
+}
+
+func GetAllFinishedEvents() (Blokers []Bloker, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+	_, err = database.QueryTable(new(Bloker)).Filter("finished", true).All(&Blokers)
+	return Blokers, err
 }

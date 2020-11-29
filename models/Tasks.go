@@ -3,7 +3,9 @@ package models
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -18,10 +20,16 @@ type Tasks struct {
 	ClassOfService *ClassOfService `orm:"rel(fk);column(class_id)"`
 	Typetask       *TypeWorkItem   `orm:"rel(fk);column(typetask)"`
 	Blokers        []*Bloker       `orm:"reverse(many)"`
+	Users          []*User         `orm:"rel(m2m)"`
+	Duedate        time.Time       `orm:"null;column(duedate)"`
+	Group          *Group          `orm:"rel(fk);column(idGroup)"`
+	Сommentscount  string          `orm:"null"`
+	SmallWorkItem  bool            `orm:"column(Smallworkitem)"`
 }
 
 func init() {
 	orm.RegisterModel(new(Tasks))
+
 }
 
 func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
@@ -39,7 +47,7 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 	cond = cond.AndCond(cond2)
 
 	database.QueryTable(new(Tasks)).SetCond(cond).All(&taskListFromDB)
-	fmt.Println(database.QueryTable(new(Tasks)).SetCond(cond).Count())
+	//fmt.Println(database.QueryTable(new(Tasks)).SetCond(cond).Count())
 	for i, task := range taskListFromDB {
 		database.LoadRelated(&task, "Blokers")
 		taskListFromDB[i].Blokers = task.Blokers
@@ -47,8 +55,31 @@ func GetTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
 		taskListFromDB[i].ClassOfService = task.ClassOfService
 		database.LoadRelated(&task, "Typetask")
 		taskListFromDB[i].Typetask = task.Typetask
+		database.LoadRelated(&task, "Group")
+		taskListFromDB[i].Group = task.Group
+		database.LoadRelated(&task, "Users")
+		taskListFromDB[i].Users = task.Users
 		//database.LoadRelated(&task, "Class")
 	}
+	return taskListFromDB, err
+}
+
+func GetAllTaskListFromDB(id int) (taskListFromDB []Tasks, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	cond := orm.NewCondition()
+	cond = cond.And("finished", false)
+
+	cond2 := orm.NewCondition()
+	desk, _ := GetDeskFromDBById(id)
+	for _, Stage := range desk.Stages {
+		cond2 = cond2.Or("stageid", Stage.Id)
+	}
+	cond = cond.AndCond(cond2)
+
+	database.QueryTable(new(Tasks)).SetCond(cond).All(&taskListFromDB)
+
 	return taskListFromDB, err
 }
 
@@ -60,6 +91,7 @@ func GetTaskFromDB(id int) (taskFromDB Tasks, err error) {
 	database.LoadRelated(&taskFromDB, "Blokers")
 	database.LoadRelated(&taskFromDB, "ClassOfService")
 	database.LoadRelated(&taskFromDB, "Typetask")
+	database.LoadRelated(&taskFromDB, "Users")
 	return taskFromDB, err
 }
 
@@ -76,15 +108,28 @@ func UpdateTaskInDB(task Tasks) (err error) {
 	database.Using("default")
 
 	_, err = database.QueryTable(new(Tasks)).Filter("idtasks", task.Idtasks).Update(orm.Params{
-		"stageid":  task.Stageid,
-		"swimline": task.Swimline,
-		"typetask": task.Typetask.Id,
-		"class_id": task.ClassOfService.Id,
+		"title":         task.Title,
+		"stageid":       task.Stageid,
+		"swimline":      task.Swimline,
+		"typetask":      task.Typetask.Id,
+		"class_id":      task.ClassOfService.Id,
+		"Duedate":       task.Duedate.UTC(),
+		"idGroup":       task.Group.ID,
+		"Сommentscount": task.Сommentscount,
+		"Smallworkitem": task.SmallWorkItem,
 	})
+	m2m := database.QueryM2M(&task, "Users")
+	_, err = m2m.Clear()
+	if err != nil {
+		beego.Error(err)
+		return err
+	}
 
+	_, err = m2m.Add(task.Users)
 	if err == nil {
 		return nil
 	}
+	beego.Error(err)
 	return err
 }
 
@@ -114,8 +159,16 @@ func SetTaskFromBitrix24(NewTask map[string]string) (id int, err error) {
 	idType, _ := strconv.Atoi(NewTask["Typetask"])
 	typeWorkItem := TypeWorkItem{Id: idType}
 	task.Typetask = &typeWorkItem
-	task.ClassOfService = &ClassOfService{Id: 0}
+	idTmp, _ := strconv.Atoi(NewTask["Class"])
+	task.ClassOfService = &ClassOfService{Id: idTmp}
+	idTmp, _ = strconv.Atoi(NewTask["GROUP_ID"])
+	task.Group = &Group{ID: idTmp}
 	//getTypeTask(idType)
+	task.SmallWorkItem = false
+	if NewTask["GROUP_ID"] == "1" {
+		task.SmallWorkItem = true
+	}
+
 	task.Swimline, _ = strconv.Atoi(NewTask["Swimline"])
 
 	var idint int

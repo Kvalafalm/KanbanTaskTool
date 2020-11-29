@@ -287,7 +287,7 @@ func DifferenceInDays(start interface{}, end interface{}) (day int) {
 
 }
 
-func isHoliday(day time.Time) (t bool) {
+func isHolidayOLD(day time.Time) (t bool) {
 	var Holidays = make([]time.Time, 30)
 	Holidays = append(Holidays, time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC))
 	Holidays = append(Holidays, time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC))

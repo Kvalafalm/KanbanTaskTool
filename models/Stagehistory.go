@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -15,7 +16,7 @@ type Stagehistory struct {
 	Start         time.Time
 	End           time.Time
 	Durationinmin int
-	Finised       bool
+	Finished      bool
 }
 type RawStageHistoryForCFD struct {
 	Idstage   int
@@ -83,7 +84,7 @@ func GetCurrentTaskStage(TaskId int) (rowTaskHistory Stagehistory, err error) {
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable(&rowTaskHistory).Filter("idtask", TaskId).Filter("finised", false).All(&rowTaskHistory)
+	_, err = database.QueryTable(&rowTaskHistory).Filter("idtask", TaskId).Filter("finished", false).All(&rowTaskHistory)
 	if err != nil {
 		fmt.Println(err)
 		return rowTaskHistory, err
@@ -105,7 +106,7 @@ func SetCurrentTaskStage(stageHistoryRow Stagehistory) (err error) {
 		"start":         stageHistoryRow.Start,
 		"end":           stageHistoryRow.End,
 		"durationinmin": stageHistoryRow.Durationinmin,
-		"finised":       stageHistoryRow.Finised,
+		"Finished":      stageHistoryRow.Finished,
 	}
 
 	if stageHistoryRow.Id == 0 {
@@ -114,7 +115,7 @@ func SetCurrentTaskStage(stageHistoryRow Stagehistory) (err error) {
 		_, err = database.QueryTable(new(Stagehistory)).Filter("id", stageHistoryRow.Id).Update(Param)
 	}
 	if err != nil {
-		fmt.Println(err)
+		beego.Error(err)
 	}
 	return nil
 }
@@ -123,7 +124,14 @@ func GetTaskHistoryStages(TaskId int) (rowTaskHistory []Stagehistory, err error)
 	database := orm.NewOrm()
 	database.Using("default")
 
-	_, err = database.QueryTable("Stagehistory").Filter("idtask", TaskId).OrderBy("start").All(&rowTaskHistory)
+	_, err = database.QueryTable(new(Stagehistory)).Filter("idtask", TaskId).OrderBy("start").All(&rowTaskHistory)
+	return rowTaskHistory, err
+}
+func GetAllFinishedStages() (rowTaskHistory []Stagehistory, err error) {
+	database := orm.NewOrm()
+	database.Using("default")
+
+	_, err = database.QueryTable(new(Stagehistory)).OrderBy("start").All(&rowTaskHistory)
 	return rowTaskHistory, err
 }
 
