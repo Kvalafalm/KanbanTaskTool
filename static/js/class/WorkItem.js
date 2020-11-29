@@ -8,6 +8,7 @@ let TypeEventColor = [
 class WorkItem {
 	constructor(){
 		this.div = document.createElement('div');
+		this.isFullData = false;
 		this.Template = "";
 		this.Id = "";
 		this.IdBitrix24 = "";
@@ -17,7 +18,7 @@ class WorkItem {
 		this.Swimline = "";     
 		//this.DateStart = ""; 
 		this.DueDate = undefined;
-  
+		this.Count  = 1;
 		
 		this.Users = new Array;         
 		
@@ -64,7 +65,7 @@ class WorkItem {
 		});
 
 		this.blinking = false;
-
+		this.calcMetrics()
 	}
 
 	updateData(data) {
@@ -73,6 +74,7 @@ class WorkItem {
 		this.Name = data.Name;
 		if (this.Swimline != data.Swimline || this.Stage != data.Stage){
 			this.Parent = $("#SL"+data.Swimline+" .Stage"+data.Stage+" .KanbanColumnContent");
+			this.Parent.append(this.div);
 		}
 
 		this.Stage = data.Stage;
@@ -80,8 +82,13 @@ class WorkItem {
 		this.DateStart = data.DateStart;
 		this.LeadTime = data.LeadTime;
 		this.CyrcleTime = data.CyrcleTime;
-		this.FlowEffectives = data.FlowEffectives; 
-		if (data.DueDate == "0001-01-01T00:00:00Z" || data.DueDate === undefined){
+		
+		this.LeadTimeInMinutes = data.LeadTimeInMinutes;
+		this.WorkTimeInMinutes = data.WorkTimeInMinutes;
+		this.FlowEffectives = Math.round(this.WorkTimeInMinutes / this.LeadTimeInMinutes*100); 
+
+
+		if (data.DueDate == "0001-01-01T07:00:00+07:00" || data.DueDate === undefined){
 			this.DueDate = undefined;
 		}else{
 			this.DueDate = new Date(data.DueDate)
@@ -94,7 +101,10 @@ class WorkItem {
 	    
 		this.IdProject =data.IdProject;    
 		this.ImageProject= data.ImageProject;  
-		this.NameProject = data.NameProject; 
+		this.NameProject = data.NameProject;
+		if (data.StagesHistory != undefined) { 
+			this.StagesHistory = data.StagesHistory;
+		}
 		this.ActiveBlokers= data.ActiveBlokers;
 		this.onPause = false; 
 		
@@ -140,12 +150,40 @@ class WorkItem {
 			this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
 		}
 
-		this.Parent.append(this.div);
+		
 
 		if (this.Id != 0 ){
 			this.div.addEventListener("dragstart" , (e)=>{
 				e.dataTransfer.setData("Text",this.Id);
 			});
+		}
+
+		this.calcMetrics()
+	}
+
+	calcMetrics(){
+		this.LeadTimeInMinutes = 0;
+		this.WorkTimeInMinutes = 0;
+		this.FlowEffectives= 100 ;
+		this.StagesHistory.forEach((stage)=>{
+				if (thisStageIsWork(stage.Idstage)){
+					this.WorkTimeInMinutes += stage.Duration;	
+				}
+				if (thisStageIsOnDesk(stage.Idstage)){
+					this.LeadTimeInMinutes += stage.Duration;	
+				}		
+			
+		});
+
+		this.Blokers.forEach((event)=>{
+			if (!thisStageIsWork(event.Idstage)){
+				this.WorkTimeInMinutes += event.WorkTimeInMinutes;	
+			}else{
+				this.WorkTimeInMinutes -= event.WorkTimeInMinutes;
+			}
+		});
+		if(this.LeadTimeInMinutes > 0){
+			this.FlowEffectives = Math.round(this.WorkTimeInMinutes / this.LeadTimeInMinutes*100); 
 		}
 	}
 
@@ -166,8 +204,7 @@ class WorkItem {
 		if (this.blinking){
 			this.div.classList.add("blink");
 		}
-		this.div.id=`${this.Id}`
-		this.div.draggable = true; 
+
 		if (
 			   this.Stage==1 
 			|| this.Stage==2 
@@ -193,8 +230,32 @@ class WorkItem {
 			this.div.style.borderLeft = `7px solid ${this.TypeTask.Color}`;
 		}
 		this.show();
+		this.div.id=this.Id
+		this.div.draggable = true; 
 	}
+	getDataFromSrerver(){
+		const thisObj = this
+		var xhr = new XMLHttpRequest();
+		
+		xhr.open('GET', `/KanbanToolAPI/task/${this.Id}`, true);
+		xhr.setRequestHeader('Content-Type', 'application/json');
+		xhr.send();
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4 ){
+				if (xhr.status != 200) {
+					console.log( xhr.status + ': ' + xhr.statusText );
+				} else {
+					thisObj.updateData(JSON.parse(xhr.responseText));
+					thisObj.isFullData = true;
+					thisObj.refreshCard();
+				}
+			}
+		}
 
+
+
+	}
+	 
 	hide(){
 		this.div.classList.add("blink");
 		setTimeout(() => {
@@ -279,8 +340,8 @@ class WorkItem {
 		btnFinish.addEventListener("click" , ()=>{
 			this.finishTask();
 		});
-		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnFinish);
-
+//		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnFinish);
+		this.div.querySelector('.onhover').prepend(btnFinish);
 		let btnOnPause = document.createElement("button");
 		btnOnPause.type = "button";
 		btnOnPause.id = `btnOnPause${this.Id}`;
@@ -298,7 +359,8 @@ class WorkItem {
 		}
 
 		btnOnPause.style.padding = "1px";
-		$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnOnPause);
+		//$(`#${this.Id} .KanbanNameProject .onhover`).prepend(btnOnPause);
+		this.div.querySelector('.onhover').prepend(btnOnPause);
 	}
 
 	//Открытие информации по Рабочему элементу 
@@ -353,6 +415,7 @@ class WorkItem {
 				window.location.replace("/login")
 				return
 			}
+				thisElement.updateData(Kanbans);
 				$(".TitleBitrix24").empty();
 				$(".Descripion").empty();
 				$(".StageMore").empty();
@@ -421,6 +484,11 @@ class WorkItem {
 				<button type="button" class="btn btn-link btn-xs" style="padding:1px">
 					<i class="fa fa-trash" aria-hidden="true"></i>
 				</button> `*/
+				const StringSS = `
+				<span class="onhover"> 
+					<b> ${calculationGapDatesString(new Date(),new Date(),thisElement.WorkTimeInMinutes)} / ${calculationGapDatesString( new Date(),new Date(),thisElement.LeadTimeInMinutes)} = ${thisElement.FlowEffectives} % </b>
+				</span>`
+				$(".StageMore").append(StringSS);
 
 				// Вывод истории по этапам
 				Kanbans.StagesHistory.forEach(function(element) {
@@ -432,10 +500,10 @@ class WorkItem {
 					}else{
 						Stringdate = (new Date(element.End)).toLocaleDateString();
 					}
-	
+					
 					const StringSS = `
-						<span id="`+element.Id+`" class="onhover"> 
-							<b>`+element.Name +'</b> c ' + startDate + ' по ' + Stringdate + ` (${element.Duration} д.)`+ DefaultButton + `
+						<span id="${element.Id}" class="onhover"> 
+							<b>`+element.Name +'</b> c ' + startDate + ' по ' + Stringdate + ` (${calculationGapDatesString(element.Start,element.End,element.Duration)})`+ DefaultButton + `
 						</span>` 
 					$(".StageMore").append(StringSS);
 				});
@@ -495,7 +563,7 @@ class WorkItem {
 			
 					
 			});
-
+	
 	}
 
 	blink(){
@@ -556,6 +624,7 @@ class WorkItem {
 			pause.EndDate = undefined;
 			pause.Finished = false;
 			pause.TypeEvent = 2;
+			pause.IdStage = this.Stage;
 			this.Blokers.push(pause);
 			this.onPause = true;
 			pause.save();
@@ -623,11 +692,11 @@ class EventOfWorkItem {
 	constructor(data,task) {
 		this.Id = data.Id;
 		this.Task = task;
+		this.IdStage = data.IdStage;
 		this.Idtask = data.Idtask;
 		(data.Description!=undefined?this.Description= data.Description:this.Description = "");
 		(data.Diside!=undefined?this.Diside= data.Diside:this.Diside = "")
 		//TO DO 
-		//(data.EndDate!=undefined?this.EndDate= "0001-01-01T00:00:00Z":this.EndDate=data.EndDate);
 		if(this.Id == undefined){
 			this.newEvent = true;
 		}else{
@@ -635,21 +704,24 @@ class EventOfWorkItem {
 		}
 		
 		this.StartDate = new Date(data.StartDate)
-		//this.StartDateString = this.StartDate.toLocaleDateString()
-		
+		this.Durationinmin = data.Durationinmin
 
-		if (data.EndDate == "0001-01-01T00:00:00Z" || data.EndDate === undefined){
+		if (!data.Finished){
 			this.EndDate = undefined;
-			//this.EndDateString = "настоящее время";
 			this.Finished = false;
-			this.Duration = calculationGapDatesString(this.StartDate,new Date());		
+			this.Duration = calculationGapDatesString(this.StartDate,new Date(),data.Durationinmin);		
 		}else{
 			this.EndDate = new Date(data.EndDate)
-			//this.EndDateString = this.EndDate.toLocaleDateString();
 			this.Finished = true;
-			this.Duration = calculationGapDatesString(this.StartDate,this.EndDate);
+			this.Duration = calculationGapDatesString(this.StartDate,this.EndDate,data.Durationinmin);
 		}
+		
 		this.TypeEvent = data.TypeEvent;
+		if (this.TypeEvent == 3){
+			this.WorkTimeInMinutes = data.Durationinmin
+		}else{
+			this.WorkTimeInMinutes = data.Durationinmin*-1
+		}
 
 	}
 	addInputRow(Title,Id,type,value,placeholder) {
@@ -661,7 +733,7 @@ class EventOfWorkItem {
 		return row;
 	}
 	edit(){
-		const footer = $(".modal-footer")
+		const footer = $(".modal-footer");
 		const body = $(".modal-body");
 		$("#exampleModalLabel").empty();
 		body.empty();
@@ -679,6 +751,12 @@ class EventOfWorkItem {
 		form += this.addInputRow("Причина","BlokerReason","text",this.Description,"");
 		form += this.addInputRow("Решение","BlokerDecision","text",this.Diside,"");
 		form += this.addInputRow("Время начала","BlokerStart","datetime-local",this.StartDate.getDateTimetoLocalString(),"");
+		form += `
+		<div class="form-group">
+			<label >Завершенна</label>
+			<input type="checkbox" class="form-check-input"id="BlokerFinished" ${this.Finished?` checked `:``}  >
+		</div>`;
+
 		if (!this.newEvent){
 			if (this.Finished){
 				form += this.addInputRow("Время окончания","BlokerEnd","datetime-local",this.EndDate.getDateTimetoLocalString(),"");
@@ -688,6 +766,7 @@ class EventOfWorkItem {
 		}else{
 			form += this.addInputRow("Время окончания","BlokerEnd","datetime-local","","");
 		}
+
 
 		body.append(form);
 
@@ -704,7 +783,7 @@ class EventOfWorkItem {
 			this.Description = document.getElementById("BlokerReason").value;
 			this.Diside = $("#BlokerDecision")[0].value;
 			this.StartDate = new Date($("#BlokerStart")[0].value);
-			if($("#BlokerEnd")[0].value!=""){
+			if(document.getElementById("BlokerFinished").checked){
 				this.EndDate = new Date($("#BlokerEnd")[0].value);
 				this.Finished = true;
 			}else{
@@ -714,6 +793,7 @@ class EventOfWorkItem {
 			this.TypeEvent = parseInt($("#BlokerType")[0].value);
 			if(this.newEvent){
 				this.Task.Blokers.push(this);
+				this.IdStage = this.Task.Stage;
 			}
 			if(this.TypeEvent==2 && !this.Finished){
 				this.Task.onPause = true;
@@ -824,6 +904,7 @@ class EventOfWorkItem {
 				window.location.replace("/login")
 				return
 			}
+			EventTask.IdStage = EventTask.Task.Stage;
 			EventTask.Id = element.Id
 			EventTask.showPreview();
 			EventTask.Task.refreshCard();
@@ -894,27 +975,55 @@ function calculationDateStatusString(DateSetStatusJSON) {
 	return Result;
 }
 
-function calculationGapDatesString(StartDate, EndDate) {
+function thisStageIsWork(Id){
+	let isWorkStage = false
+	window.KanbanDesk.Stages.forEach((Stage)=>{
+		if (parseInt(Stage.Id)===Id){
+			isWorkStage = Stage.WorkTime 
+		}
+	});
+	return isWorkStage
+}
 
-	let times = Math.ceil(Math.abs(EndDate.getTime() - StartDate.getTime()) / (1000 * 60));
-	if (Math.floor(times/(60*24)) > 0){
+function thisStageIsOnDesk(Id){
+	let IsOnDesk = false
+	window.KanbanDesk.Stages.forEach((Stage)=>{
+		if (parseInt(Stage.Id)===Id && window.KanbanDesk.Endstage != Id ){
+			IsOnDesk = true
+		}
+	});
+	return IsOnDesk
+}
 
-		let numWorkDays = 0;
+
+function calculationGapDatesString(StartDate= new Date(), EndDate= new Date(), Minutes=undefined) {
+	let times;
+	if (Minutes == undefined ){
+		times= Math.ceil(Math.abs(EndDate.getTime() - StartDate.getTime()) / (1000 * 60));
+	}else{
+		times = Minutes
+	}
+	
+
+	if (Math.floor(times/(60*9)) > 0){
+		days = Math.floor(times/(60*9))
+		hours = Math.floor( (times - (days*60*9) )/60)
+		/*let numWorkDays = 0;
 		let checkDate =StartDate ;      
 		while (checkDate <= EndDate) {
 			// Skips Sunday and Saturday
 			if (checkDate.getDay() !== 0 && checkDate.getDay() !== 6) {
 				numWorkDays++;
 			}
-
-			
 			checkDate = checkDate.addDays(1);
-		}
+		}*/
 
-		Result = numWorkDays + " д.";
+		Result = days + " д. " + hours + " ч.";
 
 	}else if(Math.floor(times/(60)) > 0 ){
-		Result = Math.floor(times/(60)) + " ч.";
+		hours = Math.floor(Minutes/60)
+		min = Math.floor( (Minutes - (hours*60) )/60)
+		Result = hours + " ч. " + min + " м."  ;
 	}else{
 		Result = Math.floor(times) + " м.";
 	}

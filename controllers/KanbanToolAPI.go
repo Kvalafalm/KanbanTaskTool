@@ -6,6 +6,7 @@ import (
 	service "KanbanTaskTool/services"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	s "strings"
 
@@ -23,7 +24,7 @@ func (this *KanbanToolAPI) Get() {
 	session := this.StartSession()
 	User := session.Get("User")
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
-
+	beego.Info("Request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
 	if User == nil {
 		errorJson := make(map[string]string)
 		errorJson["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
@@ -79,6 +80,33 @@ func (this *KanbanToolAPI) Get() {
 		this.Data["json"] = &bloker
 		this.ServeJSON()
 
+	case "serviceduration.update":
+		err := serv.ServiceUpdateDuration()
+
+		resultJSON := make(map[string]string)
+		if err == nil {
+			resultJSON["result"] = "successful"
+			resultJSON["resultId"] = "100"
+		} else {
+			resultJSON["result"] = err.Error()
+			resultJSON["resultId"] = "401"
+		}
+		this.Data["json"] = resultJSON
+		this.ServeJSON()
+
+	case "servicebitrix24.update":
+		err := serv.ServiceUpdateDateFromBitrix24(idInt)
+
+		resultJSON := make(map[string]string)
+		if err == nil {
+			resultJSON["result"] = "successful"
+			resultJSON["resultId"] = "100"
+		} else {
+			resultJSON["result"] = err.Error()
+			resultJSON["resultId"] = "401"
+		}
+		this.Data["json"] = resultJSON
+		this.ServeJSON()
 	default:
 		this.Data["json"] = "{ \"error\" : \"Ошибка значения + " + TypeAction + " - " + this.Ctx.Input.Param(":id") + " \", \"errorId\" : \"402\" }"
 		this.ServeJSON()
@@ -91,10 +119,10 @@ func (this *KanbanToolAPI) Post() {
 	session := this.StartSession()
 	User := session.Get("User")
 	TypeAction := strings.ToLower(this.Ctx.Input.Param(":Type"))
-
+	beego.Info("Request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
 	param, err := getParamBitrix24(string(this.Ctx.Input.RequestBody))
 
-	if User == nil && err != nil {
+	if param["bitrix24request"] == "false" && User == nil && err != nil {
 		errorJSON := make(map[string]string)
 		errorJSON["error"] = "Ошибка авторизации + " + TypeAction + " - " + this.Ctx.Input.Param(":id")
 		errorJSON["errorId"] = "401"
@@ -106,6 +134,8 @@ func (this *KanbanToolAPI) Post() {
 	defer session.SessionRelease(this.Ctx.ResponseWriter)
 	if User != nil {
 		beego.Info("From user:", User.(Models.User).Id, " ", User.(Models.User).Firstname, " - request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
+	} else {
+		beego.Info("Request:", TypeAction, "; id-", this.Ctx.Input.Param(":id"))
 	}
 	var serv = service.KanbanService{}
 	switch TypeAction {
@@ -122,6 +152,7 @@ func (this *KanbanToolAPI) Post() {
 			User.(Models.User).Firstname,
 			User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" обновил(а) задаче №"+strconv.Itoa(taskPublish.IDBitrix24),
 			&taskPublish)
+
 		if err != nil {
 			this.Data["json"] = "{ \"successful\" : \"false\" }"
 		} else {
@@ -159,6 +190,11 @@ func (this *KanbanToolAPI) Post() {
 		if err != nil {
 			beego.Error(err)
 		} else {
+			serv.CheckUpdateWorkItem(ID)
+			if err != nil {
+				beego.Error(err)
+				return
+			}
 			task, err := serv.GetTask(ID)
 			if err != nil {
 				beego.Error(err)
@@ -187,6 +223,31 @@ func (this *KanbanToolAPI) Post() {
 		} else {
 			this.Data["json"] = "true"
 		}
+
+		this.ServeJSON()
+	case "stage.save":
+
+		stage := service.Stages{}
+		json.Unmarshal(this.Ctx.Input.RequestBody, &stage)
+		fmt.Println(stage)
+		err := serv.StageSave(&stage)
+
+		/*publish <- newEvent(
+		models.EVENT_REMOVECARD,
+		User.(Models.User).Id,
+		User.(Models.User).Firstname,
+		User.(Models.User).Firstname+" "+User.(Models.User).Secondname+" Обновил настройки этапа ",
+		id)*/
+		resultJSON := make(map[string]string)
+		if err == nil {
+			resultJSON["result"] = "successful"
+			resultJSON["resultId"] = "100"
+		} else {
+			resultJSON["result"] = err.Error()
+			resultJSON["resultId"] = "401"
+		}
+		this.Data["json"] = resultJSON
+		this.ServeJSON()
 
 		this.ServeJSON()
 
@@ -279,8 +340,10 @@ func getParamBitrix24(dataIn string) (data map[string]string, err error) {
 		}
 		if mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncomingNewTask") ||
 			mapData["auth[application_token]"] != beego.AppConfig.String("BitrixWebHookIncomingUpdateTask") {
+			mapData["bitrix24request"] = "true"
 			return mapData, nil
 		} else {
+			mapData["bitrix24request"] = "false"
 			err = errors.New("bad bitrix24 request")
 		}
 

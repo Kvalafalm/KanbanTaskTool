@@ -11,9 +11,10 @@ window.onload = function() {
 	refreshDeskList();
 
 	window.KanbanDesk = new KanbanDesk($("#DeskList option:selected").val());
+
 	window.KanbanDesk.GetDeskDataFromServerAndRefresh();
 
-	
+
 	$("#refreshDesk").click(()=>{
 		window.KanbanDesk.GetDeskDataFromServerAndRefresh();
 	});

@@ -206,7 +206,7 @@ type TasksB24 struct {
 			ClosedBy            interface{} `json:"closedBy"`
 			ClosedDate          interface{} `json:"closedDate"`
 			DateStart           time.Time   `json:"dateStart"`
-			Deadline            time.Time   `json:"deadline"`
+			Deadline            string      `json:"deadline"`
 			StartDatePlan       interface{} `json:"startDatePlan"`
 			EndDatePlan         interface{} `json:"endDatePlan"`
 			GUID                string      `json:"guid"`
@@ -237,8 +237,8 @@ type TasksB24 struct {
 			Auditors           []string    `json:"auditors"`
 			Accomplices        []string    `json:"accomplices,string"`
 			//Accomplices      string `json:"accomplices`
-			NewCommentsCount int    `json:"newCommentsCount"`
-			SubStatus        string `json:"subStatus"`
+			//NewCommentsCount int    `json:"newCommentsCount,string"`
+			SubStatus string `json:"subStatus"`
 			//Checklist        map[string]CheckListElement
 			Creator struct {
 				ID   string `json:"id"`
@@ -473,6 +473,25 @@ func (Cb *ConnectionBitrix24) AddTask(task map[string]string) (newtask TaskB, er
 	return app.Result.Task, nil
 }
 
+func (Cb *ConnectionBitrix24) SendMessage(chat string, message string) (err error) {
+	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/im.message.add"
+
+	req := httplib.Post(request)
+
+	//req.Param("BOT_ID", "263")
+	//chat6373
+	req.Param("MESSAGE", message)
+	//
+	req.Param("DIALOG_ID", chat)
+
+	_, err = req.Bytes()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (Cb *ConnectionBitrix24) CompleteTask(idTaskBitrix24 int) (err error) {
 
 	request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/tasks.task.complete"
@@ -584,6 +603,7 @@ func (Cb *ConnectionBitrix24) GetTaskListById(filter []int) (app TasksB24, err e
 			jsonFilter.Filter.Id = currentTasks
 
 			request := "https://" + Cb.Portal + "/rest/" + Cb.UserID + "/" + Cb.Webhook + "/tasks.task.list.json"
+			time.Sleep(time.Second / 2)
 			req := httplib.Post(request)
 			req.JSONBody(jsonFilter)
 			str, err := req.Bytes()

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///C:/Users/rerknv/go/src/KanbanTaskTool/views/Roles.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>КанбанТул РЭР</title>
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+  <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+  <script src="../static/js/class/DriversView.js"></script>
+  <script src="../static/js/class/DriversBoard.js"></script>
+  <script src="../static/js/class/Driver.js"></script>
+  <script>
+    window.onload = ()=>{
+
+      const viewer = new DriversView("S3DriversLayer");
+      Window.S3Board = new DriversBoard();
+      Window.S3Board.getDriversFromServer();
+      viewer.showDriversList(Window.S3Board.GetDrivers());
+    }
+  </script>  
+</head>
+
+<body style="background-color: #e7e7e785;">
+<!-- Styles -->
+
+
+    <!-- Resources -->
+    <link href="../static/css/domains.css?1.0" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script src="../static/js/class/Domens.js?ver=1.0.0.0"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+      <a class="navbar-brand" href="#">KanbanTool</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="/KanbanTool/">Доски</a></li>
+          <li class="nav-item"><a class="nav-link" href="/KanbanToolGraph/">Анализ графиков</a></li>
+          <li class="nav-item"><a class="nav-link" href="/static/roles.html">Описание ролей(Старое)</a></li>
+          <li class="nav-item"><a class="nav-link" href="/static/domains.html">Домены</a></li>
+        </ul>
+
+        <form class="navbar-form navbar-left" role="form" action="http://{{.Website}}/login/" method="Get">
+          <button class="btn btn-default" id="addBookButton">Login</button>        
+        </form>
+
+      </div>
+    </nav>
+    <h3>Список драйверов</h3>
+    <div class="container" id="S3DriversLayer">
+
+
+    </div>
+
+  </body>
+</html>

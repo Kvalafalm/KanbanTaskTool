@@ -1,3 +1,10 @@
+const typeGrouping = [
+	{"Id":0,"Name":"Без группироваки"},
+	{"Id":1,"Name":"По классу обслуживания"},
+	{"Id":2,"Name":"По типу работ"},
+	{"Id":3,"Name":"По проекту"},
+]
+
 class Experement {
 	constructor(){
 		this.Id = "";                     
@@ -300,7 +307,8 @@ class KanbanDesk {
 					let workItem = new WorkItem();
 					thisClass.WorkItems.push(workItem);
 					workItem.updateData(element);
-					
+					//workItem.getDataFromSrerver();
+
 					thisClass.Stages.forEach((elStage)=>{
 						if(workItem.Stage === elStage.Id){
 
@@ -317,14 +325,15 @@ class KanbanDesk {
 				thisClass.orderingWorkItems(1);
 				thisClass.groupWorkItems();
 				thisClass.showWorkItems();
-			   $(".KanbanColumnContent").each(function(){
+
+			   /*$(".KanbanColumnContent").each(function(){
 					$(this).closest(".Swimline").children(".SwimlineName").children("#StageInfo" + this.parentElement.className.replace("Stage","")).children(".count").text(" ( "
 									+ this.childElementCount + " / 0 ) ");
-				});
+				});*/
 	
-				
-				
-	
+				thisClass.calcMetrics();
+				document.getElementById("NavBar__FlowEffectivness").innerHTML = "";
+				document.getElementById("NavBar__FlowEffectivness").insertAdjacentHTML("beforeend",`FE:${thisClass.AverageFlowEffectivness}`);
 				thisClass.StopLoading();
 		});
 	}
@@ -337,26 +346,13 @@ class KanbanDesk {
 
 	StagesWorkItemClear(){
 		this.Stages.forEach(element => {
-			element.SwimlineList=new Array;
-			element.SwimlineList.push({Id:"0",WorkItemsList:new Array});
-			element.SwimlineList.push({Id:"1",WorkItemsList:new Array});
-			element.SwimlineList.push({Id:"2",WorkItemsList:new Array});
-			element.SwimlineList.push({Id:"3",WorkItemsList:new Array});
-			element.SwimlineList.push({Id:"4",WorkItemsList:new Array});
-			element.SwimlineList.push({Id:"5",WorkItemsList:new Array});
-			element.WorkItemsList = new Array;	
-
+			element.clearData();
 		});
 	}
 	orderingWorkItems(typeOfOrder){
 
 		//Сортировка По КлассуОбслуживания
 		if (typeOfOrder==1){
-			//this.WorkItems.sort((elemA,elemB)=>{
-
-			//	return ( !(elemA.ClassOfService.Order < elemB.ClassOfService.Order) - !(elemB.ClassOfService.Order < elemA.ClassOfService.Order) )
-			//	|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
-			//});
 
 			this.Stages.forEach((elementStage)=>{
 				elementStage.SwimlineList.forEach((SWL)=>{
@@ -389,16 +385,18 @@ class KanbanDesk {
 							
 					const List = new Array;
 					let prevProject = 0;
+					let groupCart= new GroupWorkItem();
 					while (SWL.WorkItemsList.length>0){
 						const oldElement = SWL.WorkItemsList.shift();
+					
 						if(prevProject === oldElement.ClassOfService.Id){
 							List[List.length-1].Count++;
 						}else{
-							const groupCart= new GroupWorkItem();
+							groupCart= new GroupWorkItem();
 							prevProject= oldElement.ClassOfService.Id;
 							groupCart.Swimline = oldElement.Swimline;
 							groupCart.Stage= oldElement.Stage;
-							groupCart.NameGroup = "Сгруппированно по классу обслуживания";
+							groupCart.NameGroup = `Класс ${oldElement.ClassOfService.Name}`;
 							groupCart.Name = oldElement.Name;
 							groupCart.NameProject = oldElement.ClassOfService.Name;
 							groupCart.TypeTask  = oldElement.TypeTask;
@@ -406,7 +404,8 @@ class KanbanDesk {
 							groupCart.Count  = 1;
 							List.push(groupCart);
 						}
-						oldElement.div.outerHTML = "";
+						groupCart.WorkItems.push(oldElement);
+						oldElement.div.remove();
 					}
 					SWL.WorkItemsList = List;
 				}else if(elementStage.Group===2){
@@ -418,16 +417,19 @@ class KanbanDesk {
 
 						const List = new Array;
 						let prevProject = 0;
+						let groupCart = new GroupWorkItem();
 						while (SWL.WorkItemsList.length>0){
 							const oldElement = SWL.WorkItemsList.shift();
+							
+							
 							if(prevProject=== oldElement.TypeTask.Id){
 								List[List.length-1].Count++;
 							}else{
-								const groupCart= new GroupWorkItem();
+								groupCart = new GroupWorkItem();
 								prevProject= oldElement.TypeTask.Id;
 								groupCart.Swimline = oldElement.Swimline;
 								groupCart.Stage= oldElement.Stage;
-								groupCart.NameGroup = "Сгруппированно по типу работ";
+								groupCart.NameGroup = `Тип работ ${oldElement.TypeTask.Name}`;
 								groupCart.Name = oldElement.Name;
 								groupCart.NameProject =oldElement.TypeTask.Name;
 								groupCart.TypeTask  = oldElement.TypeTask;
@@ -435,23 +437,33 @@ class KanbanDesk {
 								groupCart.Count  = 1;
 								List.push(groupCart);
 							}
-							oldElement.div.outerHTML = "";
+							groupCart.WorkItems.push(oldElement);
+							oldElement.div.remove();
 						}
 						SWL.WorkItemsList = List;
 				}else if(elementStage.Group===3){
-							
+
+					SWL.WorkItemsList.sort((elemA,elemB)=>{
+						return ( !(elemA.NameProject < elemB.NameProject) - !(elemB.NameProject < elemA.NameProject) )
+						|| ( !(elemA.Id<elemB.Id) - !(elemB.Id<elemA.Id) );
+					});	
+
 					const List = new Array;
+					
 					let prevProject = 0;
+					let groupCart= new GroupWorkItem();
 					while (SWL.WorkItemsList.length>0){
 						const oldElement = SWL.WorkItemsList.shift();
+						
+						
 						if(prevProject === oldElement.IdProject){
 							List[List.length-1].Count++;
 						}else{
-							const groupCart= new GroupWorkItem();
+							groupCart= new GroupWorkItem();
 							prevProject= oldElement.IdProject
 							groupCart.Swimline = oldElement.Swimline;
 							groupCart.Stage= oldElement.Stage;
-							groupCart.NameGroup = "Сгруппированно по проекту";
+							groupCart.NameGroup = `Проект ${oldElement.NameProject}`;
 							groupCart.Name = oldElement.Name;
 							groupCart.NameProject =oldElement.NameProject;
 							groupCart.TypeTask  = oldElement.TypeTask;
@@ -459,7 +471,8 @@ class KanbanDesk {
 							groupCart.Count  = 1;
 							List.push(groupCart);
 						}
-						oldElement.div.outerHTML = "";
+						groupCart.WorkItems.push(oldElement);
+						oldElement.div.remove();
 					}
 					SWL.WorkItemsList = List;
 				}
@@ -470,8 +483,10 @@ class KanbanDesk {
 
 		this.Stages.forEach((elementStage)=>{
 			elementStage.SwimlineList.forEach((SWL)=>{
+				const div = $("#SL"+SWL.Id+" .Stage"+elementStage.Id+" .KanbanColumnContent");
+				div.empty();
 				SWL.WorkItemsList.forEach((element)=>{
-					element.Parent = $("#SL"+element.Swimline+" .Stage"+element.Stage+" .KanbanColumnContent");
+					element.Parent = div;
 					element.show();
 					element.Parent.append(element.div);
 				});
@@ -501,6 +516,19 @@ class KanbanDesk {
 	}
 	StopLoading(){
 		document.getElementById('preloaderbg').style.display = 'none';
+	}
+	calcMetrics(){
+		let flowEffectivnessSumm = 0;
+		this.WorkItems.forEach(element => {
+			element.calcMetrics();
+			flowEffectivnessSumm += element.FlowEffectives
+		});	
+		this.AverageFlowEffectivness = 0
+		if (this.WorkItems.length){
+			this.AverageFlowEffectivness = Math.round(flowEffectivnessSumm / this.WorkItems.length,2);
+		}else{
+			this.AverageFlowEffectivness = "Неопределенно"
+		}	
 	}
 	InfoDesk(){
 
@@ -535,8 +563,13 @@ class KanbanDesk {
 			btnReset.addEventListener("click" , resetFiltr);
 
 			spanCancel.append(btnReset);	
-
 			let row = document.createElement("span");
+		
+			this.calcMetrics();
+			row.insertAdjacentHTML("beforeend",`Эффективность Потока - ${this.AverageFlowEffectivness} %`);
+			info.append(row);
+
+			row = document.createElement("span");
 			row.insertAdjacentHTML("beforeend",`Юзер - всего РЭ/ РЭ в работе`);
 			info.append(row);			
 
@@ -643,11 +676,17 @@ class KanbanDesk {
 					SWL.div = document.querySelector("#SL"+SWL.Id);
 					
 					if (SWL.div != null) {
-						SWL.divInfo =SWL.div.querySelector(".SwimlineName").querySelector("#StageInfo"+stage.Id);
+						try {
+							SWL.divInfo =SWL.div.querySelector(".SwimlineName").querySelector("#StageInfo"+stage.Id);
+						}catch (e) {
+
+						}
+						
 							if (SWL.divInfo != null) {
+								SWL.divInfo.innerHTML=stage.Name;
 								SWL.divInfo.append(getBtnStageCount(0,0));
-								SWL.divInfo.append(getBtnStageSettings());
-								SWL.divInfo.append(getBtnStageInfo(stage));
+								SWL.divInfo.append(getBtnStageSettings(stage));
+								//SWL.divInfo.append(getBtnStageInfo(stage));
 								SWL.divInfo.append(getBtnStageshowhideSL(SWL.div.querySelector(".SwimlineContent")));
 							}
 					}
@@ -710,7 +749,6 @@ class KanbanDesk {
 		  e.preventDefault();
 		  let data=e.originalEvent.dataTransfer.getData("Text");
 		  let fromId = $("#"+data).closest(".KanbanColumnContent")[0].parentElement.id.replace("Stage","");
-		  
 		  if (
 			  fromId != CurrentStageDrop.id.replace("Stage","") 
 			  ||  $("#"+data).closest(".Swimline")[0].id.replace("SL","") != CurrentStageDrop.parentElement.parentElement.id.replace("SL","")
@@ -727,6 +765,7 @@ class KanbanDesk {
 						  });
 						  element.refreshCard();
 						  element.save();
+
 					  }
 				  });
 		  }
@@ -803,13 +842,6 @@ function FantomCard(height){
 		</div>
 	</div>`;
 	return FantomCard
-}
-
-class deskStage {
-	constructor(){
-
-	}
-
 }
 
 class deskViewer {
@@ -981,7 +1013,7 @@ class deskViewer {
 		ModalDiv.classList.add("modal");
 		ModalDiv.classList.add("fade");
 
-		ModalDiv.id = id
+		ModalDiv.id = id;
 		ModalDiv.tabindex = -1;
 		ModalDiv.role = "dialog";
 		ModalDiv.aria_labelledby = `${id}Label`;
@@ -1104,7 +1136,8 @@ class StageOfDesk{
 		this.Name = data.Name;
 		this.Description = data.Description;
 		this.Order = data.Order;
-		this.Group = data.Group;
+		this.Group = parseInt(data.Group);
+		this.WorkTime = data.WorkTime;
 		this.SwimlineList=new Array;
 		this.SwimlineList.push({Id:"0",WorkItemsList:new Array});
 		this.SwimlineList.push({Id:"1",WorkItemsList:new Array});
@@ -1112,6 +1145,9 @@ class StageOfDesk{
 		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
 		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
 		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"6",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"7",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"8",WorkItemsList:new Array});
 		this.WorkItemsList = new Array;	
 	}
 	clearData(){
@@ -1122,19 +1158,161 @@ class StageOfDesk{
 		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
 		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
 		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"6",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"7",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"8",WorkItemsList:new Array});
 		this.WorkItemsList = new Array;		
 	}
+	edit(){
+		const divId = "GroupItem__modal";
+		let div = document.getElementById(divId);
+		if (div == null) {
+			document.body.append(getModal(divId))
+			div =  document.getElementById(divId).querySelector(".modal-content");
+		}else{
+			div =  document.getElementById(divId).querySelector(".modal-content");
+			div.innerHTML="";
+		}
+		div.insertAdjacentHTML("beforeend",`
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">${this.getInputForm("Наименование",this.Name,"form-control","Name")}</h5>
+			</div>
+		`);		
 
+		const body = document.createElement("div");
+		body.className = "modal-body";
+		div.append(body);
+		body.insertAdjacentHTML("beforeend",this.getInputForm("Порядок",this.Order,"form-control","Order"));
+		body.insertAdjacentHTML("beforeend",this.getTextareaForm("Описание",this.Description,"form-control","Description"));
+		body.insertAdjacentHTML("beforeend",this.getSelectForm("Группировка",typeGrouping,this.Group,"form-control","Group"));
+		body.insertAdjacentHTML("beforeend",this.getBoolForm("Рабочий этап",this.WorkTime,"form-check-input","WorkTime"));
+
+		const footer = document.createElement("div");
+		footer.className = "modal-footer";
+		footer.append(this.getBtnSave(this));
+		footer.append(this.getBtnCancel(this));
+		div.append(footer);
+		
+		$('#'+divId).modal('show');
+		
+	}
+	getInputForm(title,value,className,name){
+		return `
+		<div class="form-group">
+			<label for="StageEdit_${name}">${title}</label>
+			<input class="${className}" id="StageEdit_${name}" value="${value}">
+			
+		</div>	
+		`;
+	}
+	getBoolForm(title,value,className,name){
+		return `
+		<div class="form-group">
+			<label for="StageEdit_${name}">${title}</label>
+			<input type="checkbox" id="StageEdit_${name}" class="${className}" ${value?` checked `:``} ></input>
+		</div>	
+		`;
+	}
+	getTextareaForm(title,value,className,name){
+		return `
+		<div class="form-group">
+			<label for="StageEdit_${name}">${title}</label>
+			<textarea class="${className}" id="StageEdit_${name}" rows="5">${value}</textarea>
+		</div>	
+		`;
+	}
+	getSelectForm(title,array,value,className,name){
+		let option;
+		array.forEach((element)=>{
+			option += `<option value="${element.Id}" ${element.Id===value?"selected":""}>${element.Name}</option>`
+		});
+
+		return `
+			<div class="form-group">
+				<label for="StageEdit_${name}">${title}</label>
+				<select class="form-control" id="StageEdit_${name}">
+					${option}
+				</select>
+			</div>	
+		`;	
+	}
+
+	getBtnSave(Obj) {
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.id = `bntSave${Obj.Id}`;
+		btn.className = "btn btn-primary";
+		btn.style.margin = "1px";
+		btn.dataset.dismiss = "modal"
+		btn.insertAdjacentHTML("beforeend",`Сохранить`);
+		btn.addEventListener("click" , ()=>{
+			Obj.UpdateDriverFromModalForm(Obj);
+			Obj.save();
+			//if (Obj.New) {
+			//	this.tbody.append(this.addRowWithDriver(Obj));
+			//};
+		});
+		return btn;
+	}
+
+	UpdateDriverFromModalForm(Obj){
+		Obj.Name 	= document.getElementById("StageEdit_Name").value;
+		Obj.Description = document.getElementById("StageEdit_Description").value;
+		Obj.Order = document.getElementById("StageEdit_Order").value;
+		Obj.Group 	=parseInt($("#StageEdit_Group option:selected").val())
+		Obj.WorkTime 		= document.getElementById("StageEdit_WorkTime").checked;
+
+		
+	}
+	save(){
+
+		$.ajax({
+			type: "POST",
+			url: "/KanbanToolAPI/stage.save/0",
+			contentType: "application/json; charset=utf-8",
+			crossDomain : true,
+			processData: false,
+			data: JSON.stringify(this,(key, value)=> {
+				if (key === 'SwimlineList' || key === 'WorkItemsList') {
+				  return undefined; 
+				}
+				return value;
+			  }),
+			async: true
+	   }).done((element) => {
+				if( element.errorId != undefined && element.errorId == "401" ){
+					window.location.replace("/login")
+					return false
+				}
+				if (this.isNew){
+					window.KanbanDesk.Experements.push(this);
+					this.isNew = false;
+				}
+	   });
+
+	}
+	getBtnCancel(Obj) {
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.id = `btnCancel${Obj.Id}`;
+		btn.className = "btn btn-secondary";
+		btn.style.margin = "1px";
+		btn.dataset.dismiss = "modal"
+		 
+		btn.insertAdjacentHTML("beforeend",`Отменить`);
+
+		return btn;
+	}
 }
 
 class GroupWorkItem{
 	constructor(){
 		this.div = document.createElement('div');
-		this.div.classList.add("KanbanGroup");
+		this.div.classList.add("KanbanGroups");
+		this.div.style.position ="relative"
 		this.Parent ="";
 		this.TypeTask  = "";    
 		this.ClassOfService  = "";
-		this.Count  = "";
 		this.Swimline = "";
 		this.Stage="";
 		this.NameGroup = "";
@@ -1142,38 +1320,190 @@ class GroupWorkItem{
 		this.NameProject ="";
 		this.TypeTask  = "";
 		this.ClassOfService  = "";
+		this.WorkItems = new Array;
 		this.Count  = 0;
+		this.div.addEventListener("dblclick" , ()=>{
+			this.StartModalWindow();
+		});
 	}
 	getGroupCard(){
 		return  		`
-		<div class="Kanban">
+
+		<div class="" style="position: relative;
+									border: 1px solid gray;
+									margin: 5px;
+									width: 185px;
+									height: 130px;
+									border-radius: 5px;
+									background-color: rgba(236, 234, 234, 1);
+									border-left: 7px solid ${this.ClassOfService.Color};">
 			<div class="KanbanName">
 				<div>
 					${this.NameGroup} 
 				</div>
 			</div>
 
-			<div class="KanbanDescription"> <span class="nameClient">${this.Name}</span>
-				<div class="KanbanDurationStatus">
-				<div class="KanbanNameProject">
+		</div> 
+
+		<div class="" style="background-color: rgba(236, 234, 234, 1);
+									border-radius: 5px;
+									border: 1px solid gray;
+									float: right;
+									padding: 5px;
+									margin: 5px;
+									width: 185px;
+									height: 130px;
+									position: absolute;
+									left: -5px;
+									top: 5px;
+									border-left: 7px solid ${this.ClassOfService.Color};">
+			<div class="KanbanName">
+				<div>
+					${this.NameGroup} 
+				</div>
+			</div>
+
+			<div class="KanbanDescription" style="> <span class="nameClient">${this.Name}</span>
+				<div class="KanbanDurationStatus"></div>
+				<div class="KanbanNameProject"></div>
 				<div style="text-align: right;" >
 					<span class="projectName"><b> Количество: ${this.Count}</b></span>
-					<span class="projectName">${this.NameProject}</span><br>
 				</div>
 			</div> 
 		</div> 
-		<div class="Kanban">
-		тест
-		</div>
+		
 		`; 
 	}
 	show(){
 		this.div.insertAdjacentHTML("beforeend",this.getGroupCard() );
-		this.div.style.borderLeft = `7px solid ${this.ClassOfService.Color}`;
+		//this.div.append(this.btnUnGroup());
+		this.div.querySelector(".KanbanDurationStatus").append(this.btnUnGroup());
+		//this.div.style.borderLeft = `7px solid ${this.ClassOfService.Color}`;
 	}
+
+	btnUnGroup(){
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "btn btn-light btn-xs";
+		btn.style.padding = "2px";
+		btn.style.margin = "2px";
+		btn.insertAdjacentHTML("beforeend",`<i class="fa fa-object-group" aria-hidden="true"></i>`);
+		btn.addEventListener("click" , ()=>{
+			alert();
+	
+		});
+		return "";
+	}
+
 	edit(){
 
 	}
+	StartModalWindow(){
+		const divId = "GroupItems__modal";
+		let div = document.getElementById(divId);
+		let modalDiv = document.getElementById(divId);
+		if (modalDiv == null) {
+			document.body.append(getModalWithoutBootstrap(divId))
+			modalDiv = document.getElementById(divId);
+			div =  document.getElementById(divId).querySelector(".modal-content");
+		}else{
+			div =  document.getElementById(divId).querySelector(".modal-content");
+			modalDiv = document.getElementById(divId);
+			div.innerHTML="";
+		}
+		//modalDiv.style.width = `30%`;
+		modalDiv.style.minWidth = `200px`;
+		modalDiv.style.maxWidth = `620px`;
+		modalDiv.style.left = document.documentElement.clientWidth*0.7/2+'px';
+		modalDiv.style.top = document.documentElement.clientHeight * 0.05+'px';
+
+		const ModalDivHeader = document.createElement("div");
+		ModalDivHeader.classList.add("modal-header");
+
+		
+		ModalDivHeader.onmousedown = function(e) { // 1. отследить нажатие
+			// подготовить к перемещению
+			// 2. разместить на том же месте, но в абсолютных координатах
+			modalDiv.style.position = 'absolute';
+			let offsetX = e.offsetX;
+			let offsetY = e.offsetY;
+
+			moveAt(e);
+			// переместим в body, чтобы мяч был точно не внутри position:relative
+			//document.body.appendChild(div);
+		  
+			modalDiv.style.zIndex = 1060; // показывать мяч над другими элементами
+
+			// передвинуть мяч под координаты курсора
+			// и сдвинуть на половину ширины/высоты для центрирования
+			function moveAt(e) {
+				modalDiv.style.left = e.pageX - offsetX - 28+ 'px';
+				modalDiv.style.top = e.pageY - offsetY -28 + 'px';
+			}
+		  
+			// 3, перемещать по экрану
+			document.onmousemove = function(e) {
+			  moveAt(e);
+			  
+			}
+		  
+			// 4. отследить окончание переноса
+			modalDiv.onmouseup = function() {
+			  document.onmousemove = null;
+			  modalDiv.onmouseup = null;
+			}
+		  }
+
+
+		div.append(ModalDivHeader);
+
+		ModalDivHeader.insertAdjacentHTML("beforeend",`
+				<h5 class="modal-title" id="exampleModalLabel">${this.NameGroup}</h5>
+		`);		
+
+		const body = document.createElement("div");
+		body.className = "modal-body";
+		body.className = "KanbanColumnContent";
+		div.append(body);
+		//const ContentKanban = document.createElement("div");
+		//footer.className = "modal-body";
+
+		this.WorkItems.forEach((element)=>{
+			if (this.Stage=== element.Stage){ 
+				element.Parent = body
+				element.div = document.createElement("div");
+				element.div.addEventListener("dragstart" , (e)=>{
+					e.dataTransfer.setData("Text",element.Id);
+				});
+				element.div.className = `Kanban`;
+				element.div.id=`${element.Id}`
+				element.div.draggable = true; 
+				element.div.style.borderLeft = `7px solid ${element.TypeTask.Color}`;
+				element.div.style.fontSize = "xx-small";
+				element.Parent.append(element.div);
+				element.div.addEventListener("dblclick" , ()=>{
+					element.StartModalWindow();
+				});
+				element.show();
+			}
+		});
+		
+		const footer = document.createElement("div");
+		footer.className = "modal-footer";
+		const btnClose =  getBtnСloseALL(`Закрыть`);
+
+		btnClose.addEventListener("click" , ()=>{
+			modalDiv.style.display ="none";
+		});
+		footer.append(btnClose);
+
+
+		div.append(footer);
+		modalDiv.style.display ="block";
+		
+
+	}
+
 }
 
 function getBtnStageSettings(Stage){
@@ -1185,8 +1515,7 @@ function getBtnStageSettings(Stage){
 	btn.style.margin = "2px";
 	btn.insertAdjacentHTML("beforeend",`<i class="fa fa-cogs" aria-hidden="true"></i>`);
 	btn.addEventListener("click" , ()=>{
-		alert();
-
+		Stage.edit();
 	});
 	return btn;
 }
@@ -1230,6 +1559,63 @@ function getBtnStageshowhideSL(element){
 		}
 	}
 	btn.addEventListener("click" , ShowHide);
+
+	return btn;
+}
+
+function getModal(id){
+	const ModalDiv = document.createElement("div");
+	ModalDiv.classList.add("modal");
+	ModalDiv.classList.add("fade");
+	ModalDiv.id = id
+	ModalDiv.tabindex = -1;
+	ModalDiv.role = "dialog";
+	ModalDiv.aria_labelledby = `${id}Label`;
+	ModalDiv.aria_hidden = true;
+
+	ModalDiv.Dialog = document.createElement("div");
+	ModalDiv.Dialog.classList.add("modal-dialog");
+	ModalDiv.Dialog.classList.add("modal-lg");
+	ModalDiv.Dialog.role = "document";
+	ModalDiv.append(ModalDiv.Dialog);
+	
+	ModalDiv.Content = document.createElement("div");
+	ModalDiv.Content.classList.add("modal-content");
+	ModalDiv.Dialog.append(ModalDiv.Content)
+
+	return ModalDiv;
+}
+
+function getModalWithoutBootstrap(id){
+	const ModalDiv = document.createElement("div");
+	ModalDiv.classList.add("KanbanMore");
+	ModalDiv.style.display =`block`;
+	ModalDiv.style.position =`absolute`;
+
+
+	ModalDiv.id = id
+
+	ModalDiv.Dialog = document.createElement("div");
+	ModalDiv.Dialog.classList.add("modal-dialog");
+	ModalDiv.Dialog.style.maxWidth = `100%`;
+	ModalDiv.Dialog.role = "document";
+	ModalDiv.append(ModalDiv.Dialog);
+	
+	ModalDiv.Content = document.createElement("div");
+	ModalDiv.Content.classList.add("modal-content");
+	ModalDiv.Dialog.append(ModalDiv.Content)
+
+	return ModalDiv;
+}
+
+function getBtnСloseALL(name){
+
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.className = "btn btn-light btn-xs";
+	btn.style.padding = "2px";
+	btn.style.margin = "2px";
+	btn.insertAdjacentHTML("beforeend",name);
 
 	return btn;
 }

@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"KanbanTaskTool/models"
+	model "KanbanTaskTool/models"
+	s "KanbanTaskTool/services"
 	"container/list"
 	"time"
 
@@ -42,6 +44,12 @@ func EventsBox() {
 		case sub := <-subscribe:
 			subscribers.PushBack(sub) // Add user to the end of list.
 			publish <- newEvent(models.EVENT_JOIN, sub.UserID, sub.Name, "", nil)
+			//Делам запись что пользователь присоединился
+			user := model.User{
+				Id: sub.UserID,
+			}
+			user.Join()
+
 			beego.Info("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 
 		case event := <-publish:
@@ -53,6 +61,12 @@ func EventsBox() {
 
 			broadcastWebSocket(event)
 			models.NewArchive(event)
+
+			connectionBitrix24API := s.ConnectionBitrix24{
+				beego.AppConfig.String("BitrixDomen"),
+				beego.AppConfig.String("BitrixUser"),
+				beego.AppConfig.String("BitrixWebHook")}
+			connectionBitrix24API.SendMessage("chat6843", event.Content)
 
 			if event.Type == models.EVENT_MESSAGE {
 				beego.Info("Message from", event.User, ";Content:", event.Content)

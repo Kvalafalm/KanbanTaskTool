@@ -20,6 +20,7 @@ type Desk struct {
 	Stages         []*Stage          `orm:"rel(m2m)"`
 	Experements    []*Experement     `orm:"reverse(many)"`
 	UseExperements bool
+	//flowEfficiencyStages    string
 }
 
 func init() {
