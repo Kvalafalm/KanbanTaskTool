@@ -180,9 +180,24 @@ func (this *KanbanToolAPI) Post() {
 		}
 
 		this.ServeJSON()
-
+	//create task from Bitrix24
 	case "task.create":
-		serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
+		IdTask, err := serv.SetTaskByIdFromBitrix24(param["data[FIELDS_AFTER][ID]"])
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		task, err := serv.GetTask(IdTask)
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		publish <- newEvent(
+			models.EVENT_NEWCARD,
+			0,
+			"",
+			"Рабочий элемент №"+strconv.Itoa(task.IDBitrix24)+" создан в Битрикс24",
+			&task)
 		this.ServeJSON()
 
 	case "task.updateb24":

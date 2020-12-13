@@ -717,11 +717,21 @@ class EventOfWorkItem {
 		}
 		
 		this.TypeEvent = data.TypeEvent;
-		if (this.TypeEvent == 3){
-			this.WorkTimeInMinutes = data.Durationinmin
+
+		if (thisStageIsWork(parseInt(this.IdStage))){
+			if (this.TypeEvent == 3){
+				this.WorkTimeInMinutes = 0;
+			} else {
+				this.WorkTimeInMinutes = data.Durationinmin*-1;
+			}
 		}else{
-			this.WorkTimeInMinutes = data.Durationinmin*-1
+			if (this.TypeEvent == 3){
+				this.WorkTimeInMinutes = data.Durationinmin
+			}else{
+				this.WorkTimeInMinutes = 0
+			}
 		}
+
 
 	}
 	addInputRow(Title,Id,type,value,placeholder) {

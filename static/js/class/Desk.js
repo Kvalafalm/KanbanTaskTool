@@ -483,13 +483,17 @@ class KanbanDesk {
 
 		this.Stages.forEach((elementStage)=>{
 			elementStage.SwimlineList.forEach((SWL)=>{
+				let AllCounts = 0;
 				const div = $("#SL"+SWL.Id+" .Stage"+elementStage.Id+" .KanbanColumnContent");
 				div.empty();
 				SWL.WorkItemsList.forEach((element)=>{
 					element.Parent = div;
 					element.show();
 					element.Parent.append(element.div);
+					AllCounts += element.Count;
 				});
+				SWL.AllCounts = AllCounts
+				SWL.CountsDiv.textContent = ` ( ${SWL.AllCounts} / 0 ) `;
 			});
 		});
 
@@ -684,7 +688,9 @@ class KanbanDesk {
 						
 							if (SWL.divInfo != null) {
 								SWL.divInfo.innerHTML=stage.Name;
-								SWL.divInfo.append(getBtnStageCount(0,0));
+								
+								
+								SWL.divInfo.append(SWL.CountsDiv);
 								SWL.divInfo.append(getBtnStageSettings(stage));
 								//SWL.divInfo.append(getBtnStageInfo(stage));
 								SWL.divInfo.append(getBtnStageshowhideSL(SWL.div.querySelector(".SwimlineContent")));
@@ -1139,28 +1145,22 @@ class StageOfDesk{
 		this.Group = parseInt(data.Group);
 		this.WorkTime = data.WorkTime;
 		this.SwimlineList=new Array;
-		this.SwimlineList.push({Id:"0",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"1",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"2",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"6",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"7",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"8",WorkItemsList:new Array});
+		this.SwimlineList.push({Id:"0",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"1",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"2",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"3",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"5",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"6",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"4",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"7",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
+		this.SwimlineList.push({Id:"8",WorkItemsList:new Array,"CountsDiv":getBtnStageCount(data.Id,0)});
 		this.WorkItemsList = new Array;	
 	}
 	clearData(){
-		this.SwimlineList=new Array;
-		this.SwimlineList.push({Id:"0",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"1",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"2",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"3",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"4",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"5",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"6",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"7",WorkItemsList:new Array});
-		this.SwimlineList.push({Id:"8",WorkItemsList:new Array});
+		//this.SwimlineList=new Array;
+		this.SwimlineList.forEach((element)=>{
+			element.WorkItemsList = new Array
+		});
 		this.WorkItemsList = new Array;		
 	}
 	edit(){

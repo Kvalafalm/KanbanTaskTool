@@ -2,6 +2,7 @@ package services
 
 import (
 	model "KanbanTaskTool/models"
+	"errors"
 	"html/template"
 	"strconv"
 	"strings"
@@ -244,7 +245,16 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 			Bitrix24id: id,
 		}
 		user.GetUserByBitrix24ID()
-		task.Users = append(task.Users, user)
+		addUser := true
+		for _, row := range task.Users {
+			if row.Id == user.Id {
+				addUser = false
+			}
+
+		}
+		if addUser {
+			task.Users = append(task.Users, user)
+		}
 	}
 
 	err = model.UpdateTaskInDB(task)
@@ -259,6 +269,7 @@ func (Cb *KanbanService) SetTask(tasks Tasks) (err error) {
 		if rowHistory.Id > 0 {
 			rowHistory.Finished = true
 			rowHistory.End = timeNow
+			rowHistory.Durationinmin = DifferenceInMinutes(rowHistory.Start, rowHistory.End)
 			err = model.SetCurrentTaskStage(rowHistory)
 			if err != nil {
 				fmt.Println(err)
@@ -326,7 +337,7 @@ func (Cb *KanbanService) NewTask(workItem WorkItem, user model.User) (id int, er
 	newtaskK["Swimline"] = strconv.Itoa(workItem.Swimline)
 	newtaskK["Typetask"] = "0"
 	newtaskK["idBitrix"] = strconv.Itoa(user.Defaulttaskb24)
-
+	newtaskK["Title"] = workItem.Name
 	newtaskK["CheckUnicColluumn"] = "idbitrix24"
 	// TO DO
 	if workItem.Stage != desk.Endstage {
@@ -339,8 +350,6 @@ func (Cb *KanbanService) NewTask(workItem WorkItem, user model.User) (id int, er
 		newtaskK["idBitrix"] = taskB24.ID
 	} else {
 		taskB24, _ := connectionBitrix24API.GetTask(strconv.Itoa(user.Defaulttaskb24))
-
-		newtaskK["Title"] = workItem.Name + ""
 		newtaskK["CheckUnicColluumn"] = ""
 		newtaskK["Typetask"] = strconv.Itoa(user.DefaultWorkItemType)
 		newtaskK["Class"] = "1"
@@ -604,7 +613,7 @@ func (Cb *KanbanService) GetIdtaskByBitrix24(IdB24 string) (Id int, err error) {
 	return task.Idtasks, nil
 }
 
-func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
+func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) (id int, err error) {
 
 	var ConnectionBitrix24 = ConnectionBitrix24{
 		beego.AppConfig.String("BitrixDomen"),
@@ -616,16 +625,25 @@ func (Cb *KanbanService) SetTaskByIdFromBitrix24(Id string) {
 		task := make(map[string]string)
 		task["Id"] = taskBitrix24.Result.ID
 		task["Stage"] = strconv.Itoa(desk.Startstage)
+
 		task["idBitrix"] = taskBitrix24.Result.ID
 		task["Typetask"] = "0"
 		task["CheckUnicColluumn"] = "Idbitrix24"
-		_, err := model.SetTaskFromBitrix24(task)
-		if err == nil {
-			beego.Info("Create work itemB24:" + taskBitrix24.Result.ID)
-		} else {
+		idTask, err := model.SetTaskFromBitrix24(task)
+		if err != nil {
 			beego.Error(err)
 		}
+		err = Cb.CheckUpdateWorkItem(idTask)
+		if err == nil {
+			beego.Info("Create work itemB24:" + taskBitrix24.Result.ID)
+			return idTask, nil
+		} else {
+			beego.Error(err)
+			return 0, err
+		}
 	}
+
+	return 0, errors.New("Can`t create WorkItem")
 
 }
 
